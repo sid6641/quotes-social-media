@@ -1,5 +1,5 @@
 # Phase: 1 — Requirements & Contracting
-**Step**: spec
+**Step**: handoff
 **Status**: 🟢 Active
 **Started**: 2026-07-07
 **Updated**: 2026-07-07

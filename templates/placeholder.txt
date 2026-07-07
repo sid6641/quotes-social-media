@@ -1,0 +1,11 @@
+📸 PLACEHOLDER — Template Images
+
+This directory should contain background images for quote generation.
+
+Add your images here (supported formats: .jpg, .jpeg, .png, .webp).
+
+The generator will pick from these files when creating quote images.
+Delete this file once you've added your template images.
+
+Tip: Use high-resolution images (at least 1080x1080px) for best results.
+Instagram-style backgrounds work best (aesthetic photos, gradients, textures).
