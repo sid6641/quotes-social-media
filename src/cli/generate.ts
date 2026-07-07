@@ -6,6 +6,7 @@
  * Picks 10 quote + template combinations, sends to Gemini,
  * saves the resulting images to output/, and prints a summary.
  */
+import "dotenv/config";
 import path from "path";
 import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "../lib/prompts";

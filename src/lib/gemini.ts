@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * gemini-2.0-flash-exp-image-generation supports image output.
  * Override via GEMINI_MODEL env var if needed.
  */
-const IMAGE_GEN_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash-exp-image-generation";
+const IMAGE_GEN_MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-image";
 
 /**
  * Generate a quote image by sending a background image and engineered prompt
