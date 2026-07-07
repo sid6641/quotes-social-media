@@ -4,10 +4,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 /**
  * Model to use for image generation.
  * gemini-2.0-flash-exp-image-generation supports image output.
- * Fall back to gemini-2.5-flash if the experimental model is unavailable.
+ * Override via GEMINI_MODEL env var if needed.
  */
-const IMAGE_GEN_MODEL = "gemini-2.0-flash-exp-image-generation";
-const FALLBACK_MODEL = "gemini-2.5-flash";
+const IMAGE_GEN_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash-exp-image-generation";
 
 /**
  * Generate a quote image by sending a background image and engineered prompt
@@ -37,23 +36,12 @@ export async function generateQuoteImage(
   const mimeType = getMimeType(backgroundPath);
   const base64Image = imageBuffer.toString("base64");
 
-  // Apply quote text into the prompt template
-  const prompt = promptTemplate.replace(
-    /\{\{quote_text\}\}/g,
-    quoteText
-  );
+  // The prompt template already has {{quote_text}} and {{background_description}}
+  // substituted by the caller — use as-is
+  const prompt = promptTemplate;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-
-  // Try the image-generation model first, fall back if needed
-  let model;
-  try {
-    model = genAI.getGenerativeModel({ model: IMAGE_GEN_MODEL });
-    // Quick test to see if the model is available
-    await model.generateContent("test");
-  } catch {
-    model = genAI.getGenerativeModel({ model: FALLBACK_MODEL });
-  }
+  const model = genAI.getGenerativeModel({ model: IMAGE_GEN_MODEL });
 
   const result = await model.generateContent([
     {

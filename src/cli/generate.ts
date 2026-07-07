@@ -11,7 +11,7 @@ import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "../lib/prompts";
 import { pickCombinations } from "../lib/mixer";
 import { generateQuoteImage } from "../lib/gemini";
-import { createBatch } from "../lib/manifest";
+import { createBatch, generateBatchId } from "../lib/manifest";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
@@ -109,11 +109,6 @@ async function main() {
   console.log(
     `\n👉 Review at http://localhost:3000 (run: npm run dev)`
   );
-}
-
-function generateBatchId(): string {
-  const now = new Date();
-  return now.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
 main().catch((err) => {

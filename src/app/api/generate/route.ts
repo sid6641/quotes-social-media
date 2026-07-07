@@ -4,7 +4,7 @@ import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "@/lib/prompts";
 import { pickCombinations } from "@/lib/mixer";
 import { generateQuoteImage } from "@/lib/gemini";
-import { createBatch, invalidateCache } from "@/lib/manifest";
+import { createBatch, generateBatchId, invalidateCache } from "@/lib/manifest";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
@@ -32,12 +32,13 @@ export async function POST(_request: NextRequest) {
     }
 
     // 4. Generate images
-    const batchId = new Date().toISOString().slice(0, 10);
+    const batchId = generateBatchId();
     const results: Array<{
       quote: string;
       template: string;
       filename: string;
       success: boolean;
+      error?: string;
     }> = [];
 
     for (let i = 0; i < combos.length; i++) {
@@ -62,8 +63,9 @@ export async function POST(_request: NextRequest) {
         );
         fs.writeFileSync(path.join(OUTPUT_DIR, filename), imageBuffer);
         results.push({ quote, template, filename, success: true });
-      } catch {
-        results.push({ quote, template, filename, success: false });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        results.push({ quote, template, filename, success: false, error: msg });
       }
     }
 

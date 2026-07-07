@@ -55,7 +55,7 @@ function writeManifest(data: Manifest[]): void {
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(data, null, 2), "utf-8");
 }
 
-function generateBatchId(): string {
+export function generateBatchId(): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
   // Find the next sequence number for today
