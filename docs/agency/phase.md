@@ -17,8 +17,8 @@ Draft PRD and present to client for approval.
 | Step | Status | Completed |
 |------|--------|-----------|
 | Requirements Brief (grill) | ✅ | 2026-07-07 |
-| PRD (spec) | ❌ | — |
-| Technical Spec (spec) | ❌ | — |
+| PRD (spec) | ✅ | 2026-07-07 |
+| Technical Spec (spec) | ✅ | 2026-07-07 |
 | Client Approval | ❌ | — |
 | Handoff | ❌ | — |
 | Development | ❌ | — |
