@@ -16,7 +16,7 @@ quotes-social-media — An automated quote-image generator that mixes Instagram-
 
 - **Framework**: Next.js
 - **Language**: TypeScript
-- **Image Generation**: Canvas API / Sharp (to render template + quote compositions)
+- **Image Generation**: Gemini API (end-to-end — background + quote → finished asset via crafted prompts)
 - **Storage**: Local filesystem (MVP) — photos and quote library
 - **Review UI**: Web endpoint to preview generated quote images before publishing
 - **Instagram Publishing**: TBD (manual download + upload, or API integration)

@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-07-07 — Full grill interview completed, requirements brief produced
+
+### Agent
+Director
+
+### Skill
+agency-grill
+
+### Summary
+- Full requirements extraction across all 6 areas (North Star, Scope, Users, Tech, Non-Functionals, Risks)
+- Architecture clarified: Gemini handles end-to-end image generation via engineered prompt templates
+- Tech stack updated: no Canvas/Sharp — Gemini does the rendering
+- MVP scope defined: CLI + web trigger → generate 10 images → review → download
+- 4 risks identified and captured
+- Requirements brief written and saved
+
+### Artifacts Produced
+- `docs/requirements-brief.md` — Complete requirements brief
+
+### State At End
+Requirements brief complete. Ready to proceed with agency-spec for PRD/spec generation.
+
 ## 2026-07-07 — Project initialized and knowledge base seeded
 
 ### Agent
@@ -26,4 +48,4 @@ agency-import
 - `.gitignore` — Node.js/Next.js ignores
 
 ### State At End
-Knowledge base seeded. Awaiting client's high-level intent to begin Phase 1 and proceed to full agency-grill for deeper requirements extraction.
+Requirements brief completed and approved. Ready to proceed with agency-spec for PRD/spec generation.

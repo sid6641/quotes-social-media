@@ -12,7 +12,8 @@
 - [x] Tech stack defined (Next.js, TypeScript, Gemini API)
 - [x] .env/.gitignore set up
 - [x] 3 decisions captured
-- [ ] Full requirements extraction (agency-grill)
+- [x] Full requirements extraction (agency-grill)
+- [ ] PRD / technical spec (agency-spec)
 
 ## Open Questions
 
@@ -20,4 +21,4 @@
 
 ## Next Micro-Step
 
-Client will tell the Director what they want to build. Route to agency-grill for full requirements extraction.
+Route to agency-spec to expand the requirements brief into a full PRD/spec document.
