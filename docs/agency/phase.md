@@ -1,16 +1,16 @@
 # Phase: 1 — Requirements & Contracting
-**Step**: handoff
+**Step**: development ✅ (awaiting feedback)
 **Status**: 🟢 Active
 **Started**: 2026-07-07
 **Updated**: 2026-07-07
 
 ## Current Step Details
 
-Expanding the requirements brief into a full PRD + technical spec via agency-spec.
+MVP fully implemented, reviewed, and all blocking issues fixed. Build verified — zero TypeScript errors.
 
 ## Next Action
 
-Draft PRD and present to client for approval.
+Client (Captain) to set up API key, add template images, and run the generator.
 
 ## Progress
 
@@ -19,9 +19,9 @@ Draft PRD and present to client for approval.
 | Requirements Brief (grill) | ✅ | 2026-07-07 |
 | PRD (spec) | ✅ | 2026-07-07 |
 | Technical Spec (spec) | ✅ | 2026-07-07 |
-| Client Approval | ❌ | — |
-| Handoff | ❌ | — |
-| Development | ❌ | — |
-| Code Review | ❌ | — |
+| Client Approval | ✅ | 2026-07-07 |
+| Handoff | ✅ | 2026-07-07 |
+| Development | ✅ | 2026-07-07 |
+| Code Review | ✅ | 2026-07-07 |
 | Retrospective | ❌ | — |
 | Report | ❌ | — |
