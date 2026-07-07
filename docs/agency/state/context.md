@@ -1,17 +1,19 @@
 # Session Context
 
-<!-- Overwritten per session. Metadata about the current session. -->
-
-**Session**: {{SESSION_NUMBER}}
-**Date**: {{DATE}}
-**Agent Mode**: <!-- Director / Analyst / Architect / Builder / Reviewer / Communicator -->
-**Primary Skill**: <!-- Which skill is driving this session -->
-**Working Directory**: <!-- Absolute path to the project -->
+**Session**: 001
+**Date**: 2026-07-07
+**Agent Mode**: Director
+**Primary Skill**: agency-import
+**Working Directory**: /Users/sidkumar/Desktop/side_hustles/projects/quotes-social-media
 
 ## Recent Context
 
-<!-- 2-3 sentences summarizing what happened in the immediately preceding session, for continuity. -->
+Fresh project setup. GitHub repo created, knowledge base seeded via client interview. Project is an automated quote-image generator using Next.js + Gemini API. Ready for Phase 1 — proceed to agency-grill for full requirements extraction.
 
 ## Relevant Files
 
-- <!-- Files that are most relevant to the current task -->
+- `docs/agency/README.md` — Entry point
+- `docs/agency/phase.md` — Current phase (Phase 1, Step: grill)
+- `docs/agency/decisions.md` — 3 decisions captured
+- `docs/agency/state/current-task.md` — Active task
+- `AGENTS.md` — Project-level config

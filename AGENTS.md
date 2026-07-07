@@ -10,18 +10,24 @@ This file is the **project-level** layer of a two-tier agent organization.
 
 ## Project Overview
 
-<!-- TODO: Describe what this project does, who it's for -->
+quotes-social-media — An automated quote-image generator that mixes Instagram-style templates with a quote library to produce and publish optimized Instagram posts.
 
 ## Tech Stack
 
-<!-- TODO: List framework, language, key dependencies -->
+- **Framework**: Next.js
+- **Language**: TypeScript
+- **Image Generation**: Canvas API / Sharp (to render template + quote compositions)
+- **Storage**: Local filesystem (MVP) — photos and quote library
+- **Review UI**: Web endpoint to preview generated quote images before publishing
+- **Instagram Publishing**: TBD (manual download + upload, or API integration)
 
 ## Project Structure
 
-<!-- TODO: Document directory layout -->
-
 ```
-src/  → Source code
+src/         → Source code (Next.js app)
+templates/   → Instagram-style image templates
+quotes/      → Quote source text files
+.env         → API keys and config
 ```
 
 ## Commands

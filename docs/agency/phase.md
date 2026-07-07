@@ -6,11 +6,11 @@
 
 ## Current Step Details
 
-<!-- 1-2 sentences about what's happening right now -->
+Interviewing the client via agency-grill to extract requirements for the quote-image generator.
 
 ## Next Action
 
-<!-- What should happen next — for the agent to pick up -->
+Complete the grill interview (one more question), then produce the requirements brief.
 
 ## Progress
 

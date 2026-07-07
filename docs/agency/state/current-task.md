@@ -1,20 +1,23 @@
 # Current Task
 
-<!-- Overwritten per agent session. Enables resume within a step. -->
-
-**Agent**: <!-- Who is working on this -->
-**Skill**: <!-- Which skill is active -->
-**Started**: {{DATE}} {{TIME}}
-**Step Detail**: <!-- What exactly is being worked on right now -->
+**Agent**: Director
+**Skill**: agency-orchestrate (awaiting client intent)
+**Started**: 2026-07-07
+**Step Detail**: Project initialized. Knowledge base populated via client interview. Awaiting client's high-level intent to begin Phase 1 and proceed to full agency-grill for deeper requirements extraction.
 
 ## Progress
 
-<!-- Free-form. What's been done so far in this task, what's left. -->
+- [x] GitHub repo created and pushed
+- [x] Project scaffolded (AGENTS.md + KB)
+- [x] Tech stack defined (Next.js, TypeScript, Gemini API)
+- [x] .env/.gitignore set up
+- [x] 3 decisions captured
+- [ ] Full requirements extraction (agency-grill)
 
 ## Open Questions
 
-- <!-- Things that need answers before continuing -->
+- Full feature requirements (deeper dive via agency-grill)
 
 ## Next Micro-Step
 
-<!-- The very next thing to do when resuming -->
+Client will tell the Director what they want to build. Route to agency-grill for full requirements extraction.

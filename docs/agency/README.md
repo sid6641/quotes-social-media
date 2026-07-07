@@ -4,16 +4,16 @@ This is the agency's persistent memory for this project. Every agent reads this 
 
 ## Project
 
-<!-- ONE SENTENCE: What is this project? -->
+quotes-social-media — An automated quote-image generator that mixes Instagram-style templates with a quote library to produce and publish optimized Instagram posts.
 
 ## Client
 
-<!-- Who is the client? -->
+Captain (sidkumar) — personal side project
 
 ## Current Phase
 
-**Phase**: <!-- 1 / 2 / 3 -->
-**Step**: <!-- grill / spec / handoff / development / review / retro / report -->
+**Phase**: 1 — Requirements & Contracting
+**Step**: grill
 **Status**: 🟢 Active
 See `phase.md` for details.
 
@@ -30,8 +30,8 @@ See `phase.md` for details.
 
 ## Quick Stats
 
-- Sessions: 0
-- Decisions: 0
+- Sessions: 1
+- Decisions: 3
 - Project Learnings: 0
 
 ---
