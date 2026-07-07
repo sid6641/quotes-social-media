@@ -30,6 +30,8 @@ export default function ReviewPage() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
@@ -99,6 +101,52 @@ export default function ReviewPage() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update status");
+    }
+  };
+
+  const handlePublishToInstagram = async () => {
+    if (!manifest) return;
+
+    const approved = manifest.images.filter(
+      (img) => img.status === "approved"
+    );
+    if (approved.length === 0) {
+      setError("No approved images to publish");
+      return;
+    }
+
+    try {
+      setPublishing(true);
+      setPublishResult(null);
+      setError(null);
+
+      const res = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageIds: approved.map((img) => img.id),
+          caption: "Daily quote inspiration ✨ #quotes",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Publishing failed");
+      }
+
+      setPublishResult(
+        `✅ Published ${data.published} image${data.published !== 1 ? "s" : ""} to Instagram` +
+          (data.failed > 0
+            ? ` (${data.failed} failed)`
+            : "")
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to publish to Instagram"
+      );
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -174,6 +222,15 @@ export default function ReviewPage() {
             Download Approved ({statusCounts.approved})
           </button>
           <button
+            onClick={handlePublishToInstagram}
+            disabled={statusCounts.approved === 0 || publishing}
+            className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+          >
+            {publishing
+              ? "Publishing..."
+              : `Publish to Instagram (${statusCounts.approved})`}
+          </button>
+          <button
             onClick={handleGenerate}
             disabled={generating}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
@@ -182,6 +239,19 @@ export default function ReviewPage() {
           </button>
         </div>
       </div>
+
+      {/* Publish result banner */}
+      {publishResult && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          {publishResult}
+          <button
+            onClick={() => setPublishResult(null)}
+            className="ml-3 underline hover:no-underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Error banner */}
       {error && (
