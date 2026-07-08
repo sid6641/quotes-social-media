@@ -91,27 +91,67 @@ Client (grill session)
 ### Reopens?
 No — format is standard. Template designs can evolve.
 
-## 2026-07-07: Quality over reliability
+## 2026-07-08: Caption v2 — Image-aware + 5 options + self-learning
 
 ### Context
-Client cares about publish-ready image quality, not uptime or error recovery.
+Captions generated without seeing the image were generic. Users need choice.
 
 ### Decision
-- Primary focus: image composition quality (typography, layout, contrast, aesthetics)
-
-## 2026-07-08: Caption pipeline — separate text model
-
-### Context
-Captions (commentary + hashtags) need AI generation alongside images. Using the image-gen model for text is overkill and expensive.
-
-### Decision
-- Caption generation uses `gemini-2.0-flash` text model (configurable via `GEMINI_TEXT_MODEL` env var)
-- All quotes in a batch are sent in one API call for efficiency
-- Caption failure is non-fatal — images proceed without captions
-- Captions are editable in the review UI (commentary and hashtags independently)
+- Send actual generated image to Gemini alongside the quote for context-aware captions
+- Generate 5 distinct options per image with different tones (warm, bold, story, minimalist, philosophical)
+- Self-learning store records which options users pick and uses top examples as few-shot prompts
+- Store capped at 50 examples, sorted by popularity
 
 ### Decided By
-Director (architectural)
+Director (architectural) + Client approval
+
+### Reopens?
+No
+
+## 2026-07-08: Logger writes to stderr
+
+### Context
+Logger JSON output was interfering with pipeable CLI JSON output (--json flag).
+
+### Decision
+Logger writes to stderr (fd 2) by default. stdout is reserved for structured CLI output.
+
+### Decided By
+Director (engineering)
+
+### Reopens?
+No
+
+## 2026-07-08: Quote Pool lifecycle
+
+### Context
+Flat text files don't track usage, cooldown, or themes. No reuse prevention.
+
+### Decision
+- File-based quote pool at output/quote-pool.json with lifecycle states
+- available → used → cooldown (30 days) → recycle, auto-retire after 5 uses
+- Theme categories for filtering per account
+- Dedup on import by text content
+
+### Decided By
+Director (architectural) + Client approval
+
+### Reopens?
+Yes — cooldown days can become per-account
+
+## 2026-07-08: Account sandbox isolation
+
+### Context
+Multiple Instagram accounts need separate queues, manifests, configs, and themes.
+
+### Decision
+- Each account gets output/accounts/<id>/ with own config, queue, manifest, images
+- Quote pool is shared but each quote tracks which accounts used it
+- --account flag on generate and publish scopes operations to an account
+- Backward compat: no account = uses global output/ dir
+
+### Decided By
+Director (design doc) + Client approval
 
 ### Reopens?
 No

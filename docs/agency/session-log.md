@@ -199,3 +199,84 @@ Director → Builder
 
 ### State At End
 Publish queue complete. Next up: review UI enhancements (full preview, batch selection, keyboard shortcuts).
+
+## 2026-07-08 — Full session: Caption v2, Post preview, Batch history, Template preview, Hashtag bank, Batch select, Bug fixes, Structured logging, Quote Pool (Phase A), Account Sandboxes (Phase B), JSON piping
+
+### Agent
+Director → Builder
+
+### Summary
+Massive session covering all remaining Phase 2 features plus Phases A and B:
+
+**Caption v2 (Image-aware + 5 options + Self-learning)**
+- `src/lib/caption.ts` — Rewritten to send actual image to Gemini for context-aware caption generation
+- Generates 5 distinct caption options per image (warm, bold, story-driven, minimalist, philosophical)
+- Self-learning store at `output/caption-examples.json` — records user picks, uses top 2 as few-shot examples
+- UI updated to show 5 pickable numbered options per image card with visual selection state
+
+**Post preview, batch history, caption copy**
+- Phone-frame modal showing image + full caption + hashtags
+- Clickable batch selector in header to switch between past batches
+- One-click clipboard copy with "Copied!" feedback
+
+**Template preview, hashtag bank, batch select**
+- Templates tab with thumbnails and file sizes from `templates/` dir
+- Hashtag bank: named sets CRUD via web UI + API
+- Batch select: checkboxes on cards, floating action bar for bulk approve/reject
+
+**Bug fixes**
+- 404 loading hang: `setLoading(false)` was missing in 404 early-return
+- Caption sync after approval: queue entry now updates when caption option changes
+- Duplicate queue entries prevented via dedup logic
+
+**Structured logging (pino)**
+- `src/lib/logger.ts` — Pino-based JSON logging with LOG_LEVEL, LOG_PRETTY, LOG_FILE
+- All console.log/error replaced across CLI and lib files
+- Logger writes to stderr (fd 2) so stdout stays clean for pipeable JSON output
+
+**Phase A — Quote Pool**
+- `src/lib/quote-pool.ts` — Self-managing pool with lifecycle (available → cooldown → recycle, auto-retire after 5 uses)
+- Theme categories, dedup on import, per-account usage tracking
+- API: `GET/POST/DELETE /api/quotes`
+- CLI: `npm run cli quotes list/add/import/stats/expire`
+- Web UI: Quotes tab with stats, add form, filter tabs, delete
+- Auto-seeds from text files on first run
+
+**Phase B — Account Sandboxes**
+- `src/lib/account.ts` — CRUD for accounts with isolated dirs (`output/accounts/<id>/`)
+- Per-account config: themes, schedule, IG auth, cooldownDays
+- API: `GET/POST/DELETE /api/accounts`
+- CLI: `npm run cli account create/list/get/update/delete`
+- Web UI: Accounts tab with create form, enable/disable toggle, delete
+- `generate --account <id>` — uses account's themes for quote filtering, writes to account directory
+- `publish --account <id>` — reads account-specific queue
+- `queue.ts` and `manifest.ts` updated for per-account paths
+- `mixer.ts` updated for theme-filtered quote picking
+- All commands support `--json` for pipeable output
+
+### Decisions Made
+- Caption v2: send actual image to Gemini for context-aware captions (was text-only)
+- 5 caption options per image with different tones for user to choose from
+- Self-learning store capped at 50 examples, sorted by pickCount
+- Logger writes to stderr for clean JSON piping on stdout
+- Quote pool replaces flat text file approach with lifecycle management
+- Each account gets fully isolated directory (manifest, queue, images, config)
+- Accounts can share the quote pool but each tracks which account used which quote
+- --account flag scopes both generation and publishing to a specific account
+- `--json` flag on all CLI commands for pipeable output
+
+### Artifacts Produced
+- `src/lib/caption.ts` (rewrite) — Image-aware 5-option caption generation
+- `src/lib/caption-learning.ts` — Self-learning store for caption picks
+- `src/lib/logger.ts` — Pino-based structured logger
+- `src/lib/quote-pool.ts` — Quote pool with lifecycle management
+- `src/lib/account.ts` — Account sandbox management
+- `src/app/api/quotes/route.ts` — Quotes REST API
+- `src/app/api/accounts/route.ts` — Accounts REST API
+- `src/cli/quotes.ts` — CLI quotes commands
+- `src/cli/account.ts` — CLI account commands
+- Updated: `page.tsx`, `generate.ts`, `publish.ts`, `index.ts`, `queue.ts`, `manifest.ts`, `mixer.ts`, `gemini.ts`, `list.ts`, many API routes
+
+### State At End
+All Phase 2 features complete. Phases A (Quote Pool) and B (Account Sandboxes) complete.
+Next up: Phase C (AI Quote Generation), Phase D (Autopilot Scheduler), or other roadmap items.

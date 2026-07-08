@@ -1,16 +1,18 @@
 # Phase: 2 — Iterative Improvement
-**Step**: caption pipeline ✅
+**Step**: Features complete ✅
 **Status**: 🟢 Active
 **Started**: 2026-07-07
 **Updated**: 2026-07-08
 
 ## Current Step Details
 
-Building on the MVP. Caption pipeline (commentary + hashtags) is complete. Next: CLI improvements (flags, subcommands, better UX), then publish queue + review UI enhancements.
+All Phase 2 features complete: Caption v2 (image-aware, 5 options, self-learning), post preview, batch history, caption copy, template preview, hashtag bank, batch select, structured logging.
+
+Phases A (Quote Pool with lifecycle) and B (Multi-Account Sandboxes with isolated dirs, per-account config, --account flag) also complete.
 
 ## Next Action
 
-CLI improvements — add proper flag parsing, subcommands, JSON output.
+Phase C: AI Quote Generation or other roadmap item.
 
 ## Progress
 
@@ -21,4 +23,10 @@ CLI improvements — add proper flag parsing, subcommands, JSON output.
 | Caption Pipeline | ✅ | 2026-07-08 |
 | CLI Improvements | ✅ | 2026-07-08 |
 | Publish Queue | ✅ | 2026-07-08 |
-| Review UI Enhancements | ❌ | — |
+| Post Preview / Batch History / Caption Copy | ✅ | 2026-07-08 |
+| Template Preview / Hashtag Bank / Batch Select | ✅ | 2026-07-08 |
+| Structured Logging (pino) | ✅ | 2026-07-08 |
+| Phase A: Quote Pool | ✅ | 2026-07-08 |
+| Phase B: Account Sandboxes | ✅ | 2026-07-08 |
+| Phase C: AI Quote Generation | ❌ | — |
+| Phase D: Autopilot Scheduler | ❌ | — |

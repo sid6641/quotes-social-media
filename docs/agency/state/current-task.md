@@ -1,23 +1,28 @@
 # Current Task
 
 **Agent**: Director
-**Skill**: Phase 2 — Iterative Improvement
+**Skill**: Phase 2 — Complete
 **Started**: 2026-07-07
 **Updated**: 2026-07-08
-**Step Detail**: Caption pipeline complete. Next: CLI improvements.
+**Step Detail**: All Phase 2 features, Phase A (Quote Pool), and Phase B (Account Sandboxes) complete.
 
 ## Progress
 
 - [x] MVP implemented, reviewed, and fixed
-- [x] Caption pipeline (commentary + hashtags)
+- [x] Caption v2 (image-aware, 5 options, self-learning)
 - [x] CLI improvements (flags, subcommands, JSON output, list)
 - [x] Publish queue (approve → scheduled post)
-- [ ] Review UI enhancements
+- [x] Post preview, batch history, caption copy
+- [x] Template preview, hashtag bank, batch select
+- [x] Structured logging (pino)
+- [x] Phase A: Quote Pool with lifecycle
+- [x] Phase B: Account sandboxes with isolated dirs
+- [x] All CLI pipeable with --json
 
 ## Open Questions
 
-- What review UI enhancements matter most? (full preview, batch selection, keyboard shortcuts, history view?)
+- Which Phase to tackle next: AI Quote Generation, Autopilot Scheduler, Content Calendar, or something else?
 
 ## Next Micro-Step
 
-Discuss review UI enhancements with captain before building.
+Awaiting captain's direction on next phase.
