@@ -1,8 +1,11 @@
 import fs from "fs";
 import path from "path";
+import type { CaptionData } from "./caption";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const MANIFEST_PATH = path.join(OUTPUT_DIR, "manifest.json");
+
+export type { CaptionData };
 
 export interface BatchInfo {
   id: string;
@@ -17,6 +20,7 @@ export interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  caption?: CaptionData;
 }
 
 export interface Manifest {
@@ -67,11 +71,13 @@ export function generateBatchId(): string {
 
 /**
  * Create a new batch entry in the manifest.
+ * Optionally accepts an array of CaptionData aligned with the images array.
  */
 export function createBatch(
   images: Array<{ quote: string; template: string; filename: string }>,
   trigger: "cli" | "web",
-  promptTemplate: string = "default.md"
+  promptTemplate: string = "default.md",
+  captions?: CaptionData[]
 ): Manifest {
   const manifests = readManifest();
   const batchId = generateBatchId();
@@ -89,6 +95,7 @@ export function createBatch(
       template: img.template,
       promptTemplate,
       status: "pending",
+      caption: captions?.[index],
     })),
   };
 
@@ -121,6 +128,26 @@ export function updateImageStatus(
   if (!image) return false;
 
   image.status = status;
+  writeManifest(manifests);
+  return true;
+}
+
+/**
+ * Update the caption (commentary + hashtags) of a specific image in a batch.
+ */
+export function updateImageCaption(
+  batchId: string,
+  imageId: string,
+  caption: CaptionData
+): boolean {
+  const manifests = readManifest();
+  const batch = manifests.find((m) => m.batch.id === batchId);
+  if (!batch) return false;
+
+  const image = batch.images.find((img) => img.id === imageId);
+  if (!image) return false;
+
+  image.caption = caption;
   writeManifest(manifests);
   return true;
 }

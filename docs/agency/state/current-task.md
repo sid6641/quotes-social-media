@@ -1,24 +1,23 @@
 # Current Task
 
 **Agent**: Director
-**Skill**: agency-orchestrate (awaiting client intent)
+**Skill**: Phase 2 — Iterative Improvement
 **Started**: 2026-07-07
-**Step Detail**: Project initialized. Knowledge base populated via client interview. Awaiting client's high-level intent to begin Phase 1 and proceed to full agency-grill for deeper requirements extraction.
+**Updated**: 2026-07-08
+**Step Detail**: Caption pipeline complete. Next: CLI improvements.
 
 ## Progress
 
-- [x] GitHub repo created and pushed
-- [x] Project scaffolded (AGENTS.md + KB)
-- [x] Tech stack defined (Next.js, TypeScript, Gemini API)
-- [x] .env/.gitignore set up
-- [x] 3 decisions captured
-- [x] Full requirements extraction (agency-grill)
-- [ ] PRD / technical spec (agency-spec)
+- [x] MVP implemented, reviewed, and fixed
+- [x] Caption pipeline (commentary + hashtags)
+- [x] CLI improvements (flags, subcommands, JSON output, list)
+- [x] Publish queue (approve → scheduled post)
+- [ ] Review UI enhancements
 
 ## Open Questions
 
-- Full feature requirements (deeper dive via agency-grill)
+- What review UI enhancements matter most? (full preview, batch selection, keyboard shortcuts, history view?)
 
 ## Next Micro-Step
 
-Route to agency-spec to expand the requirements brief into a full PRD/spec document.
+Discuss review UI enhancements with captain before building.

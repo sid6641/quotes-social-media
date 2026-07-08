@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "generate": "tsx src/cli/generate.ts",
+    "cli": "tsx src/cli/index.ts",
     "lint": "next lint"
   },
   "dependencies": {

@@ -85,18 +85,20 @@ function getRecentlyUsedQuotes(): Set<string> {
 }
 
 /**
- * Pick 10 quote+template combinations.
+ * Pick quote+template combinations.
  *
- * - Cycles through quotes if fewer than 10 unique quotes exist
- * - Cycles through templates if fewer than 10 unique templates exist
+ * - Cycles through quotes if fewer than `count` unique quotes exist
+ * - Cycles through templates if fewer than `count` unique templates exist
  * - Avoids reusing the same quote+template combo in one batch
  * - Soft-deduplicates quotes from the most recent batch
+ *
+ * @param count Number of combinations to pick (default: 10)
  */
-export function pickCombinations(): QuoteTemplateCombo[] {
+export function pickCombinations(count: number = 10): QuoteTemplateCombo[] {
   const allQuotes = loadQuotes();
   const allTemplates = loadTemplates();
   const recentlyUsed = getRecentlyUsedQuotes();
-  const targetCount = 10;
+  const targetCount = count;
 
   // Prefer quotes not recently used
   const freshQuotes = allQuotes.filter((q) => !recentlyUsed.has(q));

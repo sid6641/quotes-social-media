@@ -98,6 +98,40 @@ Client cares about publish-ready image quality, not uptime or error recovery.
 
 ### Decision
 - Primary focus: image composition quality (typography, layout, contrast, aesthetics)
+
+## 2026-07-08: Caption pipeline — separate text model
+
+### Context
+Captions (commentary + hashtags) need AI generation alongside images. Using the image-gen model for text is overkill and expensive.
+
+### Decision
+- Caption generation uses `gemini-2.0-flash` text model (configurable via `GEMINI_TEXT_MODEL` env var)
+- All quotes in a batch are sent in one API call for efficiency
+- Caption failure is non-fatal — images proceed without captions
+- Captions are editable in the review UI (commentary and hashtags independently)
+
+### Decided By
+Director (architectural)
+
+### Reopens?
+No
+
+## 2026-07-08: MCP server parked, reels parked
+
+### Context
+Client decided to focus on core UX first — caption pipeline, CLI improvements, review UI, publish queue.
+
+### Decision
+- MCP server idea deferred (no timeline)
+- FFmpeg-based reel compositing deferred (no timeline)
+- Quote scraping from existing pages deferred (noted for later)
+- Current focus: caption pipeline → CLI improvements → publish queue
+
+### Decided By
+Client
+
+### Reopens?
+Yes — all three can be revisited when client is ready.
 - Reliability / error handling: minimal effort — if Gemini or rendering fails, just surface the error
 - No retries, no queue, no backup API
 

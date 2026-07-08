@@ -1,27 +1,24 @@
-# Phase: 1 — Requirements & Contracting
-**Step**: development ✅ (awaiting feedback)
+# Phase: 2 — Iterative Improvement
+**Step**: caption pipeline ✅
 **Status**: 🟢 Active
 **Started**: 2026-07-07
-**Updated**: 2026-07-07
+**Updated**: 2026-07-08
 
 ## Current Step Details
 
-MVP fully implemented, reviewed, and all blocking issues fixed. Build verified — zero TypeScript errors.
+Building on the MVP. Caption pipeline (commentary + hashtags) is complete. Next: CLI improvements (flags, subcommands, better UX), then publish queue + review UI enhancements.
 
 ## Next Action
 
-Client (Captain) to set up API key, add template images, and run the generator.
+CLI improvements — add proper flag parsing, subcommands, JSON output.
 
 ## Progress
 
 | Step | Status | Completed |
 |------|--------|-----------|
-| Requirements Brief (grill) | ✅ | 2026-07-07 |
-| PRD (spec) | ✅ | 2026-07-07 |
-| Technical Spec (spec) | ✅ | 2026-07-07 |
-| Client Approval | ✅ | 2026-07-07 |
-| Handoff | ✅ | 2026-07-07 |
-| Development | ✅ | 2026-07-07 |
-| Code Review | ✅ | 2026-07-07 |
-| Retrospective | ❌ | — |
-| Report | ❌ | — |
+| MVP Development | ✅ | 2026-07-07 |
+| MVP Code Review | ✅ | 2026-07-07 |
+| Caption Pipeline | ✅ | 2026-07-08 |
+| CLI Improvements | ✅ | 2026-07-08 |
+| Publish Queue | ✅ | 2026-07-08 |
+| Review UI Enhancements | ❌ | — |

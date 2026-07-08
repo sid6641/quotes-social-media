@@ -96,3 +96,106 @@ agency-import
 
 ### State At End
 Requirements brief completed and approved. Ready to proceed with agency-spec for PRD/spec generation.
+
+## 2026-07-08 — Caption pipeline built (commentary + hashtags)
+
+### Agent
+Director → Builder
+
+### Skill
+agency-grill (requirements)
+
+### Summary
+- New scope direction set: focus on core UX, drop MCP server for now, drop reels for now
+- Caption pipeline built: AI-generated commentary + hashtags for every generated quote image
+- New module `src/lib/caption.ts` — batch caption generation via Gemini text model (gemini-2.0-flash)
+- Manifest types extended with `caption?: { commentary, hashtags }`
+- CLI generate now prints captions after batch generation
+- Web API generate now returns captionCount
+- New API route `POST /api/caption` for saving edited captions
+- Review UI updated: captions displayed per image card, inline editing with save/cancel
+- Build verified — zero TypeScript errors
+
+### Artifacts Produced
+- `src/lib/caption.ts` — Caption generation module
+- `src/app/api/caption/route.ts` — Caption save endpoint
+- Updated: `src/lib/manifest.ts`, `src/cli/generate.ts`, `src/app/api/generate/route.ts`, `src/app/page.tsx`
+
+### Decisions Made
+- Caption generation uses a separate text model (gemini-2.0-flash) from image generation — cheaper and faster
+- Captions are generated in batch (all quotes in one API call) after image generation completes
+- Caption generation failure is non-fatal — images proceed without captions
+- Captions are editable in the review UI with save/cancel
+- Captions include: commentary (1-3 sentences) + hashtags (8-12)
+
+### State At End
+Caption pipeline complete and verified. Next up: CLI improvements (flags, subcommands), then review UI + publish queue improvements.
+
+## 2026-07-08 — CLI improvements (flags, subcommands, list)
+
+### Agent
+Director → Builder
+
+### Skill
+— (direct build)
+
+### Summary
+- Built proper CLI with command routing (`src/cli/index.ts`)
+- `npm run generate` still works unchanged (backward compat)
+- `npm run cli generate [options]` — enhanced CLI entry point
+- `--count <n>` flag to override batch size
+- `--template <name>` flag to pick a specific prompt template
+- `--json` flag for JSON output (pipes to `jq`)
+- `npm run cli list quotes` — lists all quotes from quotes/ folder
+- `npm run cli list templates` — lists template images with file sizes
+- `npm run cli list prompts` — lists prompt templates with first-line summary
+- Refactored `pickCombinations()` to accept a count parameter (was hardcoded 10)
+- `runGenerate()` now returns a structured `GenerateResult` for programmatic use
+- Build verified — zero errors
+- CLI tested: `--help`, `list prompts`, `list quotes`, `list templates` all work
+
+### Artifacts Produced
+- `src/cli/index.ts` — CLI entry point with routing
+- `src/cli/list.ts` — list subcommand handlers
+- Updated: `src/cli/generate.ts`, `src/lib/mixer.ts`, `package.json`
+
+### State At End
+CLI improvements complete. Next up: publish queue (approve → scheduled post) + review UI enhancements.
+
+## 2026-07-08 — Publish queue built
+
+### Agent
+Director → Builder
+
+### Skill
+— (direct build)
+
+### Summary
+- Built full publish queue system: queue file, API, CLI, and UI
+- `src/lib/queue.ts` — Queue management module (add, remove, process, stats, daily scheduling)
+- Queue stored in `output/publish-queue.json`
+- Auto-queues on approve: status API now calls `addToQueue()` when image is approved
+- Auto-removes on reject: status API calls `removeImageFromQueue()` when rejected
+- Daily scheduling: items scheduled for next `PUBLISH_TIME` (default 09:00, configurable via env var)
+- CLI: `npm run cli publish` with `--status`, `--force`, `--dry-run` flags
+- API: `GET /api/queue` (list), `POST /api/queue` (add/process), `DELETE /api/queue` (remove)
+- Web UI: "Publish Queue" tab with queue table, status badges, remove button, "Publish Due Items Now" button
+- Publish is simulated for now (Instagram restricted) — marks items as published
+- Build verified — zero errors
+- CLI tested: `publish --status` works (shows empty queue)
+
+### Artifacts Produced
+- `src/lib/queue.ts` — Queue management
+- `src/app/api/queue/route.ts` — Queue API
+- `src/cli/publish.ts` — Publish CLI command
+- Updated: `src/cli/index.ts`, `src/app/api/status/route.ts`, `src/app/page.tsx`, `README.md`
+
+### Decisions Made
+- Queue stored in separate file (`output/publish-queue.json`) from manifest
+- Approve auto-queues, reject auto-removes (via status API)
+- Daily scheduling: configurable `PUBLISH_TIME` env var (default 09:00)
+- Publish is simulated while Instagram is restricted
+- Queue entries are deduplicated (no duplicate batchId+imageId combos)
+
+### State At End
+Publish queue complete. Next up: review UI enhancements (full preview, batch selection, keyboard shortcuts).

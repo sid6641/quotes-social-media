@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
+interface CaptionData {
+  commentary: string;
+  hashtags: string[];
+}
+
 interface ImageEntry {
   id: string;
   filename: string;
@@ -11,6 +16,7 @@ interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  caption?: CaptionData;
 }
 
 interface BatchInfo {
@@ -25,6 +31,21 @@ interface Manifest {
 }
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
+type ViewMode = "review" | "queue";
+
+interface QueueEntry {
+  id: string;
+  batchId: string;
+  imageId: string;
+  filename: string;
+  quote: string;
+  template: string;
+  caption: { commentary: string; hashtags: string[] };
+  scheduledAt: string;
+  status: "queued" | "publishing" | "published" | "failed";
+  publishedAt?: string;
+  error?: string;
+}
 
 export default function ReviewPage() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
@@ -34,6 +55,9 @@ export default function ReviewPage() {
   const [publishResult, setPublishResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("review");
+  const [queue, setQueue] = useState<QueueEntry[]>([]);
+  const [queueLoading, setQueueLoading] = useState(false);
 
   const fetchLatestBatch = useCallback(async () => {
     try {
@@ -101,6 +125,68 @@ export default function ReviewPage() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update status");
+    }
+  };
+
+  // Queue fetching
+  const fetchQueue = useCallback(async () => {
+    try {
+      setQueueLoading(true);
+      const res = await fetch("/api/queue");
+      if (!res.ok) throw new Error("Failed to fetch queue");
+      const data = await res.json();
+      setQueue(data.queue || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load queue");
+    } finally {
+      setQueueLoading(false);
+    }
+  }, []);
+
+  const handleRemoveFromQueue = async (id: string) => {
+    try {
+      const res = await fetch("/api/queue", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to remove from queue");
+      setQueue((prev) => prev.filter((e) => e.id !== id));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to remove from queue"
+      );
+    }
+  };
+
+  const handlePublishNow = async () => {
+    try {
+      setPublishing(true);
+      setError(null);
+      const res = await fetch("/api/queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "process" }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Publish failed");
+
+      await fetchQueue();
+      setPublishResult(
+        `📤 Published ${data.results?.filter((r: any) => r.status === "published").length || 0} item(s)`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Publish failed");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  // Switch view and fetch data
+  const switchView = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === "queue") {
+      fetchQueue();
     }
   };
 
@@ -179,6 +265,82 @@ export default function ReviewPage() {
       setError(
         err instanceof Error ? err.message : "Failed to create download"
       );
+    }
+  };
+
+  // Caption editing state: { imageId: { commentary, hashtags } }
+  const [editingCaptions, setEditingCaptions] = useState<
+    Record<string, CaptionData>
+  >({});
+  const [savingCaption, setSavingCaption] = useState<string | null>(null);
+
+  const handleCaptionEdit = (
+    imageId: string,
+    field: "commentary" | "hashtags",
+    value: string | string[]
+  ) => {
+    setEditingCaptions((prev) => {
+      const current = prev[imageId] ?? { commentary: "", hashtags: [] };
+      return {
+        ...prev,
+        [imageId]: {
+          ...current,
+          [field]: value,
+        },
+      };
+    });
+  };
+
+  const startEditingCaption = (image: ImageEntry) => {
+    setEditingCaptions((prev) => ({
+      ...prev,
+      [image.id]: {
+        commentary: image.caption?.commentary ?? "",
+        hashtags: image.caption?.hashtags ?? [],
+      },
+    }));
+  };
+
+  const cancelEditingCaption = (imageId: string) => {
+    setEditingCaptions((prev) => {
+      const next = { ...prev };
+      delete next[imageId];
+      return next;
+    });
+  };
+
+  const handleCaptionSave = async (
+    batchId: string,
+    imageId: string
+  ) => {
+    const caption = editingCaptions[imageId];
+    if (!caption) return;
+
+    try {
+      setSavingCaption(imageId);
+      const res = await fetch("/api/caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batchId, imageId, caption }),
+      });
+      if (!res.ok) throw new Error("Failed to save caption");
+
+      setManifest((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          images: prev.images.map((img) =>
+            img.id === imageId ? { ...img, caption } : img
+          ),
+        };
+      });
+      cancelEditingCaption(imageId);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to save caption"
+      );
+    } finally {
+      setSavingCaption(null);
     }
   };
 
@@ -290,8 +452,32 @@ export default function ReviewPage() {
         </div>
       )}
 
-      {/* Filter tabs */}
-      {manifest && (
+      {/* View mode tabs */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => switchView("review")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "review"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Review
+        </button>
+        <button
+          onClick={() => switchView("queue")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "queue"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Publish Queue
+        </button>
+      </div>
+
+      {/* Filter tabs (review mode only) */}
+      {manifest && viewMode === "review" && (
         <div className="flex gap-2 mb-6">
           {(
             [
@@ -316,8 +502,8 @@ export default function ReviewPage() {
         </div>
       )}
 
-      {/* Image grid */}
-      {manifest && (
+      {/* Review mode — image grid */}
+      {viewMode === "review" && manifest && (
         <>
           {filteredImages.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
@@ -361,9 +547,107 @@ export default function ReviewPage() {
                     <p className="text-sm text-gray-700 line-clamp-2 mb-1">
                       &ldquo;{image.quote}&rdquo;
                     </p>
-                    <p className="text-xs text-gray-400 mb-3">
+                    <p className="text-xs text-gray-400 mb-2">
                       Template: {image.template}
                     </p>
+
+                    {/* Caption section */}
+                    {(image.caption || editingCaptions[image.id]) && (
+                      <div className="mb-3 border-t border-gray-100 pt-2">
+                        {editingCaptions[image.id] ? (
+                          <>
+                            <textarea
+                              value={editingCaptions[image.id].commentary}
+                              onChange={(e) =>
+                                handleCaptionEdit(
+                                  image.id,
+                                  "commentary",
+                                  e.target.value
+                                )
+                              }
+                              rows={3}
+                              className="w-full text-xs text-gray-600 border border-gray-200 rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              placeholder="Write a commentary..."
+                            />
+                            <input
+                              value={
+                                editingCaptions[image.id].hashtags.join(" ")
+                              }
+                              onChange={(e) => {
+                                const tags = e.target.value
+                                  .split(/\s+/)
+                                  .filter((t) => t.length > 0)
+                                  .map((t) =>
+                                    t.startsWith("#") ? t : `#${t}`
+                                  );
+                                handleCaptionEdit(
+                                  image.id,
+                                  "hashtags",
+                                  tags
+                                );
+                              }}
+                              className="w-full text-xs text-gray-500 border border-gray-200 rounded-md p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                              placeholder="#tags #separated #by spaces"
+                            />
+                            <div className="flex gap-1.5 mt-1.5">
+                              <button
+                                onClick={() =>
+                                  handleCaptionSave(
+                                    manifest.batch.id,
+                                    image.id
+                                  )
+                                }
+                                disabled={savingCaption === image.id}
+                                className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors text-xs font-medium disabled:opacity-50"
+                              >
+                                {savingCaption === image.id
+                                  ? "Saving..."
+                                  : "Save"}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  cancelEditingCaption(image.id)
+                                }
+                                className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </>
+                        ) : image.caption ? (
+                          <>
+                            <p className="text-xs text-gray-600 leading-relaxed mb-1.5">
+                              {image.caption.commentary}
+                            </p>
+                            <div className="flex flex-wrap gap-1 mb-1.5">
+                              {image.caption.hashtags.map((tag, ti) => (
+                                <span
+                                  key={ti}
+                                  className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => startEditingCaption(image)}
+                              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              ✏️ Edit caption
+                            </button>
+                          </>
+                        ) : null}
+                      </div>
+                    )}
+
+                    {!image.caption && !editingCaptions[image.id] && (
+                      <button
+                        onClick={() => startEditingCaption(image)}
+                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors mb-2 block"
+                      >
+                        ✏️ Add caption
+                      </button>
+                    )}
 
                     {/* Action buttons */}
                     {image.status === "pending" && (
@@ -428,6 +712,142 @@ export default function ReviewPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Queue mode — publish queue view */}
+      {viewMode === "queue" && (
+        <div>
+          {queueLoading ? (
+            <div className="text-center py-20 text-gray-500">
+              Loading queue...
+            </div>
+          ) : queue.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400 mb-4">
+                No items in the publish queue. Approve images from the Review tab to add them.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Queue header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-gray-500">
+                  {queue.filter((e) => e.status === "queued").length} queued
+                  &middot; {queue.filter((e) => e.status === "published").length} published
+                  &middot; {queue.filter((e) => e.status === "failed").length} failed
+                </div>
+                <button
+                  onClick={handlePublishNow}
+                  disabled={publishing || queue.filter((e) => e.status === "queued").length === 0}
+                  className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                >
+                  {publishing ? "Publishing..." : "Publish Due Items Now"}
+                </button>
+              </div>
+
+              {/* Queue table */}
+              <div className="space-y-3">
+                {queue.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${
+                      entry.status === "published"
+                        ? "border-green-200 opacity-70"
+                        : entry.status === "failed"
+                        ? "border-red-200"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <div className="p-4 flex items-start gap-4">
+                      {/* Thumbnail */}
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <img
+                          src={`/api/images/${entry.filename}`}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-700 line-clamp-1 font-medium">
+                          &ldquo;{entry.quote}&rdquo;
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                          {entry.caption.commentary}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {entry.caption.hashtags.slice(0, 5).map((tag, ti) => (
+                            <span
+                              key={ti}
+                              className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {entry.caption.hashtags.length > 5 && (
+                            <span className="text-xs text-gray-400">
+                              +{entry.caption.hashtags.length - 5}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status & Actions */}
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="text-right">
+                          <span
+                            className={`inline-block text-xs font-medium px-2 py-0.5 rounded ${
+                              entry.status === "queued"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : entry.status === "published"
+                                ? "bg-green-100 text-green-700"
+                                : entry.status === "failed"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {entry.status === "queued"
+                              ? "Queued"
+                              : entry.status === "published"
+                              ? "Published"
+                              : entry.status === "failed"
+                              ? "Failed"
+                              : entry.status}
+                          </span>
+                          {entry.status === "queued" && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(entry.scheduledAt).toLocaleString()}
+                            </p>
+                          )}
+                          {entry.publishedAt && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(entry.publishedAt).toLocaleString()}
+                            </p>
+                          )}
+                          {entry.error && (
+                            <p className="text-xs text-red-400 mt-0.5 max-w-[200px] truncate" title={entry.error}>
+                              {entry.error}
+                            </p>
+                          )}
+                        </div>
+                        {entry.status === "queued" && (
+                          <button
+                            onClick={() => handleRemoveFromQueue(entry.id)}
+                            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                            title="Remove from queue"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </main>
   );

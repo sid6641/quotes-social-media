@@ -4,6 +4,7 @@ import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "@/lib/prompts";
 import { pickCombinations } from "@/lib/mixer";
 import { generateQuoteImage } from "@/lib/gemini";
+import { generateCaptions } from "@/lib/caption";
 import { createBatch, generateBatchId, invalidateCache } from "@/lib/manifest";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
@@ -69,8 +70,21 @@ export async function POST(_request: NextRequest) {
       }
     }
 
-    // 5. Save manifest
+    // 5. Generate captions for successful images
     const successfulImages = results.filter((r) => r.success);
+    let captions: Awaited<ReturnType<typeof generateCaptions>> = [];
+
+    if (successfulImages.length > 0) {
+      try {
+        captions = await generateCaptions(
+          successfulImages.map((r) => r.quote)
+        );
+      } catch {
+        // Non-fatal — captions are a nice-to-have
+      }
+    }
+
+    // 6. Save manifest
     if (successfulImages.length > 0) {
       createBatch(
         successfulImages.map((r) => ({
@@ -79,7 +93,8 @@ export async function POST(_request: NextRequest) {
           filename: r.filename,
         })),
         "web",
-        promptName
+        promptName,
+        captions.length > 0 ? captions : undefined
       );
       invalidateCache();
     }
@@ -88,6 +103,7 @@ export async function POST(_request: NextRequest) {
       success: true,
       batchId,
       imageCount: successfulImages.length,
+      captionCount: captions.length,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
