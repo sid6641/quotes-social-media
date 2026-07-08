@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 import {
   getQueue,
   addToQueue,
@@ -14,6 +15,7 @@ import { getLatestBatch } from "@/lib/manifest";
  * Query params:
  *   ?status=queued|published|failed  — filter by status
  *   ?stats=true                       — return stats instead of full list
+ *   ?account=xxx                      — scope to a specific account
  */
 export async function GET(request: NextRequest) {
   try {
@@ -24,13 +26,17 @@ export async function GET(request: NextRequest) {
       | "failed"
       | null;
     const statsOnly = searchParams.get("stats") === "true";
+    const accountId = searchParams.get("account") || undefined;
+    const dir = accountId
+      ? path.join(process.cwd(), "output", accountId)
+      : undefined;
 
     if (statsOnly) {
-      const stats = getQueueStats();
+      const stats = getQueueStats(dir);
       return NextResponse.json({ success: true, stats });
     }
 
-    const queue = getQueue(status || undefined);
+    const queue = getQueue(status || undefined, dir);
     return NextResponse.json({ success: true, queue });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

@@ -223,14 +223,15 @@ export function updateSelectedCaptionIndex(
 /**
  * Get all batches (summaries for history listing).
  */
-export function getAllBatches(): Array<{
+export function getAllBatches(accountId?: string): Array<{
   id: string;
   generatedAt: string;
   trigger: "cli" | "web";
   imageCount: number;
   approvedCount: number;
 }> {
-  return readManifest().map((m) => ({
+  const dir = accountId ? path.resolve(process.cwd(), "output", accountId) : undefined;
+  return readManifestFromDir(dir).map((m) => ({
     id: m.batch.id,
     generatedAt: m.batch.generatedAt,
     trigger: m.batch.trigger,
@@ -242,16 +243,17 @@ export function getAllBatches(): Array<{
 /**
  * Get a specific batch by ID.
  */
-export function getBatchById(batchId: string): Manifest | null {
-  const manifests = readManifest();
+export function getBatchById(batchId: string, accountId?: string): Manifest | null {
+  const dir = accountId ? path.resolve(process.cwd(), "output", accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
   return manifests.find((m) => m.batch.id === batchId) || null;
 }
 
 /**
- * Get approved images from the latest batch.
+ * Get approved images from the latest batch (optionally scoped to account).
  */
-export function getApprovedImages(): ImageEntry[] {
-  const batch = getLatestBatch();
+export function getApprovedImages(accountId?: string): ImageEntry[] {
+  const batch = getLatestBatch(accountId);
   if (!batch) return [];
   return batch.images.filter((img) => img.status === "approved");
 }

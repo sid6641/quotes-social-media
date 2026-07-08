@@ -76,7 +76,8 @@ export default function ReviewPage() {
   >([]);
   const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
 
-  // Accounts
+  // Account selection (first-class citizen)
+  const [selectedAccount, setSelectedAccount] = useState<string>("");
   const [accounts, setAccounts] = useState<Array<{ id: string; name: string; enabled: boolean; cooldownDays?: number }>>([]);
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [newAccountId, setNewAccountId] = useState("");
@@ -108,7 +109,8 @@ export default function ReviewPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/manifest");
+      const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
+      const res = await fetch(`/api/manifest${accountParam}`);
       if (!res.ok) {
         if (res.status === 404) {
           setManifest(null);
@@ -134,7 +136,11 @@ export default function ReviewPage() {
     try {
       setGenerating(true);
       setError(null);
-      const res = await fetch("/api/generate", { method: "POST" });
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: selectedAccount || undefined }),
+      });
       const data = await res.json();
       if (!data.success) {
         throw new Error(data.error || "Generation failed");
@@ -156,7 +162,7 @@ export default function ReviewPage() {
       const res = await fetch("/api/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ batchId, imageId, status }),
+        body: JSON.stringify({ batchId, imageId, status, account: selectedAccount || undefined }),
       });
       if (!res.ok) throw new Error("Failed to update status");
 
@@ -178,7 +184,8 @@ export default function ReviewPage() {
   const fetchQueue = useCallback(async () => {
     try {
       setQueueLoading(true);
-      const res = await fetch("/api/queue");
+      const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
+      const res = await fetch(`/api/queue${accountParam}`);
       if (!res.ok) throw new Error("Failed to fetch queue");
       const data = await res.json();
       setQueue(data.queue || []);
@@ -245,7 +252,7 @@ export default function ReviewPage() {
       const res = await fetch("/api/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ days: 7 }),
+        body: JSON.stringify({ days: 7, account: selectedAccount || undefined }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Export failed");
@@ -819,8 +826,23 @@ export default function ReviewPage() {
           <h1 className="text-3xl font-bold text-gray-900">
             Quote Image Review
           </h1>
-          {manifest && (
-            <div className="text-sm text-gray-500 mt-1 relative">
+          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+            {/* Account selector */}
+            <select
+              value={selectedAccount}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
+            >
+              <option value="">All accounts</option>
+              {accounts.filter(a => a.enabled).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name || a.id}
+                </option>
+              ))}
+            </select>
+
+            {manifest && (
+            <span className="relative">
               {/* Batch selector */}
               <span
                 className="cursor-pointer hover:text-gray-700 transition-colors"
@@ -860,8 +882,9 @@ export default function ReviewPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </span>
           )}
+          </div>
         </div>
         <div className="flex gap-3">
           <button
