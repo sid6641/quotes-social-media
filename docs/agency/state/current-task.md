@@ -1,10 +1,10 @@
 # Current Task
 
 **Agent**: Director
-**Skill**: Phase 2 — Complete
-**Started**: 2026-07-07
+**Skill**: Content Calendar Export (P0)
+**Started**: 2026-07-08
 **Updated**: 2026-07-08
-**Step Detail**: All Phase 2 features, Phase A (Quote Pool), and Phase B (Account Sandboxes) complete.
+**Step Detail**: Export feature complete — CLI, API, and UI button.
 
 ## Progress
 
@@ -18,11 +18,12 @@
 - [x] Phase A: Quote Pool with lifecycle
 - [x] Phase B: Account sandboxes with isolated dirs
 - [x] All CLI pipeable with --json
+- [x] **P0: Content Calendar Export** (CLI + API + UI button)
 
 ## Open Questions
 
-- Which Phase to tackle next: AI Quote Generation, Autopilot Scheduler, Content Calendar, or something else?
+- Next: AI Quote Generation (Phase C), Autopilot Scheduler (Phase D)
 
 ## Next Micro-Step
 
-Awaiting captain's direction on next phase.
+Run daily: generate → approve → export. Post manually to Instagram from the exported content folder.

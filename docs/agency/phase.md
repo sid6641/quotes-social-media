@@ -28,5 +28,6 @@ Phase C: AI Quote Generation or other roadmap item.
 | Structured Logging (pino) | ✅ | 2026-07-08 |
 | Phase A: Quote Pool | ✅ | 2026-07-08 |
 | Phase B: Account Sandboxes | ✅ | 2026-07-08 |
+| **P0: Content Calendar Export** | ✅ | 2026-07-08 |
 | Phase C: AI Quote Generation | ❌ | — |
 | Phase D: Autopilot Scheduler | ❌ | — |

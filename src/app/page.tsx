@@ -58,6 +58,8 @@ export default function ReviewPage() {
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportResult, setExportResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("review");
@@ -233,6 +235,28 @@ export default function ReviewPage() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to pick caption");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      setError(null);
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ days: 7 }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Export failed");
+      setExportResult(
+        `📅 Content calendar exported! ${data.result.totalImages} images over ${data.result.totalDays} days. Files in: ${data.result.contentDir}`
+      );
+      setTimeout(() => setExportResult(null), 8000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -775,6 +799,15 @@ export default function ReviewPage() {
             Download Approved ({statusCounts.approved})
           </button>
           <button
+            onClick={handleExport}
+            disabled={statusCounts.approved === 0 || exporting}
+            className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+          >
+            {exporting
+              ? "Exporting..."
+              : `📅 Export Calendar (${statusCounts.approved})`}
+          </button>
+          <button
             onClick={handlePublishToInstagram}
             disabled={statusCounts.approved === 0 || publishing}
             className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
@@ -799,6 +832,19 @@ export default function ReviewPage() {
           {publishResult}
           <button
             onClick={() => setPublishResult(null)}
+            className="ml-3 underline hover:no-underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Export result banner */}
+      {exportResult && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm">
+          {exportResult}
+          <button
+            onClick={() => setExportResult(null)}
             className="ml-3 underline hover:no-underline"
           >
             Dismiss

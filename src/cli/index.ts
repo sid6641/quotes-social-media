@@ -16,6 +16,7 @@
 import "dotenv/config";
 import { runGenerate } from "./generate";
 import { runPublish } from "./publish";
+import { runExport, printExportUsage } from "./export";
 import { runQuotes, printQuotesUsage } from "./quotes";
 import { runAccount, printAccountUsage } from "./account";
 import { listQuotes, listTemplates, listPrompts } from "./list";
@@ -29,6 +30,7 @@ function printUsage(): void {
 Usage:
   npm run cli generate  [options]    Generate a batch of quote images
   npm run cli publish   [options]    Process the publish queue
+  npm run cli export    [options]    Export a content calendar for manual posting
   npm run cli account   <command>    Manage accounts
   npm run cli quotes    <command>    Manage the quote pool
   npm run cli list      <resource>   List available resources
@@ -45,6 +47,11 @@ Options (publish):
   --force            Queue all approved images, then publish due
   --dry-run          Show what would be published without doing it
   --account <id>     Scope publish to an account's queue
+
+Options (export):
+  --days <n>         Number of days to schedule (default: 7)
+  --account <id>     Scope to a specific account
+  --json             Output results as JSON (for piping)
 
 Account commands:
   create <id>                   Create a new account
@@ -86,6 +93,9 @@ Examples:
   npm run cli generate -- --account dailygrind
   npm run cli publish -- --status
   npm run cli publish -- --account dailygrind
+  npm run cli export                           Export 7-day content calendar
+  npm run cli export -- --days 14              Export 14-day calendar
+  npm run cli export -- --account deepthoughts Export for a specific account
   npm run --silent cli account list -- --json | jq '.accounts[].id'
   npm run --silent cli quotes stats -- --json | jq '{available, cooldown}'
   npm run cli quotes add "Be yourself." --author Wilde --theme life
@@ -122,6 +132,30 @@ function parseArgs(): {
         i += 2;
       } else if (arg === "--template" && i + 1 < args.length) {
         result.flags.template = args[i + 1];
+        i += 2;
+      } else if (arg === "--account" && i + 1 < args.length) {
+        result.flags.account = args[i + 1];
+        i += 2;
+      } else if (arg === "--json") {
+        result.flags.json = true;
+        i += 1;
+      } else if (arg === "--help" || arg === "-h") {
+        result.command = "help";
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return result;
+  }
+
+  if (command === "export") {
+    result.command = "export";
+    let i = 1;
+    while (i < args.length) {
+      const arg = args[i];
+      if (arg === "--days" && i + 1 < args.length) {
+        result.flags.days = parseInt(args[i + 1], 10);
         i += 2;
       } else if (arg === "--account" && i + 1 < args.length) {
         result.flags.account = args[i + 1];
@@ -285,6 +319,18 @@ async function main(): Promise<void> {
         typeof flags.account === "string" ? flags.account : undefined;
 
       await runPublish({ status, force, dryRun, accountId });
+      return;
+    }
+    case "export": {
+      const exportDays =
+        typeof flags.days === "number" && flags.days > 0
+          ? flags.days
+          : 7;
+      const jsonOutput = flags.json === true;
+      const accountId =
+        typeof flags.account === "string" ? flags.account : undefined;
+
+      await runExport({ accountId, days: exportDays, jsonOutput });
       return;
     }
     case "account": {

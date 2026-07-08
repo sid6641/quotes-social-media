@@ -27,6 +27,27 @@ agency-orchestrate, agency-handoff, agency-review
 ### State At End
 MVP implemented, reviewed, and fixed. Ready for use.
 
+## 2026-07-08 — P0: Content Calendar Export
+
+### Agent
+Director → Builder
+
+### Skill
+N/A (direct implementation)
+
+### Summary
+- Built Content Calendar Export feature to bypass Instagram API restriction
+- **New files**: `src/lib/exporter.ts` — core export library, `src/cli/export.ts` — CLI command, `src/app/api/export/route.ts` — API endpoint
+- **Modified**: `src/cli/index.ts` — registered export command with parsing + dispatch, `src/app/page.tsx` — added 📅 Export Calendar button + result banner
+- CLI: `npm run cli export -- --days 7 --account dailygrind`
+- API: `POST /api/export { days: 7 }`
+- UI: Amber "📅 Export Calendar" button in the action bar
+- Output: `output/exports/calendar-<account>-<date>.json` + `output/exports/<account>-content/01-YYYY-MM-DD.png` + caption.txt per day
+- Tested: 3 images exported successfully with captions and hashtags
+
+### State At End
+Export feature complete. Users can generate, approve, and export a content calendar for manual Instagram posting.
+
 ## 2026-07-07 — PRD and technical spec drafted
 
 ### Agent
