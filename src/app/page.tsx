@@ -95,6 +95,7 @@ export default function ReviewPage() {
       if (!res.ok) {
         if (res.status === 404) {
           setManifest(null);
+          setLoading(false);
           return;
         }
         throw new Error(`Failed to fetch manifest: ${res.statusText}`);
