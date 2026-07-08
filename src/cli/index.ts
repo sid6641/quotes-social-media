@@ -56,6 +56,9 @@ Account commands:
   update <id> --enabled false   Update account settings
   delete <id>                   Delete an account
 
+  Note: use -- before flags with npm run, e.g.:
+    npm run cli --silent account list -- --json | jq '.accounts[].id'
+
 Quotes commands:
   list                          List all quotes in the pool
   list --json                   JSON output for piping
@@ -63,13 +66,13 @@ Quotes commands:
   list --theme motivation       Filter by theme
   add "text"                    Add a single quote to the pool
   add "text" --author X --theme motivation
-  add "text" --json             JSON output
   import --file path            Import quotes from a text file
   import --file path --theme motivation
-  import --file path --json     JSON output
   stats                         Show pool statistics
-  stats --json                  JSON output
   expire                        Recycle expired cooldowns
+
+  Note: use --silent to suppress npm headers when piping:
+    npm run --silent cli quotes stats -- --json | jq '{available,cooldown}'
 
 Resources (list):
   templates         List all template images
@@ -83,11 +86,10 @@ Examples:
   npm run cli generate -- --account dailygrind
   npm run cli publish -- --status
   npm run cli publish -- --account dailygrind
-  npm run cli account list
-  npm run cli quotes list
+  npm run --silent cli account list -- --json | jq '.accounts[].id'
+  npm run --silent cli quotes stats -- --json | jq '{available, cooldown}'
   npm run cli quotes add "Be yourself." --author Wilde --theme life
   npm run cli quotes import --file quotes/sample.txt --theme motivation
-  npm run cli quotes stats
 `);
 }
 

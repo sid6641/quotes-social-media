@@ -31,7 +31,7 @@ const baseDir = path.resolve(process.cwd(), "output", "logs");
 function buildDestination(): pino.DestinationStream {
   const targets: Array<{ target: string; options: Record<string, unknown>; level?: string }> = [];
 
-  // Always write to stdout
+  // Write to stderr so stdout stays clean for pipeable JSON output
   if (LOG_PRETTY) {
     targets.push({
       target: "pino-pretty",
@@ -39,12 +39,13 @@ function buildDestination(): pino.DestinationStream {
         colorize: true,
         translateTime: "SYS:HH:MM:ss",
         ignore: "pid,hostname,module",
+        destination: 2, // stderr
       },
     });
   } else {
     targets.push({
       target: "pino/file",
-      options: {},
+      options: { destination: 2 }, // stderr
       level: LOG_LEVEL,
     });
   }
