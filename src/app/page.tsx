@@ -36,7 +36,7 @@ interface Manifest {
 }
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
-type ViewMode = "review" | "queue" | "templates" | "hashtags" | "quotes";
+type ViewMode = "review" | "queue" | "templates" | "hashtags" | "quotes" | "accounts";
 
 interface QueueEntry {
   id: string;
@@ -73,6 +73,13 @@ export default function ReviewPage() {
     Array<{ id: string; generatedAt: string; trigger: string; imageCount: number; approvedCount: number }>
   >([]);
   const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
+
+  // Accounts
+  const [accounts, setAccounts] = useState<Array<{ id: string; name: string; enabled: boolean; theme?: string[]; cooldownDays?: number }>>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [newAccountId, setNewAccountId] = useState("");
+  const [newAccountName, setNewAccountName] = useState("");
+  const [newAccountTheme, setNewAccountTheme] = useState("");
 
   // Quotes pool
   const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; theme?: string; status: string; usageCount: number }>>([]);
@@ -370,6 +377,70 @@ export default function ReviewPage() {
     }
   };
 
+  // Accounts
+  const fetchAccounts = useCallback(async () => {
+    try {
+      setAccountsLoading(true);
+      const res = await fetch("/api/accounts");
+      const data = await res.json();
+      if (data.success) setAccounts(data.accounts || []);
+    } catch {
+      // non-fatal
+    } finally {
+      setAccountsLoading(false);
+    }
+  }, []);
+
+  const handleCreateAccount = async () => {
+    if (!newAccountId.trim()) return;
+    try {
+      const res = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: newAccountId.trim(),
+          name: newAccountName.trim() || newAccountId.trim(),
+          theme: newAccountTheme.trim() ? newAccountTheme.split(",").map((t) => t.trim()) : undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to create account");
+      setNewAccountId("");
+      setNewAccountName("");
+      setNewAccountTheme("");
+      await fetchAccounts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create account");
+    }
+  };
+
+  const handleToggleAccount = async (id: string, enabled: boolean) => {
+    try {
+      const res = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, enabled }),
+      });
+      if (!res.ok) throw new Error("Failed to update account");
+      await fetchAccounts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update account");
+    }
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    try {
+      const res = await fetch("/api/accounts", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to delete account");
+      await fetchAccounts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete account");
+    }
+  };
+
   // Quotes pool
   const fetchPoolQuotes = useCallback(async () => {
     try {
@@ -471,6 +542,7 @@ export default function ReviewPage() {
     if (mode === "templates") fetchTemplates();
     if (mode === "hashtags") fetchHashtagSets();
     if (mode === "quotes") fetchPoolQuotes();
+    if (mode === "accounts") fetchAccounts();
   };
 
   const handlePublishToInstagram = async () => {
@@ -822,6 +894,16 @@ export default function ReviewPage() {
           }`}
         >
           Quotes {poolStats ? `(${poolStats.available})` : ""}
+        </button>
+        <button
+          onClick={() => switchView("accounts")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "accounts"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Accounts {accounts.length > 0 ? `(${accounts.length})` : ""}
         </button>
       </div>
 
@@ -1470,6 +1552,110 @@ export default function ReviewPage() {
                   >
                     ✕
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Accounts mode */}
+      {viewMode === "accounts" && (
+        <div className="max-w-2xl">
+          <p className="text-sm text-gray-500 mb-6">
+            Manage your Instagram accounts. Each account has its own theme, schedule,
+            and isolated publish queue.
+          </p>
+
+          {/* Create new account */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">New Account</h3>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  value={newAccountId}
+                  onChange={(e) => setNewAccountId(e.target.value)}
+                  placeholder="Account ID (e.g., dailygrind)"
+                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                />
+                <input
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  placeholder="Display name"
+                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+              <input
+                value={newAccountTheme}
+                onChange={(e) => setNewAccountTheme(e.target.value)}
+                placeholder="Themes (comma-separated, e.g., motivation, life)"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                onClick={handleCreateAccount}
+                disabled={!newAccountId.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+
+          {/* Account list */}
+          {accountsLoading ? (
+            <div className="text-center py-10 text-gray-500">Loading accounts...</div>
+          ) : accounts.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              No accounts yet. Create your first one above.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {accounts.map((a) => (
+                <div
+                  key={a.id}
+                  className="bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700">{a.name}</h4>
+                      <p className="text-xs text-gray-400">ID: {a.id}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleAccount(a.id, !a.enabled)}
+                        className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                          a.enabled
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {a.enabled ? "Enabled" : "Disabled"}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAccount(a.id)}
+                        className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  {a.theme && a.theme.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {a.theme.map((t) => (
+                        <span
+                          key={t}
+                          className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {a.cooldownDays && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Cooldown: {a.cooldownDays} days
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

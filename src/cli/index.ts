@@ -17,6 +17,7 @@ import "dotenv/config";
 import { runGenerate } from "./generate";
 import { runPublish } from "./publish";
 import { runQuotes, printQuotesUsage } from "./quotes";
+import { runAccount, printAccountUsage } from "./account";
 import { listQuotes, listTemplates, listPrompts } from "./list";
 import { createLogger } from "../lib/logger";
 const log = createLogger("cli");
@@ -28,6 +29,7 @@ function printUsage(): void {
 Usage:
   npm run cli generate  [options]    Generate a batch of quote images
   npm run cli publish   [options]    Process the publish queue
+  npm run cli account   <command>    Manage accounts
   npm run cli quotes    <command>    Manage the quote pool
   npm run cli list      <resource>   List available resources
   npm run generate                   Shorthand: generate with defaults
@@ -41,6 +43,14 @@ Options (publish):
   --status           Show queue status (no publishing)
   --force            Queue all approved images, then publish due
   --dry-run          Show what would be published without doing it
+
+Account commands:
+  create <id>                   Create a new account
+  create <id> --name "X" --theme motivation,life
+  list                          List all accounts
+  get <id>                      Show account details
+  update <id> --enabled false   Update account settings
+  delete <id>                   Delete an account
 
 Quotes commands:
   list                          List all quotes in the pool
@@ -141,6 +151,40 @@ function parseArgs(): {
     return result;
   }
 
+  if (command === "account") {
+    result.command = "account";
+    result.subcommand = args[1] || "list";
+    let i = 2;
+    while (i < args.length) {
+      const arg = args[i];
+      if (arg === "--name" && i + 1 < args.length) {
+        result.flags.name = args[i + 1];
+        i += 2;
+      } else if (arg === "--theme" && i + 1 < args.length) {
+        result.flags.theme = args[i + 1];
+        i += 2;
+      } else if (arg === "--description" && i + 1 < args.length) {
+        result.flags.description = args[i + 1];
+        i += 2;
+      } else if (arg === "--enabled" && i + 1 < args.length) {
+        result.flags.enabled = args[i + 1] === "true";
+        i += 2;
+      } else if (arg === "--cooldown" && i + 1 < args.length) {
+        result.flags.cooldownDays = parseInt(args[i + 1], 10);
+        i += 2;
+      } else if (arg === "--help" || arg === "-h") {
+        result.command = "help";
+        i += 1;
+      } else if (!arg.startsWith("--")) {
+        result.flags.accountId = arg;
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return result;
+  }
+
   if (command === "quotes") {
     result.command = "quotes";
     result.subcommand = args[1] || "list";
@@ -212,6 +256,19 @@ async function main(): Promise<void> {
       await runPublish({ status, force, dryRun });
       return;
     }
+    case "account": {
+      await runAccount({
+        subcommand: subcommand || "list",
+        accountId: typeof flags.accountId === "string" ? flags.accountId : undefined,
+        name: typeof flags.name === "string" ? flags.name : undefined,
+        description: typeof flags.description === "string" ? flags.description : undefined,
+        theme: typeof flags.theme === "string" ? flags.theme : undefined,
+        enabled: typeof flags.enabled === "boolean" ? flags.enabled : undefined,
+        cooldownDays: typeof flags.cooldownDays === "number" ? flags.cooldownDays : undefined,
+      });
+      return;
+    }
+
     case "quotes": {
       await runQuotes({
         subcommand: subcommand || "list",
