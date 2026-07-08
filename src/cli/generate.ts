@@ -111,6 +111,7 @@ export async function runGenerate(
     filename: string;
     success: boolean;
     error?: string;
+    quoteId?: string;
   }> = [];
 
   for (let i = 0; i < combos.length; i++) {
@@ -188,11 +189,19 @@ export async function runGenerate(
       })),
       "cli",
       promptName,
-      captionOptionsList.length > 0 ? captionOptionsList : undefined
+      captionOptionsList.length > 0 ? captionOptionsList : undefined,
+      outputDir
     );
   }
 
-  // 7. Build result
+  // 7. Mark quotes as used in the pool (track per-account usage)
+  for (const r of successfulImages) {
+    if (r.quoteId) {
+      markQuoteUsed(r.quoteId, accountId || "default", cooldownDays);
+    }
+  }
+
+  // 8. Build result
   const defaultCaptions = captionOptionsList.map((opts) =>
     opts.length > 0 ? opts[0] : undefined
   );
