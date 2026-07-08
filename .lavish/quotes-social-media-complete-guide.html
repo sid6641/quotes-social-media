@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="luxury">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>quotes-social-media — Complete Platform Guide</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "strict" });
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :where(.grid, .flex) > * { min-width: 0; }
+    :where(p, h1, h2, h3, h4, h5, h6, li, dd, blockquote, figcaption, td, th, .badge, .label) { overflow-wrap: anywhere; }
+    :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+    .cmd-block { background: oklch(0.2 0.02 240); border-radius: 0.5rem; padding: 0.75rem 1rem; font-family: ui-monospace, monospace; font-size: 0.85rem; overflow-x: auto; white-space: nowrap; max-width: 100%; min-width: 0; }
+    .cmd-comment { color: oklch(0.6 0.05 160); }
+    .cmd-code { color: oklch(0.85 0.05 100); }
+    .cmd-flag { color: oklch(0.7 0.15 280); }
+    .cmd-arg { color: oklch(0.8 0.15 200); }
+    .collapse-content code { overflow-wrap: anywhere; word-break: break-word; }
+    .table code, .alert code { overflow-wrap: anywhere; word-break: break-word; font-size: 0.75rem; }
+    .section-link { scroll-margin-top: 5rem; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .mermaid-wrapper { background: oklch(0.15 0.01 240); border-radius: 1rem; padding: 1.5rem; overflow-x: auto; }
+    .collapse-content { min-width: 0; overflow-x: auto; }
+    .collapse-content > * { min-width: 0; }
+    .cmd-block { max-width: 100%; }
+    .overflow-x-auto { min-width: 0; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300 text-base-content">
+
+  <!-- ─── TOP NAV ─── -->
+  <div class="drawer lg:drawer-open">
+    <input id="nav-drawer" type="checkbox" class="drawer-toggle">
+    <div class="drawer-content flex flex-col">
+
+      <!-- Navbar -->
+      <div class="navbar bg-base-200/80 backdrop-blur-sm sticky top-0 z-30 border-b border-base-content/10">
+        <div class="navbar-start">
+          <label for="nav-drawer" class="btn btn-ghost drawer-button lg:hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </label>
+          <span class="text-xl font-bold tracking-tight">📸 quotes-social-media</span>
+        </div>
+        <div class="navbar-center hidden lg:flex gap-2">
+          <span class="badge badge-soft badge-info">CLI</span>
+          <span class="badge badge-soft badge-success">API</span>
+          <span class="badge badge-soft badge-warning">UI</span>
+          <span class="badge badge-soft badge-accent">Multi-Account</span>
+        </div>
+        <div class="navbar-end gap-2">
+          <kbd class="kbd kbd-sm hidden sm:inline">v2</kbd>
+          <span class="badge badge-primary badge-lg">Complete Guide</span>
+        </div>
+      </div>
+
+      <!-- ─── MAIN CONTENT ─── -->
+      <div class="p-4 md:p-8 max-w-6xl mx-auto w-full">
+
+        <!-- ═══ HERO ═══ -->
+        <section id="hero" class="section-link mb-12">
+          <div class="hero rounded-2xl bg-gradient-to-br from-base-200 to-base-100 border border-base-content/10 p-8 md:p-12">
+            <div class="hero-content text-center">
+              <div class="max-w-3xl">
+                <h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-4 break-words">
+                  quotes-social-media
+                </h1>
+                <p class="text-lg md:text-xl text-base-content/70 mb-6 max-w-2xl mx-auto">
+                  An automated quote-image generator that produces and publishes optimized Instagram posts
+                  across <strong class="text-primary">multiple managed accounts</strong>.
+                </p>
+                <div class="flex flex-wrap justify-center gap-3">
+                  <span class="badge badge-lg badge-primary">Next.js</span>
+                  <span class="badge badge-lg badge-secondary">TypeScript</span>
+                  <span class="badge badge-lg badge-accent">Gemini AI</span>
+                  <span class="badge badge-lg badge-info">Instagram API</span>
+                  <span class="badge badge-lg badge-neutral">Pino Logger</span>
+                </div>
+                <div class="mt-6 flex flex-wrap justify-center gap-4 text-sm text-base-content/60">
+                  <span>⚡ 3 subcommands</span>
+                  <span>🗄️ 10 API routes</span>
+                  <span>👤 3+ account sandboxes</span>
+                  <span>🤖 AI captions</span>
+                  <span>📅 Scheduled publishing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ TABLE OF CONTENTS ═══ -->
+        <section id="toc" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+            <span class="text-primary">📑</span> Table of Contents
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <a href="#architecture" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">1. Architecture Overview</span><span class="text-sm text-base-content/60">End-to-end system map</span></div></a>
+            <a href="#cli" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">2. CLI Commands</span><span class="text-sm text-base-content/60">Every command and flag</span></div></a>
+            <a href="#api" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">3. API Endpoints</span><span class="text-sm text-base-content/60">All REST routes</span></div></a>
+            <a href="#accounts" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">4. Multi-Account Management</span><span class="text-sm text-base-content/60">Isolated sandboxes</span></div></a>
+            <a href="#pipeline" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">5. Pipeline: Generate → Publish</span><span class="text-sm text-base-content/60">End-to-end content flow</span></div></a>
+            <a href="#quotes" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">6. Quote Pool</span><span class="text-sm text-base-content/60">Lifecycle & recycling</span></div></a>
+            <a href="#captions" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">7. AI Caption Pipeline</span><span class="text-sm text-base-content/60">Image-aware captions</span></div></a>
+            <a href="#queue" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">8. Publish Queue</span><span class="text-sm text-base-content/60">Schedule & dedup</span></div></a>
+            <a href="#review" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">9. Review UI</span><span class="text-sm text-base-content/60">Web preview & approval</span></div></a>
+            <a href="#logging" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">10. Logging</span><span class="text-sm text-base-content/60">Pino structured JSON</span></div></a>
+            <a href="#quickstart" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">11. Quick Start</span><span class="text-sm text-base-content/60">From zero to published</span></div></a>
+            <a href="#env" class="card card-border bg-base-200 hover:bg-base-100 transition-all"><div class="card-body p-4"><span class="font-semibold">12. Environment Reference</span><span class="text-sm text-base-content/60">All config variables</span></div></a>
+          </div>
+        </section>
+
+        <!-- ═══ 1. ARCHITECTURE ═══ -->
+        <section id="architecture" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🏗️</span> 1. Architecture Overview
+          </h2>
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <p class="mb-4">The system is built as a <strong>Next.js app</strong> with three access surfaces — a CLI, a REST API, and a browser-based Review UI — all backed by the same library modules and filesystem-based storage.</p>
+
+              <div class="mermaid-wrapper">
+                <div class="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'primaryColor': '#7c3aed', 'primaryTextColor': '#fff', 'secondaryColor': '#1e1b4b', 'lineColor': '#6b7280', 'tertiaryColor': '#111827' }}}%%
+graph TB
+    subgraph CLI["💻 CLI Layer"]
+        CLI_INDEX["src/cli/index.ts<br/><strong>Entry Point</strong>"]
+        CLI_GEN["generate.ts<br/><strong>Generate Images</strong>"]
+        CLI_LIST["list.ts<br/><strong>List Resources</strong>"]
+        CLI_PUB["publish.ts<br/><strong>Publish Queue</strong>"]
+        CLI_ACC["account.ts<br/><strong>Account CRUD</strong>"]
+        CLI_Q["quotes.ts<br/><strong>Quote Pool</strong>"]
+    end
+
+    subgraph API["🌐 API Layer (Next.js Routes)"]
+        API_GEN["/api/generate"]
+        API_STATUS["/api/status<br/>& /api/batch-status"]
+        API_IMAGES["/api/images/[filename]"]
+        API_MANIFEST["/api/manifest"]
+        API_CAPTION["/api/caption"]
+        API_HASHTAGS["/api/hashtags"]
+        API_QUEUE["/api/queue"]
+        API_PUBLISH["/api/publish"]
+        API_ACCOUNTS["/api/accounts"]
+        API_QUOTES["/api/quotes"]
+        API_TEMPLATES["/api/templates"]
+    end
+
+    subgraph LIB["📚 Library Layer"]
+        LIB_MIXER["mixer.ts<br/><strong>Quote + Template</strong>"]
+        LIB_GEMINI["gemini.ts<br/><strong>Gemini AI Client</strong>"]
+        LIB_CAPTION["caption.ts<br/><strong>Caption Generator</strong>"]
+        LIB_CAPTION_L["caption-learning.ts<br/><strong>Learning Store</strong>"]
+        LIB_MANIFEST["manifest.ts<br/><strong>Batch Manifest</strong>"]
+        LIB_QUEUE["queue.ts<br/><strong>Publish Queue</strong>"]
+        LIB_QUOTE_POOL["quote-pool.ts<br/><strong>Quote Lifecycle</strong>"]
+        LIB_ACCOUNT["account.ts<br/><strong>Account Config</strong>"]
+        LIB_HASHTAG["hashtag-bank.ts<br/><strong>Hashtag Mgmt</strong>"]
+        LIB_INSTAGRAM["instagram.ts<br/><strong>IG API Client</strong>"]
+        LIB_PROMPTS["prompts.ts<br/><strong>Prompt Builder</strong>"]
+        LIB_LOGGER["logger.ts<br/><strong>Pino Logger</strong>"]
+    end
+
+    subgraph UI["🖥️ Review UI"]
+        UI_PAGE["page.tsx<br/><strong>Web Dashboard</strong>"]
+        UI_REVIEW["Review Tab<br/>Approve / Reject"]
+        UI_QUEUE_VIEW["Queue Tab<br/>Manage Schedule"]
+    end
+
+    subgraph STORAGE["💾 Filesystem Storage"]
+        DIR_OUTPUT["output/"]
+        DIR_IMAGES["images/"]
+        DIR_MANIFEST["manifest.json"]
+        DIR_QUEUE["publish-queue.json"]
+        DIR_CAPTIONS["caption-examples.json"]
+        DIR_HASHTAGS["hashtag-bank.json"]
+        DIR_QUOTES["quote-pool.json"]
+        DIR_ACCOUNTS["output/accounts/&lt;id&gt;/"]
+    end
+
+    CLI_INDEX --> CLI_GEN & CLI_LIST & CLI_PUB & CLI_ACC & CLI_Q
+    CLI_GEN --> LIB_MIXER --> LIB_GEMINI
+    CLI_GEN --> LIB_MANIFEST
+    CLI_GEN --> LIB_LOGGER
+    CLI_PUB --> LIB_QUEUE --> LIB_INSTAGRAM
+    CLI_ACC --> LIB_ACCOUNT
+    CLI_Q --> LIB_QUOTE_POOL
+
+    API_GEN --> LIB_MIXER & LIB_GEMINI & LIB_MANIFEST
+    API_STATUS --> LIB_MANIFEST
+    API_IMAGES --> DIR_OUTPUT
+    API_CAPTION --> LIB_CAPTION --> LIB_GEMINI
+    API_CAPTION --> LIB_CAPTION_L
+    API_QUEUE --> LIB_QUEUE
+    API_PUBLISH --> LIB_QUEUE & LIB_INSTAGRAM
+    API_ACCOUNTS --> LIB_ACCOUNT
+    API_QUOTES --> LIB_QUOTE_POOL
+
+    UI_PAGE --> API_STATUS & API_QUEUE & API_IMAGES
+
+    DIR_MANIFEST -.->|reads/writes| LIB_MANIFEST
+    DIR_QUEUE -.->|reads/writes| LIB_QUEUE
+    DIR_ACCOUNTS -.->|reads/writes| LIB_ACCOUNT
+    DIR_QUOTES -.->|reads/writes| LIB_QUOTE_POOL
+
+    style CLI fill:#1e1b4b,stroke:#7c3aed,color:#fff
+    style API fill:#0f172a,stroke:#2563eb,color:#fff
+    style LIB fill:#0a0f1e,stroke:#059669,color:#fff
+    style UI fill:#1c1917,stroke:#d97706,color:#fff
+    style STORAGE fill:#0c0a0a,stroke:#dc2626,color:#fff
+                </div>
+              </div>
+              <p class="mt-4 text-sm text-base-content/60">Three access layers (CLI · API · UI) share a common library. Storage is file-based — no database required.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 2. CLI COMMANDS ═══ -->
+        <section id="cli" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">💻</span> 2. CLI Commands — Complete Reference
+          </h2>
+
+          <div class="alert alert-soft alert-info mb-6">
+            <span>All CLI commands support <code class="font-mono text-sm">--json</code> for pipeable JSON output. Logger writes to stderr — stdout stays clean for piping.</span>
+          </div>
+
+          <p class="text-sm text-base-content/60 mb-4">Entry point: <code class="font-mono text-xs">npm run cli -- [command] [args]</code> or <code class="font-mono text-xs">npx tsx src/cli/index.ts [command] [args]</code></p>
+
+          <!-- Generate -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox" checked>
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> generate — Create Quote Images
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4">
+                <p>Generates Instagram-style quote images using Gemini AI. Each image is a 1080×1080px composited asset with a styled quote over a generated background.</p>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Generate 5 images for the default account</span><br>
+                  <span class="cmd-code">npm run cli -- generate --count 5</span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Generate 10 images for a specific account (filtered by theme)</span><br>
+                  <span class="cmd-code">npm run cli -- generate --count 10 <span class="cmd-flag">--account</span> <span class="cmd-arg">dailygrind</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Generate with a specific template, output JSON</span><br>
+                  <span class="cmd-code">npm run cli -- generate --count 3 <span class="cmd-flag">--template</span> <span class="cmd-arg">minimal</span> <span class="cmd-flag">--json</span></span>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="table table-sm">
+                    <thead><tr><th>Flag</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>--count</code></td><td>number</td><td>10</td><td>Number of images to generate</td></tr>
+                      <tr><td><code>--account</code></td><td>string</td><td>—</td><td>Target account ID (scopes templates, themes, quotes)</td></tr>
+                      <tr><td><code>--template</code></td><td>string</td><td>—</td><td>Override template selection</td></tr>
+                      <tr><td><code>--json</code></td><td>flag</td><td>false</td><td>Output results as JSON array</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- List -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox">
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> list — Query Available Resources
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4">
+                <p>Browse available quotes, templates, and prompts. Three subcommands that each support <code>--json</code>.</p>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># List all quotes in the pool</span><br>
+                  <span class="cmd-code">npm run cli -- list quotes <span class="cmd-flag">--json</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># List available templates</span><br>
+                  <span class="cmd-code">npm run cli -- list templates</span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># List available prompt templates</span><br>
+                  <span class="cmd-code">npm run cli -- list prompts</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox">
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> account — Multi-Account Management
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4">
+                <p>Full CRUD for Instagram account sandboxes. Each account gets its own isolated directory with config, manifest, queue, and images.</p>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Create a new account</span><br>
+                  <span class="cmd-code">npm run cli -- account create <span class="cmd-arg">"dailygrind"</span> \<br>
+                  &nbsp;&nbsp;<span class="cmd-flag">--display-name</span> <span class="cmd-arg">"Daily Grind"</span> \<br>
+                  &nbsp;&nbsp;<span class="cmd-flag">--themes</span> <span class="cmd-arg">motivation,success</span> \<br>
+                  &nbsp;&nbsp;<span class="cmd-flag">--schedule</span> <span class="cmd-arg">09:00</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># List all accounts</span><br>
+                  <span class="cmd-code">npm run cli -- account list <span class="cmd-flag">--json</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Get account details</span><br>
+                  <span class="cmd-code">npm run cli -- account get <span class="cmd-arg">dailygrind</span> <span class="cmd-flag">--json</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Update account config</span><br>
+                  <span class="cmd-code">npm run cli -- account update <span class="cmd-arg">dailygrind</span> <span class="cmd-flag">--display-name</span> <span class="cmd-arg">"Daily Grind 🔥"</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Delete an account</span><br>
+                  <span class="cmd-code">npm run cli -- account delete <span class="cmd-arg">dailygrind</span></span>
+                </div>
+
+                <div class="overflow-x-auto mt-4">
+                  <table class="table table-sm">
+                    <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>create</code></td><td>Create new account sandbox</td></tr>
+                      <tr><td><code>list</code></td><td>List all configured accounts</td></tr>
+                      <tr><td><code>get</code></td><td>Show single account details</td></tr>
+                      <tr><td><code>update</code></td><td>Modify account config</td></tr>
+                      <tr><td><code>delete</code></td><td>Remove account and all its data</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="alert alert-soft bg-base-100 mt-3">
+                  <span class="font-semibold">Account config fields:</span>
+                  <code class="text-xs">id</code>,
+                  <code class="text-xs">displayName</code>,
+                  <code class="text-xs">themes</code> (filter which quotes are available),
+                  <code class="text-xs">schedule</code> (publish time),
+                  <code class="text-xs">igUserId</code>,
+                  <code class="text-xs">igAccessToken</code>,
+                  <code class="text-xs">cooldownDays</code>, (default 30)
+                  <code class="text-xs">createdAt</code>,
+                  <code class="text-xs">updatedAt</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quotes -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox">
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> quotes — Quote Pool Management
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4">
+                <p>Manage the self-maintaining quote pool with lifecycle tracking (available → used → cooldown → recycle).</p>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># List all quotes (with status, theme, use count)</span><br>
+                  <span class="cmd-code">npm run cli -- quotes list <span class="cmd-flag">--json</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Add a quote manually</span><br>
+                  <span class="cmd-code">npm run cli -- quotes add <span class="cmd-flag">--text</span> <span class="cmd-arg">"The best time was yesterday. The next best is now."</span> <span class="cmd-flag">--author</span> <span class="cmd-arg">"Unknown"</span> <span class="cmd-flag">--theme</span> <span class="cmd-arg">motivation</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Import quotes from a text file (auto-dedup)</span><br>
+                  <span class="cmd-code">npm run cli -- quotes import <span class="cmd-arg">./quotes/new-quotes.txt</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Show pool statistics</span><br>
+                  <span class="cmd-code">npm run cli -- quotes stats</span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Force-expire cooldown for certain quotes</span><br>
+                  <span class="cmd-code">npm run cli -- quotes expire <span class="cmd-flag">--theme</span> <span class="cmd-arg">motivation</span></span>
+                </div>
+
+                <div class="overflow-x-auto mt-4">
+                  <table class="table table-sm">
+                    <thead><tr><th>Subcommand</th><th>Description</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>list</code></td><td>List all quotes with status, theme, use count</td></tr>
+                      <tr><td><code>add</code></td><td>Add a new quote</td></tr>
+                      <tr><td><code>import</code></td><td>Batch import from text file (dedup by content)</td></tr>
+                      <tr><td><code>stats</code></td><td>Pool statistics (available/used/cooldown/retired)</td></tr>
+                      <tr><td><code>expire</code></td><td>Force-expire cooldown quotes by theme</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Publish -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox">
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> publish — Queue & Publishing
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4">
+                <p>Manage the publish queue and trigger Instagram publishing. Supports dry-run, force-publish, and status checks.</p>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Show queue status (pending / published / failed)</span><br>
+                  <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--status</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Publish all queued items (dry run first)</span><br>
+                  <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--dry-run</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Force-publish (ignore schedule — publish everything now)</span><br>
+                  <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--force</span></span>
+                </div>
+                <div class="cmd-block">
+                  <span class="cmd-comment"># Publish for a specific account</span><br>
+                  <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">dailygrind</span> <span class="cmd-flag">--status</span></span>
+                </div>
+
+                <div class="overflow-x-auto mt-4">
+                  <table class="table table-sm">
+                    <thead><tr><th>Flag</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>--status</code></td><td>flag</td><td>Show queue contents without publishing</td></tr>
+                      <tr><td><code>--force</code></td><td>flag</td><td>Publish all queued items immediately</td></tr>
+                      <tr><td><code>--dry-run</code></td><td>flag</td><td>Simulate publishing (show what would happen)</td></tr>
+                      <tr><td><code>--account</code></td><td>string</td><td>Scope to specific account</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Help -->
+          <div class="collapse collapse-arrow bg-base-200 mb-3 border border-base-content/10 rounded-box">
+            <input type="checkbox">
+            <div class="collapse-title text-lg font-semibold">
+              <span class="badge badge-primary mr-2">cmd</span> help — Built-in Documentation
+            </div>
+            <div class="collapse-content">
+              <div class="cmd-block">
+                <span class="cmd-code">npm run cli -- help</span>
+              </div>
+              <p class="mt-2 text-sm text-base-content/70">Prints usage information for all available commands.</p>
+            </div>
+          </div>
+
+          <!-- Backward compat -->
+          <div class="alert alert-soft bg-base-100 mt-4">
+            <div class="flex items-start gap-2">
+              <span class="text-xl">📌</span>
+              <div>
+                <p class="font-semibold">Backward Compatible</p>
+                <p class="text-sm text-base-content/70">The old <code class="font-mono text-xs">npm run generate</code> still works — it runs <code class="font-mono text-xs">src/cli/generate.ts</code> directly.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 3. API ENDPOINTS ═══ -->
+        <section id="api" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🌐</span> 3. API Endpoints — Complete Reference
+          </h2>
+          <p class="text-sm text-base-content/60 mb-4">All endpoints live under <code class="font-mono text-xs">src/app/api/</code> (Next.js Route Handlers). The app runs on <code class="font-mono text-xs">http://localhost:3000</code> by default.</p>
+
+          <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-200">
+            <table class="table table-zebra table-pin-rows">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Module</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-soft badge-success">POST</span></td>
+                  <td><code class="text-xs">/api/generate</code></td>
+                  <td class="text-xs text-base-content/60">generate/route.ts</td>
+                  <td>Trigger AI image generation. Body: <code>{ count, account?, template? }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/status</code></td>
+                  <td class="text-xs text-base-content/60">status/route.ts</td>
+                  <td>Get generation status for latest batch</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/batch-status</code></td>
+                  <td class="text-xs text-base-content/60">batch-status/route.ts</td>
+                  <td>Batch-level status with detailed image-by-image info</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/images/[filename]</code></td>
+                  <td class="text-xs text-base-content/60">images/[filename]/route.ts</td>
+                  <td>Serve generated images (static file serving)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/manifest</code></td>
+                  <td class="text-xs text-base-content/60">manifest/route.ts</td>
+                  <td>Get batch manifest (all generated images metadata)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-accent">POST</span></td>
+                  <td><code class="text-xs">/api/caption</code></td>
+                  <td class="text-xs text-base-content/60">caption/route.ts</td>
+                  <td>Generate 5 AI caption options for an image. Body: <code>{ quote, imagePath }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-accent">POST</span></td>
+                  <td><code class="text-xs">/api/caption</code></td>
+                  <td class="text-xs text-base-content/60">caption/route.ts</td>
+                  <td>Record a caption pick. Body: <code>{ selectedOption, editedCaption? }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/hashtags</code></td>
+                  <td class="text-xs text-base-content/60">hashtags/route.ts</td>
+                  <td>Get suggested hashtags bank</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/queue</code></td>
+                  <td class="text-xs text-base-content/60">queue/route.ts</td>
+                  <td>List all queued items (with status: pending/published/failed)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-success">POST</span></td>
+                  <td><code class="text-xs">/api/queue</code></td>
+                  <td class="text-xs text-base-content/60">queue/route.ts</td>
+                  <td>Add item to publish queue. Body: <code>{ batchId, imageId, account? }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-error">DELETE</span></td>
+                  <td><code class="text-xs">/api/queue</code></td>
+                  <td class="text-xs text-base-content/60">queue/route.ts</td>
+                  <td>Remove item from queue. Body: <code>{ batchId, imageId }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-accent">POST</span></td>
+                  <td><code class="text-xs">/api/publish</code></td>
+                  <td class="text-xs text-base-content/60">publish/route.ts</td>
+                  <td>Trigger publishing. Body: <code>{ force?, dryRun?, account? }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-success">POST</span></td>
+                  <td><code class="text-xs">/api/status</code></td>
+                  <td class="text-xs text-base-content/60">status/route.ts</td>
+                  <td>Approve (auto-queues) or reject an image. Body: <code>{ batchId, imageId, action: "approve"|"reject" }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/accounts</code></td>
+                  <td class="text-xs text-base-content/60">accounts/route.ts</td>
+                  <td>List all accounts</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-success">POST</span></td>
+                  <td><code class="text-xs">/api/accounts</code></td>
+                  <td class="text-xs text-base-content/60">accounts/route.ts</td>
+                  <td>Create a new account. Body: account config</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-error">DELETE</span></td>
+                  <td><code class="text-xs">/api/accounts</code></td>
+                  <td class="text-xs text-base-content/60">accounts/route.ts</td>
+                  <td>Delete an account. Body: <code>{ id }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/quotes</code></td>
+                  <td class="text-xs text-base-content/60">quotes/route.ts</td>
+                  <td>List all quotes with status</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-success">POST</span></td>
+                  <td><code class="text-xs">/api/quotes</code></td>
+                  <td class="text-xs text-base-content/60">quotes/route.ts</td>
+                  <td>Add a quote. Body: <code>{ text, author?, theme? }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-error">DELETE</span></td>
+                  <td><code class="text-xs">/api/quotes</code></td>
+                  <td class="text-xs text-base-content/60">quotes/route.ts</td>
+                  <td>Remove a quote. Body: <code>{ id }</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-soft badge-info">GET</span></td>
+                  <td><code class="text-xs">/api/templates</code></td>
+                  <td class="text-xs text-base-content/60">templates/route.ts</td>
+                  <td>List available image templates</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="alert alert-soft bg-base-100 mt-4">
+            <div class="flex items-start gap-2">
+              <span class="text-xl">💡</span>
+              <div>
+                <p class="font-semibold">Pro Tip: Pipe with curl + jq</p>
+                <p class="text-sm text-base-content/70">All API responses are JSON. Pipe through <code class="font-mono text-xs">jq</code> for filtering: <code class="font-mono text-xs">curl -s http://localhost:3000/api/queue | jq '.entries[] | select(.status=="pending")'</code></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 4. MULTI-ACCOUNT ═══ -->
+        <section id="accounts" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">👤</span> 4. Multi-Account Management
+          </h2>
+
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <p class="mb-4">Each Instagram account gets a <strong>fully isolated sandbox</strong>. No cross-contamination between accounts.</p>
+
+              <div class="mermaid-wrapper">
+                <div class="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'primaryColor': '#7c3aed', 'primaryTextColor': '#fff', 'lineColor': '#6b7280' }}}%%
+graph LR
+    subgraph GLOBAL["Global (no account)"]
+        G_OUTPUT["output/"]
+        G_MANIFEST["manifest.json"]
+        G_IMAGES["images/"]
+    end
+
+    subgraph ACC1["Account: dailygrind"]
+        A1["output/accounts/dailygrind/"]
+        A1_MAN["manifest.json"]
+        A1_IMG["images/"]
+        A1_Q["publish-queue.json"]
+        A1_CONFIG["config.json"]
+    end
+
+    subgraph ACC2["Account: deepthoughts"]
+        A2["output/accounts/deepthoughts/"]
+        A2_MAN["manifest.json"]
+        A2_IMG["images/"]
+        A2_Q["publish-queue.json"]
+        A2_CONFIG["config.json"]
+    end
+
+    subgraph ACC3["Account: morningwisdom"]
+        A3["output/accounts/morningwisdom/"]
+        A3_IMG["images/"]
+    end
+
+    style GLOBAL fill:#1e1b4b,stroke:#7c3aed
+    style ACC1 fill:#0f172a,stroke:#2563eb
+    style ACC2 fill:#0a0f1e,stroke:#059669
+    style ACC3 fill:#1c1917,stroke:#d97706
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-primary">dailygrind</h3>
+                    <p class="text-xs text-base-content/70">Motivational quotes for the 9-5 hustle</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span class="badge badge-xs badge-soft badge-info">motivation</span>
+                      <span class="badge badge-xs badge-soft badge-success">success</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-secondary">deepthoughts</h3>
+                    <p class="text-xs text-base-content/70">Philosophical and reflective quotes</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span class="badge badge-xs badge-soft badge-accent">philosophy</span>
+                      <span class="badge badge-xs badge-soft badge-info">wisdom</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-warning">morningwisdom</h3>
+                    <p class="text-xs text-base-content/70">Daily morning inspiration</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span class="badge badge-xs badge-soft badge-warning">morning</span>
+                      <span class="badge badge-xs badge-soft badge-primary">wisdom</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto mt-4">
+                <table class="table table-sm">
+                  <thead><tr><th>Feature</th><th>Without Account</th><th>With Account</th></tr></thead>
+                  <tbody>
+                    <tr><td>Storage root</td><td><code>output/</code></td><td><code>output/accounts/&lt;id&gt;/</code></td></tr>
+                    <tr><td>Theme filtering</td><td>All quotes</td><td>Only matching account themes</td></tr>
+                    <tr><td>Publish schedule</td><td>Default env time</td><td>Per-account schedule</td></tr>
+                    <tr><td>IG auth</td><td>Global env vars</td><td>Per-account tokens</td></tr>
+                    <tr><td>Cooldown</td><td>30 days</td><td>Configurable per account</td></tr>
+                    <tr><td>CLI scope</td><td><code>generate</code></td><td><code>generate --account &lt;id&gt;</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 5. PIPELINE ═══ -->
+        <section id="pipeline" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🔄</span> 5. Pipeline: Generate → Review → Queue → Publish
+          </h2>
+
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <div class="mermaid-wrapper">
+                <div class="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'primaryColor': '#7c3aed', 'primaryTextColor': '#fff', 'lineColor': '#6b7280' }}}%%
+graph LR
+    A["📜 Quote Pool<br/>select random"] --> B["🎨 Mixer<br/>pick template"]
+    B --> C["🤖 Gemini AI<br/>generate 1080×1080 image"]
+    C --> D["📝 Caption AI<br/>5 options (image-aware)"]
+    D --> E["🖥️ Review UI<br/>preview + approve / reject"]
+    E -->|approve| F["📋 Publish Queue<br/>auto-added"]
+    E -->|reject| G["🗑️ Discard<br/>removed from queue"]
+    F --> H["⏰ Scheduled Time<br/>or force publish"]
+    H --> I["📤 Instagram API<br/>publish to IG"]
+    I --> J["✅ Mark published<br/>in queue + manifest"]
+
+    style A fill:#1e1b4b,stroke:#7c3aed,color:#fff
+    style B fill:#0f172a,stroke:#2563eb,color:#fff
+    style C fill:#0a0f1e,stroke:#059669,color:#fff
+    style D fill:#1c1917,stroke:#d97706,color:#fff
+    style E fill:#0c0a0a,stroke:#dc2626,color:#fff
+    style F fill:#1e1b4b,stroke:#7c3aed,color:#fff
+    style G fill:#0f172a,stroke:#2563eb,color:#fff
+    style H fill:#0a0f1e,stroke:#059669,color:#fff
+    style I fill:#1c1917,stroke:#d97706,color:#fff
+    style J fill:#0c0a0a,stroke:#dc2626,color:#fff
+                </div>
+              </div>
+
+              <div class="steps steps-vertical mt-6">
+                <div class="step step-primary">
+                  <div class="font-semibold">1. Select Quote</div>
+                  <div class="text-sm text-base-content/70">Picks a random <strong>available</strong> quote from the pool. Filtered by account themes if scoped.</div>
+                </div>
+                <div class="step step-primary">
+                  <div class="font-semibold">2. Mix Template</div>
+                  <div class="text-sm text-base-content/70">Selects a visual template and combines it with the quote text for the AI prompt.</div>
+                </div>
+                <div class="step step-primary">
+                  <div class="font-semibold">3. Generate Image</div>
+                  <div class="text-sm text-base-content/70">Gemini AI (<code>gemini-3.1-flash-image</code>) creates a 1080×1080px image with styled quote + background.</div>
+                </div>
+                <div class="step step-primary">
+                  <div class="font-semibold">4. Generate Captions</div>
+                  <div class="text-sm text-base-content/70">Sends the <strong>actual generated image</strong> to Gemini (<code>gemini-2.5-flash-image</code>) to produce 5 caption options that match the visual mood.</div>
+                </div>
+                <div class="step step-neutral">
+                  <div class="font-semibold">5. Review</div>
+                  <div class="text-sm text-base-content/70">Open the web UI → Review tab → see each image → read caption options → <strong>Approve</strong> (auto-queues) or <strong>Reject</strong>.</div>
+                </div>
+                <div class="step step-neutral">
+                  <div class="font-semibold">6. Publish Queue</div>
+                  <div class="text-sm text-base-content/70">Approved items sit in the queue, scheduled for <code>PUBLISH_TIME</code> (default 09:00).</div>
+                </div>
+                <div class="step step-neutral">
+                  <div class="font-semibold">7. Publish</div>
+                  <div class="text-sm text-base-content/70">CLI <code>publish</code> or API <code>/api/publish</code> sends to Instagram via Graph API. Shows as <strong>"published"</strong> in queue.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 6. QUOTE POOL ═══ -->
+        <section id="quotes" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">📜</span> 6. Quote Pool System
+          </h2>
+
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <p class="mb-4">The quote pool is a self-managing lifecycle system. Every quote moves through states:</p>
+
+              <div class="mermaid-wrapper mb-4">
+                <div class="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'primaryColor': '#7c3aed', 'primaryTextColor': '#fff', 'lineColor': '#6b7280' }}}%%
+stateDiagram-v2
+    [*] --> Available: Seed / Import
+    Available --> Used: Image generated
+    Used --> Cooldown: 30d timer starts
+    Cooldown --> Available: Timer expires
+    Available --> Retired: Used 5+ times
+    Retired --> [*]: Removed from pool
+
+    note right of Available
+        Filtered by account themes
+        when --account is set
+    end note
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="table table-sm">
+                  <thead>
+                    <tr><th>State</th><th>Meaning</th><th>Transition</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="badge badge-soft badge-success">Available</span></td><td>Ready to be used for generation</td><td>→ Used when picked</td></tr>
+                    <tr><td><span class="badge badge-soft badge-warning">Used</span></td><td>Quote has been used recently</td><td>→ Cooldown after generation</td></tr>
+                    <tr><td><span class="badge badge-soft badge-info">Cooldown</span></td><td>On timeout (default 30 days)</td><td>→ Available after expiry</td></tr>
+                    <tr><td><span class="badge badge-soft badge-neutral">Retired</span></td><td>Used 5 times — permanently done</td><td>→ Removed from pool</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="alert alert-soft bg-base-100 mt-4">
+                <span>⚡ Each quote tracks per-account usage — same quote can be used on different accounts independently.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 7. CAPTION PIPELINE ═══ -->
+        <section id="captions" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🤖</span> 7. AI Caption Pipeline (v2)
+          </h2>
+
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <div class="feature-grid mb-4">
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-primary">🖼️ Image-Aware</h3>
+                    <p class="text-sm text-base-content/70">Captions are generated by sending the <strong>actual generated image</strong> to Gemini, so captions match the visual mood, colors, and composition.</p>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-secondary">5️⃣ Five Options</h3>
+                    <p class="text-sm text-base-content/70">Each image gets 5 distinct caption tones: <strong>warm · bold · story-driven · minimalist · philosophical</strong>.</p>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-accent">📚 Self-Learning</h3>
+                    <p class="text-sm text-base-content/70">Tracks which caption style users pick in <code>output/caption-examples.json</code>. Top 2 most-picked examples become few-shot prompts.</p>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-info">🛡️ Graceful Degradation</h3>
+                    <p class="text-sm text-base-content/70">If caption generation fails, the image proceeds without captions — never blocks the pipeline.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-soft bg-base-100">
+                <div class="flex items-start gap-2">
+                  <span class="text-xl">📁</span>
+                  <div>
+                    <p class="font-semibold">Learning Store</p>
+                    <p class="text-sm text-base-content/70">File: <code class="font-mono text-xs">output/caption-examples.json</code> — capped at 50 entries, sorted by <code class="font-mono text-xs">pickCount</code> (most popular first).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 8. PUBLISH QUEUE ═══ -->
+        <section id="queue" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">📋</span> 8. Publish Queue System
+          </h2>
+
+          <div class="card card-border bg-base-200 mb-6">
+            <div class="card-body">
+              <p class="mb-4">The queue sits between review and publishing. It's a separate file from the manifest — items only enter the queue when explicitly approved.</p>
+
+              <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-100 mb-4">
+                <table class="table table-sm">
+                  <thead>
+                    <tr><th>Concept</th><th>Detail</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Storage</td><td><code>output/publish-queue.json</code> (or <code>output/accounts/&lt;id&gt;/publish-queue.json</code>)</td></tr>
+                    <tr><td>Add to queue</td><td>Auto-added when image is approved via Review UI or API</td></tr>
+                    <tr><td>Remove from queue</td><td>Auto-removed when image is rejected. Also via <code>DELETE /api/queue</code></td></tr>
+                    <tr><td>Dedup</td><td>No duplicate <code>batchId + imageId</code> combos allowed</td></tr>
+                    <tr><td>Scheduling</td><td>Items scheduled for next <code>PUBLISH_TIME</code> (default 09:00, env var)</td></tr>
+                    <tr><td>Publishing</td><td>Simulated while Instagram is restricted (marks as published in queue)</td></tr>
+                    <tr><td>Statuses</td><td><span class="badge badge-xs badge-soft badge-warning">pending</span> <span class="badge badge-xs badge-soft badge-success">published</span> <span class="badge badge-xs badge-soft badge-error">failed</span></td></tr>
+                    <tr><td>CLI</td><td><code>publish --status | --force | --dry-run</code></td></tr>
+                    <tr><td>Review UI tab</td><td>Publish Queue tab: entries, status badges, remove, Publish Now button</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 9. REVIEW UI ═══ -->
+        <section id="review" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🖥️</span> 9. Review UI — Browser Dashboard
+          </h2>
+
+          <div class="card card-border bg-base-200">
+            <div class="card-body">
+              <p class="mb-4">The web UI at <code class="font-mono text-xs">http://localhost:3000</code> is the main review surface. It has two tabs:</p>
+
+              <div class="tabs tabs-border mb-6">
+                <span class="tab tab-active font-semibold">📸 Review Tab</span>
+                <span class="tab font-semibold">📋 Publish Queue Tab</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-lg mb-2">📸 Review Tab</h3>
+                    <ul class="text-sm space-y-2 text-base-content/80">
+                      <li>✅ Shows all generated images from latest batch</li>
+                      <li>✅ Each image card shows: preview, quote text, 5 caption options</li>
+                      <li>✅ <strong>Approve</strong> button → auto-adds to publish queue</li>
+                      <li>✅ <strong>Reject</strong> button → removes from queue + discards</li>
+                      <li>✅ Status badges: pending, approved, in queue, published</li>
+                      <li>✅ Account scoped if generated with <code>--account</code></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card bg-base-100">
+                  <div class="card-body p-4">
+                    <h3 class="font-bold text-lg mb-2">📋 Queue Tab</h3>
+                    <ul class="text-sm space-y-2 text-base-content/80">
+                      <li>✅ Shows all queued items with status badges</li>
+                      <li>✅ Each entry shows: image preview, quote, scheduled time</li>
+                      <li>✅ <strong>Remove</strong> button to dequeue</li>
+                      <li>✅ <strong>Publish Now</strong> button → triggers immediate publish</li>
+                      <li>✅ Dry-run mode available</li>
+                      <li>✅ Filterable by status (pending/published/failed)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-soft bg-base-100 mt-4">
+                <span>⏺️ The UI auto-refreshes — no manual reload needed after approving/rejecting.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 10. LOGGING ═══ -->
+        <section id="logging" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">📊</span> 10. Structured Logging (Pino)
+          </h2>
+
+          <div class="card card-border bg-base-200">
+            <div class="card-body">
+              <p class="mb-4">All logging uses <strong>Pino</strong> — structured JSON logger. Key behaviors:</p>
+
+              <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-100 mb-4">
+                <table class="table table-sm">
+                  <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+                  <tbody>
+                    <tr><td>Output format</td><td>JSON by default — trivially queryable with <code>jq</code> and <code>grep</code></td></tr>
+                    <tr><td>Stdout discipline</td><td>Logger writes to <strong>stderr</strong> (fd 2) — stdout stays clean for pipeable CLI output</td></tr>
+                    <tr><td>Pretty mode</td><td><code>LOG_PRETTY=true</code> for human-readable output</td></tr>
+                    <tr><td>Log level</td><td><code>LOG_LEVEL=debug</code> for verbosity</td></tr>
+                    <tr><td>Per log line</td><td>timestamp, level, module, message + structured data</td></tr>
+                    <tr><td>Replaced</td><td>All <code>console.log</code>/<code>console.error</code> across CLI and lib files</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="cmd-block mb-2">
+                <span class="cmd-comment"># Watch generation logs in real-time</span><br>
+                <span class="cmd-code">LOG_LEVEL=info LOG_PRETTY=true npm run cli -- generate --count 5</span>
+              </div>
+              <div class="cmd-block">
+                <span class="cmd-comment"># Pipe JSON logs to jq for filtering</span><br>
+                <span class="cmd-code">LOG_LEVEL=info npm run cli -- generate --count 3 <span class="cmd-flag">--json</span> 2>&amp;1 | grep '"level":30' | jq '{msg, module}'</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 11. QUICK START ═══ -->
+        <section id="quickstart" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🚀</span> 11. Quick Start Guide
+          </h2>
+
+          <div class="card card-border bg-base-200">
+            <div class="card-body">
+              <p class="mb-4 text-sm text-base-content/70">From zero to published post in 7 steps:</p>
+
+              <ol class="steps steps-vertical">
+                <li class="step step-primary">
+                  <div class="font-semibold">1. Create an account</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- account create <span class="cmd-arg">"mybrand"</span> <span class="cmd-flag">--display-name</span> <span class="cmd-arg">"My Brand"</span> <span class="cmd-flag">--themes</span> <span class="cmd-arg">motivation,wisdom</span> <span class="cmd-flag">--schedule</span> <span class="cmd-arg">09:00</span></span>
+                  </div>
+                </li>
+                <li class="step step-primary">
+                  <div class="font-semibold">2. Import quotes</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- quotes import <span class="cmd-arg">./quotes/my-quotes.txt</span></span>
+                  </div>
+                </li>
+                <li class="step step-primary">
+                  <div class="font-semibold">3. Check the pool</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- quotes stats</span>
+                  </div>
+                </li>
+                <li class="step step-primary">
+                  <div class="font-semibold">4. Generate images</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- generate <span class="cmd-flag">--count</span> <span class="cmd-arg">10</span> <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span></span>
+                  </div>
+                </li>
+                <li class="step step-neutral">
+                  <div class="font-semibold">5. Review in browser</div>
+                  <div class="text-sm text-base-content/70">Start the dev server: <code class="font-mono text-xs">npm run dev</code> → open <code class="font-mono text-xs">http://localhost:3000</code> → Review tab → Approve/Reject</div>
+                </li>
+                <li class="step step-neutral">
+                  <div class="font-semibold">6. Check the queue</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--status</span></span>
+                  </div>
+                </li>
+                <li class="step step-neutral">
+                  <div class="font-semibold">7. Publish</div>
+                  <div class="cmd-block mt-1">
+                    <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--force</span></span>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="alert alert-soft bg-base-100 mt-6">
+                <div class="flex items-start gap-2">
+                  <span class="text-xl">🔁</span>
+                  <div>
+                    <p class="font-semibold">Daily Workflow</p>
+                    <p class="text-sm text-base-content/70">Run step 4-7 daily. The quote pool auto-recycles (30-day cooldown). Import fresh quotes weekly.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ 12. ENVIRONMENT ═══ -->
+        <section id="env" class="section-link mb-12">
+          <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🔐</span> 12. Environment Variables Reference
+          </h2>
+
+          <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-200">
+            <table class="table table-zebra table-pin-rows">
+              <thead>
+                <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>GEMINI_API_KEY</code></td><td>—</td><td><strong>Required.</strong> Google Gemini API key</td></tr>
+                <tr><td><code>GEMINI_MODEL</code></td><td><code>gemini-3.1-flash-image</code></td><td>Model for image generation</td></tr>
+                <tr><td><code>PUBLISH_TIME</code></td><td><code>09:00</code></td><td>Default daily publish time (HH:MM)</td></tr>
+                <tr><td><code>LOG_LEVEL</code></td><td><code>info</code></td><td>Pino log level (debug/info/warn/error)</td></tr>
+                <tr><td><code>LOG_PRETTY</code></td><td><code>false</code></td><td>Human-readable (pretty) log output</td></tr>
+                <tr><td><code>IG_ACCESS_TOKEN</code></td><td>—</td><td>Instagram Graph API access token (global fallback)</td></tr>
+                <tr><td><code>IG_USER_ID</code></td><td>—</td><td>Instagram business account ID (global fallback)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="alert alert-soft bg-base-100 mt-4">
+            <span>📁 Loaded from <code class="font-mono text-xs">.env</code> file at project root. Per-account IG tokens override global ones.</span>
+          </div>
+        </section>
+
+        <!-- ═══ FOOTER ═══ -->
+        <footer class="border-t border-base-content/10 pt-6 pb-12 mt-12 text-center text-sm text-base-content/40">
+          <p class="mb-2">
+            <span class="badge badge-soft badge-neutral">quotes-social-media v2</span>
+            <span class="badge badge-soft badge-neutral mx-1">Next.js + TypeScript</span>
+            <span class="badge badge-soft badge-neutral">Gemini AI</span>
+          </p>
+          <p>Built with 💜 for multi-account Instagram automation</p>
+        </footer>
+
+      </div><!-- /main content -->
+    </div><!-- /drawer-content -->
+
+    <!-- ─── SIDEBAR ─── -->
+    <div class="drawer-side z-40">
+      <label for="nav-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+      <div class="menu bg-base-200 text-base-content min-h-full w-72 p-4 overflow-y-auto">
+        <div class="mb-4 px-3">
+          <span class="text-lg font-bold">📸 Guide</span>
+          <p class="text-xs text-base-content/50">Complete reference</p>
+        </div>
+        <ul class="menu menu-sm">
+          <li><a href="#hero"><span class="text-base-content/70">🏠</span> Overview</a></li>
+          <li><a href="#toc"><span class="text-base-content/70">📑</span> Table of Contents</a></li>
+          <li><a href="#architecture"><span class="text-base-content/70">🏗️</span> Architecture</a></li>
+          <li>
+            <details open>
+              <summary><span class="text-base-content/70">💻</span> CLI Reference</summary>
+              <ul>
+                <li><a href="#cli">All Commands</a></li>
+                <li><a href="#cli" class="ps-6">generate</a></li>
+                <li><a href="#cli" class="ps-6">list</a></li>
+                <li><a href="#cli" class="ps-6">account</a></li>
+                <li><a href="#cli" class="ps-6">quotes</a></li>
+                <li><a href="#cli" class="ps-6">publish</a></li>
+              </ul>
+            </details>
+          </li>
+          <li><a href="#api"><span class="text-base-content/70">🌐</span> API Endpoints</a></li>
+          <li><a href="#accounts"><span class="text-base-content/70">👤</span> Multi-Account</a></li>
+          <li><a href="#pipeline"><span class="text-base-content/70">🔄</span> Pipeline Flow</a></li>
+          <li><a href="#quotes"><span class="text-base-content/70">📜</span> Quote Pool</a></li>
+          <li><a href="#captions"><span class="text-base-content/70">🤖</span> Captions</a></li>
+          <li><a href="#queue"><span class="text-base-content/70">📋</span> Publish Queue</a></li>
+          <li><a href="#review"><span class="text-base-content/70">🖥️</span> Review UI</a></li>
+          <li><a href="#logging"><span class="text-base-content/70">📊</span> Logging</a></li>
+          <li><a href="#quickstart"><span class="text-base-content/70">🚀</span> Quick Start</a></li>
+          <li><a href="#env"><span class="text-base-content/70">🔐</span> Environment</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
