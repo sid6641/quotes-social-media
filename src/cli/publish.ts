@@ -104,7 +104,7 @@ export async function runPublish(options: PublishOptions = {}): Promise<void> {
     return;
   }
 
-  const results = await processQueue(accountDir);
+  const results = await processQueue(accountDir, accountId);
 
   const published = results.filter((r) => r.status === "published");
   const failed = results.filter((r) => r.status === "failed");

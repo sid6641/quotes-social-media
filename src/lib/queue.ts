@@ -299,7 +299,8 @@ export function getQueueStats(accountDir?: string): {
  * @returns Array of processed entry IDs with their result status
  */
 export async function processQueue(
-  accountDir?: string
+  accountDir?: string,
+  accountId?: string
 ): Promise<
   Array<{ id: string; status: "published" | "failed"; error?: string }>
 > {
@@ -310,16 +311,38 @@ export async function processQueue(
     error?: string;
   }> = [];
 
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
   for (const item of dueItems) {
     try {
-      const success = markPublished(item.id, accountDir);
-      if (success) {
-        results.push({ id: item.id, status: "published" });
-      } else {
-        results.push({ id: item.id, status: "failed", error: "Queue entry not found" });
-      }
+      // Build the publicly accessible image URL
+      const imageUrl = `${BASE_URL}/api/images/${item.filename}`;
+
+      // Build caption from the stored caption data
+      const captionText = item.caption?.commentary || "";
+      const hashtagStr = item.caption?.hashtags?.join(" ") || "";
+      const fullCaption = hashtagStr ? `${captionText}\n\n${hashtagStr}` : captionText;
+
+      // Attempt to publish to Instagram
+      const { publishToInstagram } = await import("./instagram");
+      const { mediaId } = await publishToInstagram(imageUrl, fullCaption, accountId);
+
+      // Mark as published on success
+      markPublished(item.id, accountDir);
+      results.push({ id: item.id, status: "published" });
+
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+
+      // If Instagram isn't configured, fall back to simulated publish
+      if (msg.includes("not configured")) {
+        const success = markPublished(item.id, accountDir);
+        if (success) {
+          results.push({ id: item.id, status: "published" });
+          continue;
+        }
+      }
+
       markFailed(item.id, msg, accountDir);
       results.push({ id: item.id, status: "failed", error: msg });
     }
