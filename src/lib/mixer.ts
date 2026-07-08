@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getLatestBatch } from "./manifest";
+import { getAvailableQuotes, getPoolStats, importQuotesFromFile } from "./quote-pool";
 
 const QUOTES_DIR = path.resolve(process.cwd(), "quotes");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
@@ -14,40 +15,49 @@ export interface QuoteTemplateCombo {
 }
 
 /**
- * Read all non-empty, non-comment lines from all .txt quote files.
- * Lines starting with "#" or "//" are treated as comments.
+ * Load quotes from the quote pool. Falls back to importing from text files
+ * if the pool is empty (auto-seed on first run).
  */
 function loadQuotes(): string[] {
-  if (!fs.existsSync(QUOTES_DIR)) {
-    throw new Error(`Quotes directory not found: ${QUOTES_DIR}`);
+  // Check if pool has available quotes
+  const stats = getPoolStats();
+
+  // Seed from text files if pool is empty
+  if (stats.total === 0) {
+    if (!fs.existsSync(QUOTES_DIR)) {
+      throw new Error(`Quotes directory not found: ${QUOTES_DIR}`);
+    }
+
+    const files = fs
+      .readdirSync(QUOTES_DIR)
+      .filter((f) => f.endsWith(".txt"))
+      .sort();
+
+    let totalSeeded = 0;
+    for (const file of files) {
+      const result = importQuotesFromFile(path.join(QUOTES_DIR, file), {
+        source: "imported",
+      });
+      totalSeeded += result.imported;
+    }
+
+    if (totalSeeded === 0) {
+      throw new Error(
+        "No quotes found. Add quotes via text files or the quotes CLI."
+      );
+    }
   }
 
-  const files = fs
-    .readdirSync(QUOTES_DIR)
-    .filter((f) => f.endsWith(".txt"))
-    .sort();
-
-  if (files.length === 0) {
+  // Get available quotes from the pool
+  const available = getAvailableQuotes(100);
+  if (available.length === 0) {
     throw new Error(
-      "No quote files found in quotes/. Add a .txt file with one quote per line."
+      "No available quotes in the pool. All quotes may be in cooldown. " +
+      "Run `npm run cli quotes expire` to recycle expired ones."
     );
   }
 
-  const quotes: string[] = [];
-  for (const file of files) {
-    const content = fs.readFileSync(path.join(QUOTES_DIR, file), "utf-8");
-    const lines = content
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !l.startsWith("#") && !l.startsWith("//"));
-    quotes.push(...lines);
-  }
-
-  if (quotes.length === 0) {
-    throw new Error("No quotes found in quote files. Add some quotes.");
-  }
-
-  return quotes;
+  return available.map((q) => q.text);
 }
 
 /**

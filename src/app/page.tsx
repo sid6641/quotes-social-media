@@ -36,7 +36,7 @@ interface Manifest {
 }
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
-type ViewMode = "review" | "queue" | "templates" | "hashtags";
+type ViewMode = "review" | "queue" | "templates" | "hashtags" | "quotes";
 
 interface QueueEntry {
   id: string;
@@ -73,6 +73,14 @@ export default function ReviewPage() {
     Array<{ id: string; generatedAt: string; trigger: string; imageCount: number; approvedCount: number }>
   >([]);
   const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
+
+  // Quotes pool
+  const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; theme?: string; status: string; usageCount: number }>>([]);
+  const [poolStats, setPoolStats] = useState<{ total: number; available: number; cooldown: number; retired: number } | null>(null);
+  const [quotesLoading, setQuotesLoading] = useState(false);
+  const [newQuoteText, setNewQuoteText] = useState("");
+  const [newQuoteTheme, setNewQuoteTheme] = useState("");
+  const [quoteFilter, setQuoteFilter] = useState<string>("all");
 
   // Templates
   const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string }>>([]);
@@ -362,6 +370,62 @@ export default function ReviewPage() {
     }
   };
 
+  // Quotes pool
+  const fetchPoolQuotes = useCallback(async () => {
+    try {
+      setQuotesLoading(true);
+      const status = quoteFilter !== "all" ? quoteFilter : undefined;
+      const url = status ? `/api/quotes?status=${status}` : "/api/quotes";
+      const [quotesRes, statsRes] = await Promise.all([
+        fetch(url),
+        fetch("/api/quotes?stats=true"),
+      ]);
+      const quotesData = await quotesRes.json();
+      const statsData = await statsRes.json();
+      if (quotesData.success) setPoolQuotes(quotesData.quotes || []);
+      if (statsData.success) setPoolStats(statsData.stats || null);
+    } catch {
+      // non-fatal
+    } finally {
+      setQuotesLoading(false);
+    }
+  }, [quoteFilter]);
+
+  const handleAddQuote = async () => {
+    const text = newQuoteText.trim();
+    if (!text) return;
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          theme: newQuoteTheme.trim() || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to add quote");
+      setNewQuoteText("");
+      setNewQuoteTheme("");
+      await fetchPoolQuotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add quote");
+    }
+  };
+
+  const handleDeleteQuote = async (id: string) => {
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to delete quote");
+      await fetchPoolQuotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete quote");
+    }
+  };
+
   // Templates
   const fetchTemplates = useCallback(async () => {
     try {
@@ -406,6 +470,7 @@ export default function ReviewPage() {
     if (mode === "queue") fetchQueue();
     if (mode === "templates") fetchTemplates();
     if (mode === "hashtags") fetchHashtagSets();
+    if (mode === "quotes") fetchPoolQuotes();
   };
 
   const handlePublishToInstagram = async () => {
@@ -747,6 +812,16 @@ export default function ReviewPage() {
           }`}
         >
           Hashtag Bank
+        </button>
+        <button
+          onClick={() => switchView("quotes")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "quotes"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Quotes {poolStats ? `(${poolStats.available})` : ""}
         </button>
       </div>
 
@@ -1289,6 +1364,112 @@ export default function ReviewPage() {
                     <p className="text-xs text-gray-700 truncate font-medium">{t.filename}</p>
                     <p className="text-[10px] text-gray-400">{t.sizeKB} KB</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Quotes Pool mode */}
+      {viewMode === "quotes" && (
+        <div>
+          {/* Stats bar */}
+          {poolStats && (
+            <div className="flex gap-4 mb-6 text-sm">
+              <span className="text-gray-500">Total: <strong>{poolStats.total}</strong></span>
+              <span className="text-green-600">Available: <strong>{poolStats.available}</strong></span>
+              <span className="text-yellow-600">Cooldown: <strong>{poolStats.cooldown}</strong></span>
+              <span className="text-gray-400">Retired: <strong>{poolStats.retired}</strong></span>
+            </div>
+          )}
+
+          {/* Add new quote */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Add Quote</h3>
+            <div className="flex gap-2">
+              <input
+                value={newQuoteText}
+                onChange={(e) => setNewQuoteText(e.target.value)}
+                placeholder="Enter quote text..."
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                onKeyDown={(e) => e.key === "Enter" && handleAddQuote()}
+              />
+              <input
+                value={newQuoteTheme}
+                onChange={(e) => setNewQuoteTheme(e.target.value)}
+                placeholder="Theme (optional)"
+                className="w-40 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                onClick={handleAddQuote}
+                disabled={!newQuoteText.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex gap-2 mb-4">
+            {["all", "available", "cooldown", "retired"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setQuoteFilter(f)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  quoteFilter === f
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Quote list */}
+          {quotesLoading ? (
+            <div className="text-center py-10 text-gray-500">Loading quotes...</div>
+          ) : poolQuotes.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              No quotes found. Add one above or import from a text file via CLI.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {poolQuotes.map((q) => (
+                <div
+                  key={q.id}
+                  className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3"
+                >
+                  <span
+                    className={`inline-block w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      q.status === "available"
+                        ? "bg-green-400"
+                        : q.status === "cooldown"
+                        ? "bg-yellow-400"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700">&ldquo;{q.text}&rdquo;</p>
+                    <div className="flex gap-2 mt-1">
+                      {q.theme && (
+                        <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          {q.theme}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        Used {q.usageCount}x
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteQuote(q.id)}
+                    className="text-xs text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 mt-1"
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>

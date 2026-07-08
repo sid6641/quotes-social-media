@@ -16,6 +16,7 @@
 import "dotenv/config";
 import { runGenerate } from "./generate";
 import { runPublish } from "./publish";
+import { runQuotes, printQuotesUsage } from "./quotes";
 import { listQuotes, listTemplates, listPrompts } from "./list";
 import { createLogger } from "../lib/logger";
 const log = createLogger("cli");
@@ -25,10 +26,11 @@ function printUsage(): void {
 📸 Quotes Social Media — CLI
 
 Usage:
-  npm run cli generate [options]    Generate a batch of quote images
-  npm run cli publish  [options]    Process the publish queue
-  npm run cli list <resource>       List available resources
-  npm run generate                  Shorthand: generate with defaults
+  npm run cli generate  [options]    Generate a batch of quote images
+  npm run cli publish   [options]    Process the publish queue
+  npm run cli quotes    <command>    Manage the quote pool
+  npm run cli list      <resource>   List available resources
+  npm run generate                   Shorthand: generate with defaults
 
 Options (generate):
   --count <n>       Number of images to generate (default: 10)
@@ -40,20 +42,29 @@ Options (publish):
   --force            Queue all approved images, then publish due
   --dry-run          Show what would be published without doing it
 
+Quotes commands:
+  list                          List all quotes in the pool
+  list --status available       Filter by status
+  list --theme motivation       Filter by theme
+  add "text"                    Add a single quote to the pool
+  add "text" --author X --theme motivation
+  import --file path            Import quotes from a text file
+  import --file path --theme motivation
+  stats                         Show pool statistics
+  expire                        Recycle expired cooldowns
+
 Resources (list):
-  quotes            List all available quotes
   templates         List all template images
   prompts           List all prompt templates
 
 Examples:
   npm run cli generate
   npm run cli generate -- --count 5
-  npm run cli generate -- --template modern --json
-  npm run cli publish
   npm run cli publish -- --status
-  npm run cli publish -- --dry-run
-  npm run cli list quotes
-  npm run cli list templates
+  npm run cli quotes list
+  npm run cli quotes add "Be yourself." --author Wilde --theme life
+  npm run cli quotes import --file quotes/sample.txt --theme motivation
+  npm run cli quotes stats
 `);
 }
 
@@ -130,6 +141,38 @@ function parseArgs(): {
     return result;
   }
 
+  if (command === "quotes") {
+    result.command = "quotes";
+    result.subcommand = args[1] || "list";
+    let i = 2;
+    while (i < args.length) {
+      const arg = args[i];
+      if (arg === "--status" && i + 1 < args.length) {
+        result.flags.status = args[i + 1];
+        i += 2;
+      } else if (arg === "--theme" && i + 1 < args.length) {
+        result.flags.theme = args[i + 1];
+        i += 2;
+      } else if (arg === "--author" && i + 1 < args.length) {
+        result.flags.author = args[i + 1];
+        i += 2;
+      } else if (arg === "--file" && i + 1 < args.length) {
+        result.flags.file = args[i + 1];
+        i += 2;
+      } else if (arg === "--help" || arg === "-h") {
+        result.command = "help";
+        i += 1;
+      } else if (!arg.startsWith("--")) {
+        // positional text for "add"
+        result.flags.text = arg;
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return result;
+  }
+
   if (command === "--help" || command === "-h" || command === "help") {
     result.command = "help";
     return result;
@@ -169,7 +212,17 @@ async function main(): Promise<void> {
       await runPublish({ status, force, dryRun });
       return;
     }
-
+    case "quotes": {
+      await runQuotes({
+        subcommand: subcommand || "list",
+        status: typeof flags.status === "string" ? flags.status : undefined,
+        theme: typeof flags.theme === "string" ? flags.theme : undefined,
+        text: typeof flags.text === "string" ? flags.text : undefined,
+        author: typeof flags.author === "string" ? flags.author : undefined,
+        file: typeof flags.file === "string" ? flags.file : undefined,
+      });
+      return;
+    }
     case "list": {
       switch (subcommand) {
         case "quotes":
