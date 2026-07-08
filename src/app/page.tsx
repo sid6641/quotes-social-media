@@ -720,7 +720,8 @@ export default function ReviewPage() {
 
       await Promise.all(
         approved.map(async (img) => {
-          const res = await fetch(`/api/images/${img.filename}`);
+          const accParam = selectedAccount ? `?account=${selectedAccount}` : "";
+          const res = await fetch(`/api/images/${img.filename}${accParam}`);
           if (!res.ok) throw new Error(`Failed to fetch ${img.filename}`);
           const blob = await res.blob();
           zip.file(img.filename, blob);
@@ -1153,7 +1154,7 @@ export default function ReviewPage() {
                   {/* Image */}
                   <div className="aspect-square bg-gray-100 relative">
                     <img
-                      src={`/api/images/${image.filename}`}
+                      src={`/api/images/${image.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
                       alt={`Quote: ${image.quote}`}
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -1480,7 +1481,7 @@ export default function ReviewPage() {
                       {/* Thumbnail */}
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img
-                          src={`/api/images/${entry.filename}`}
+                          src={`/api/images/${entry.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
                           alt=""
                           className="w-full h-full object-cover"
                         />
@@ -1587,7 +1588,7 @@ export default function ReviewPage() {
                 >
                   <div className="aspect-square bg-gray-100">
                     <img
-                      src={`/api/images/${t.filename}`}
+                      src={`/api/images/${t.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
                       alt={t.filename}
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -2076,7 +2077,7 @@ export default function ReviewPage() {
             {/* Phone-like frame */}
             <div className="bg-gray-100 p-4">
               <img
-                src={`/api/images/${previewImage.filename}`}
+                src={`/api/images/${previewImage.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
                 alt="Post preview"
                 className="w-full aspect-square rounded-lg object-cover shadow-md"
               />

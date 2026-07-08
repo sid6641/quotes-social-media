@@ -7,26 +7,42 @@ const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 /**
  * Serve generated images from output/ or template images from templates/.
- * Images are stored outside public/ so we need this custom route.
+ * Supports ?account=xxx to scope to a specific account's images/ dir.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { filename: string } }
 ) {
   const { filename } = params;
+  const accountId = request.nextUrl.searchParams.get("account");
 
   // Basic security: prevent directory traversal
   if (filename.includes("..") || filename.includes("/")) {
     return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
   }
 
-  // Try output/ first, then templates/
-  let filePath = path.join(OUTPUT_DIR, filename);
-  if (!fs.existsSync(filePath)) {
-    filePath = path.join(TEMPLATES_DIR, filename);
+  // Try account-specific dir first, then global output/, then templates/
+  let filePath: string | null = null;
+  if (accountId) {
+    const accountImagePath = path.join(OUTPUT_DIR, accountId, "images", filename);
+    if (fs.existsSync(accountImagePath)) {
+      filePath = accountImagePath;
+    }
+  }
+  if (!filePath) {
+    const globalPath = path.join(OUTPUT_DIR, filename);
+    if (fs.existsSync(globalPath)) {
+      filePath = globalPath;
+    }
+  }
+  if (!filePath) {
+    const templatePath = path.join(TEMPLATES_DIR, filename);
+    if (fs.existsSync(templatePath)) {
+      filePath = templatePath;
+    }
   }
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath) {
     return NextResponse.json({ error: "Image not found" }, { status: 404 });
   }
 
