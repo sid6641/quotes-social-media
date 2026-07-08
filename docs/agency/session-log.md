@@ -321,3 +321,34 @@ Massive session covering all remaining Phase 2 features plus Phases A and B:
 ### State At End
 All Phase 2 features complete. Phases A (Quote Pool) and B (Account Sandboxes) complete.
 Next up: Phase C (AI Quote Generation), Phase D (Autopilot Scheduler), or other roadmap items.
+
+## 2026-07-08 — Account scope audit, behavioral gaps found, BEHAVIORS.md created
+
+### Agent
+Director → Builder + Explore
+
+### Skill
+— (direct audit)
+
+### Summary
+- Comprehensive behavioral audit of the entire application
+- Created `BEHAVIORS.md` — a living behavioral contract document describing every flow (generate, approve, publish, export, image serving, quote lifecycle, account management)
+- **Key finding**: The library layer (`lib/`) mostly supports account-scoped operations via optional parameters. The **routing layer** (`api/*` route handlers) and **UI** (`page.tsx`) consistently fail to extract and forward the `account` parameter.
+- 5 🔴 critical gaps found (generate ignores account, queue ignores account, publish pre-blocks fallback, status ignores accountDir, UI Publish Now doesn't send account)
+- 4 🟡 medium gaps found (image route ignores `?account=`, batch history global-only, account ID not sanitized, export output path changed)
+- Documented 12 behavioral areas with current code state (✅ working / ❌ broken / ⚠️ partial)
+
+### Key Behavioral Rules Captured
+1. **Account isolation**: Every account is fully isolated in `output/<id>/` with own images, manifest, queue, archive, calendar
+2. **Generation**: All images + manifest go to account's dir, never global
+3. **Approval**: Auto-queues to account's queue; rejection auto-removes
+4. **Publish**: Processes only the selected account's queue; Instagram unavailability is non-fatal (local simulation)
+5. **Export**: Reads from account manifest, writes to account calendar dir
+6. **Image serving**: Tries account images dir first, then global, then templates
+7. **Quote lifecycle**: Per-account pool with available → used → cooldown → recycle
+
+### Artifacts Produced
+- `BEHAVIORS.md` — Complete behavioral contract with 12 sections, invariants, and known gaps table
+
+### State At End
+Behavioral contract documented. 5 critical gaps identified in the routing layer. Ready for systematic fix.

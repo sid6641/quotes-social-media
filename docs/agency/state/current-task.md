@@ -22,10 +22,11 @@
 
 ## Open Questions
 
-- Next: AI Quote Generation (Phase C), Autopilot Scheduler (Phase D)
+- Phase C: AI Quote Generation
+- Phase D: Autopilot Scheduler (built but CLI-only — needs cron verification)
+- Fix routing layer account-scoping gaps (5 critical, 4 medium documented in BEHAVIORS.md)
 
 ## Next Micro-Step
 
-Autopilot is set up. Run `npm run cli autopilot` to execute the full pipeline.
-Use `--setup-cron` to install daily cron at 08:00.
+Fix the 5 critical account-scoping gaps in the routing layer (see BEHAVIORS.md "Known Behavioral Gaps").
 Next feature: Phase C — AI Quote Generation.
