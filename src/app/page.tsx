@@ -126,11 +126,20 @@ export default function ReviewPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedAccount]);
 
   useEffect(() => {
     fetchLatestBatch();
   }, [fetchLatestBatch]);
+
+  // Load accounts on mount for the account selector
+  useEffect(() => {
+    fetch("/api/accounts").then(res => res.json()).then(data => {
+      if (data.success) setAccounts(data.accounts || []);
+    }).catch(() => {});
+  }, []);
+
+  // Re-fetch when account changes — runs after all callbacks are defined
 
   const handleGenerate = async () => {
     try {
@@ -194,7 +203,7 @@ export default function ReviewPage() {
     } finally {
       setQueueLoading(false);
     }
-  }, []);
+  }, [selectedAccount]);
 
   const handleRemoveFromQueue = async (id: string) => {
     try {
