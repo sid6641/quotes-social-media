@@ -32,7 +32,7 @@ Usage:
   npm run cli generate  [options]    Generate a batch of quote images
   npm run cli publish   [options]    Process the publish queue
   npm run cli export    [options]    Export a content calendar for manual posting
-  npm run cli autopilot [options]    Run the full pipeline (generate → approve → export)
+  npm run cli autopilot [options]    Scheduled generation — images land in review UI
   npm run cli account   <command>    Manage accounts
   npm run cli quotes    <command>    Manage the quote pool
   npm run cli list      <resource>   List available resources
@@ -56,10 +56,10 @@ Options (export):
   --json             Output results as JSON (for piping)
 
 Options (autopilot):
-  --account <id>     Run for a specific account only
+  --account <id>     Generate for a specific account only
   --count <n>        Images per account (default: 10)
-  --dry-run          Show what would happen without doing it
-  --setup-cron       Install daily cron job at 08:00
+  --dry-run          Preview generation without executing
+  --setup-cron       Install daily cron at 08:00
   --remove-cron      Remove the cron job
   --cron-status      Check if cron is installed
   --json             JSON output (for piping)
@@ -107,11 +107,11 @@ Examples:
   npm run cli export                           Export 7-day content calendar
   npm run cli export -- --days 14              Export 14-day calendar
   npm run cli export -- --account deepthoughts Export for a specific account
-  npm run cli autopilot                        Run full pipeline for all accounts
-  npm run cli autopilot -- --account dailygrind  Single account
-  npm run cli autopilot -- --dry-run           Preview without executing
-  npm run cli autopilot -- --setup-cron        Install daily cron job (08:00)
-  npm run cli autopilot -- --cron-status       Check if cron is installed
+  npm run cli autopilot                        Generate for all accounts
+  npm run cli autopilot -- --account dailygrind  Generate for one account
+  npm run cli autopilot -- --dry-run           Preview only
+  npm run cli autopilot -- --setup-cron        Install daily cron (08:00)
+  npm run cli autopilot -- --cron-status       Check cron status
   npm run --silent cli account list -- --json | jq '.accounts[].id'
   npm run --silent cli quotes stats -- --json | jq '{available, cooldown}'
   npm run cli quotes add "Be yourself." --author Wilde --theme life

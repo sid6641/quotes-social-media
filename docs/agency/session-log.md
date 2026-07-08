@@ -48,7 +48,7 @@ N/A (direct implementation)
 ### State At End
 Export feature complete. Users can generate, approve, and export a content calendar for manual Instagram posting.
 
-## 2026-07-08 — Phase D: Autopilot Scheduler
+## 2026-07-08 — Phase D: Autopilot Scheduler (simplified)
 
 ### Agent
 Director → Builder
@@ -57,17 +57,16 @@ Director → Builder
 N/A (direct implementation)
 
 ### Summary
-- Built the Autopilot Scheduler — fully automated content pipeline
-- **New files**: `src/lib/scheduler.ts` — core orchestration (generate → approve → export), `src/cli/autopilot.ts` — CLI command with cron management
+- Built the Autopilot Scheduler — just generates images on a cron schedule
+- **New files**: `src/lib/scheduler.ts` — runs `generate` for each enabled account, `src/cli/autopilot.ts` — CLI command with cron management
 - **Modified**: `src/cli/index.ts` — registered autopilot command
+- Autopilot does NOT auto-approve or export — just generates images for review
 - CLI: `npm run cli autopilot [--account <id>] [--count <n>] [--dry-run] [--setup-cron] [--cron-status]`
-- Auto-approve: scans manifest and marks all pending images as approved
-- Cron integration: `--setup-cron` installs daily 08:00 cron via crontab, `--remove-cron` removes it, `--cron-status` checks
-- Tested: 3-image run for dailygrind — generated, auto-approved 5 images (3 new + 2 from prior batch), exported 3-day calendar
-- `--dry-run` shows what would happen without executing
+- Cron integration: `--setup-cron` installs daily 08:00 cron, `--remove-cron` removes it, `--cron-status` checks
+- User reviews images in the UI at http://localhost:3000 → approves/rejects → exports manually
 
 ### State At End
-Autopilot ready. Run daily: `npm run cli autopilot` or install cron with `--setup-cron`.
+Autopilot generates images daily. User reviews and publishes manually.
 
 ## 2026-07-07 — PRD and technical spec drafted
 
