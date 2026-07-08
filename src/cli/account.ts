@@ -2,7 +2,7 @@
  * CLI commands for account management.
  *
  * Usage:
- *   npm run cli account create dailygrind --name "@Daily Motivation" --theme motivation,life
+ *   npm run cli account create dailygrind --name "@Daily Motivation"
  *   npm run cli account list
  *   npm run cli account get dailygrind
  *   npm run cli account update dailygrind --enabled false
@@ -24,7 +24,7 @@ export interface AccountOptions {
   accountId?: string;
   name?: string;
   description?: string;
-  theme?: string;
+  scope?: string;
   enabled?: boolean;
   cooldownDays?: number;
   jsonOutput?: boolean;
@@ -61,14 +61,13 @@ async function createCmd(options: AccountOptions): Promise<void> {
       id: options.accountId,
       name: options.name || options.accountId,
       description: options.description,
-      theme: options.theme?.split(",").map((t) => t.trim()).filter(Boolean),
       cooldownDays: options.cooldownDays ?? 30,
       enabled: options.enabled ?? true,
     });
     if (options.jsonOutput) {
       console.log(JSON.stringify({ success: true, account }));
     } else {
-      log.info({ id: account.id, themes: account.theme }, `✅ Account "${account.id}" created`);
+      log.info({ id: account.id }, `✅ Account "${account.id}" created`);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -96,10 +95,9 @@ async function listCmd(options: AccountOptions): Promise<void> {
   log.info({ count: accounts.length }, `📋 ${accounts.length} account(s)`);
   for (const a of accounts) {
     const status = a.enabled ? "✅ enabled" : "⛔ disabled";
-    const themes = a.theme?.join(", ") || "none";
     log.info(
-      { id: a.id, enabled: a.enabled, themes: a.theme },
-      `  • ${a.id} (${a.name}) — ${status} — themes: ${themes}`
+      { id: a.id, enabled: a.enabled },
+      `  • ${a.id} (${a.name}) — ${status}`
     );
   }
 }
@@ -136,7 +134,7 @@ async function updateCmd(options: AccountOptions): Promise<void> {
   const updates: Record<string, unknown> = {};
   if (options.name) updates.name = options.name;
   if (options.description !== undefined) updates.description = options.description;
-  if (options.theme) updates.theme = options.theme.split(",").map((t) => t.trim()).filter(Boolean);
+  if (options.scope) updates.scope = options.scope.split(",").map((t) => t.trim()).filter(Boolean);
   if (options.enabled !== undefined) updates.enabled = options.enabled;
   if (options.cooldownDays) updates.cooldownDays = options.cooldownDays;
 
@@ -168,7 +166,7 @@ export function printAccountUsage(): void {
   console.log(`
 Account Commands:
   create <id>              Create a new account
-  create <id> --name "X" --theme motivation,life
+  create <id> --name "X"
   list                     List all accounts
   get <id>                 Show account details
   update <id> --enabled false

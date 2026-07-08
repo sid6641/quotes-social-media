@@ -81,11 +81,9 @@ Quotes commands:
   list                          List all quotes in the pool
   list --json                   JSON output for piping
   list --status available       Filter by status
-  list --theme motivation       Filter by theme
   add "text"                    Add a single quote to the pool
-  add "text" --author X --theme motivation
+  add "text" --author X
   import --file path            Import quotes from a text file
-  import --file path --theme motivation
   stats                         Show pool statistics
   expire                        Recycle expired cooldowns
 
@@ -114,8 +112,8 @@ Examples:
   npm run cli autopilot -- --cron-status       Check cron status
   npm run --silent cli account list -- --json | jq '.accounts[].id'
   npm run --silent cli quotes stats -- --json | jq '{available, cooldown}'
-  npm run cli quotes add "Be yourself." --author Wilde --theme life
-  npm run cli quotes import --file quotes/sample.txt --theme motivation
+  npm run cli quotes add "Be yourself." --author Wilde
+  npm run cli quotes import --file quotes/sample.txt
 `);
 }
 
@@ -267,9 +265,6 @@ function parseArgs(): {
       if (arg === "--name" && i + 1 < args.length) {
         result.flags.name = args[i + 1];
         i += 2;
-      } else if (arg === "--theme" && i + 1 < args.length) {
-        result.flags.theme = args[i + 1];
-        i += 2;
       } else if (arg === "--description" && i + 1 < args.length) {
         result.flags.description = args[i + 1];
         i += 2;
@@ -303,9 +298,6 @@ function parseArgs(): {
       const arg = args[i];
       if (arg === "--status" && i + 1 < args.length) {
         result.flags.status = args[i + 1];
-        i += 2;
-      } else if (arg === "--theme" && i + 1 < args.length) {
-        result.flags.theme = args[i + 1];
         i += 2;
       } else if (arg === "--author" && i + 1 < args.length) {
         result.flags.author = args[i + 1];
@@ -415,7 +407,6 @@ async function main(): Promise<void> {
         accountId: typeof flags.accountId === "string" ? flags.accountId : undefined,
         name: typeof flags.name === "string" ? flags.name : undefined,
         description: typeof flags.description === "string" ? flags.description : undefined,
-        theme: typeof flags.theme === "string" ? flags.theme : undefined,
         enabled: typeof flags.enabled === "boolean" ? flags.enabled : undefined,
         cooldownDays: typeof flags.cooldownDays === "number" ? flags.cooldownDays : undefined,
         jsonOutput: flags.json === true,
@@ -427,7 +418,6 @@ async function main(): Promise<void> {
       await runQuotes({
         subcommand: subcommand || "list",
         status: typeof flags.status === "string" ? flags.status : undefined,
-        theme: typeof flags.theme === "string" ? flags.theme : undefined,
         text: typeof flags.text === "string" ? flags.text : undefined,
         author: typeof flags.author === "string" ? flags.author : undefined,
         file: typeof flags.file === "string" ? flags.file : undefined,

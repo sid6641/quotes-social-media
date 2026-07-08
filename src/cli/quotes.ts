@@ -3,9 +3,9 @@
  *
  * Usage:
  *   npm run cli quotes list
- *   npm run cli quotes list --status available --theme motivation
- *   npm run cli quotes add "The unexamined life is not worth living." --author Socrates --theme philosophy
- *   npm run cli quotes import --file quotes/sample.txt --theme motivation
+ *   npm run cli quotes list --status available
+ *   npm run cli quotes add "The unexamined life is not worth living." --author Socrates
+ *   npm run cli quotes import --file quotes/sample.txt
  *   npm run cli quotes stats
  *   npm run cli quotes expire
  */
@@ -23,7 +23,6 @@ const log = createLogger("quotes");
 export interface QuotesOptions {
   subcommand: string;
   status?: string;
-  theme?: string;
   text?: string;
   author?: string;
   file?: string;
@@ -53,7 +52,6 @@ export async function runQuotes(options: QuotesOptions): Promise<void> {
 async function listQuotes(options: QuotesOptions): Promise<void> {
   const quotes = getQuotes({
     status: options.status as any,
-    theme: options.theme,
   });
 
   if (options.jsonOutput) {
@@ -67,16 +65,16 @@ async function listQuotes(options: QuotesOptions): Promise<void> {
   }
 
   log.info(
-    { count: quotes.length, status: options.status || "all", theme: options.theme || "all" },
+    { count: quotes.length, status: options.status || "all" },
     `📋 ${quotes.length} quote(s)`
   );
 
   if (quotes.length <= 50) {
     for (const q of quotes) {
-      const tags = [q.status, q.theme, `used ${q.usageCount}x`]
+      const tags = [q.status, `used ${q.usageCount}x`]
         .filter(Boolean)
         .join(" · ");
-      log.info({ id: q.id, status: q.status, theme: q.theme, usageCount: q.usageCount },
+      log.info({ id: q.id, status: q.status, usageCount: q.usageCount },
         `  [${tags}] "${q.text.substring(0, 80)}${q.text.length > 80 ? "..." : ""}"`);
     }
   }
@@ -90,14 +88,13 @@ async function addQuoteCmd(options: QuotesOptions): Promise<void> {
 
   const entry = addQuote(options.text, {
     author: options.author,
-    theme: options.theme,
     source: "manual",
   });
 
   if (options.jsonOutput) {
     console.log(JSON.stringify({ success: true, quote: entry }));
   } else {
-    log.info({ id: entry.id, theme: entry.theme }, `✅ Quote added: "${entry.text.substring(0, 60)}..."`);
+    log.info({ id: entry.id }, `✅ Quote added: "${entry.text.substring(0, 60)}..."`);
   }
 }
 
@@ -109,7 +106,6 @@ async function importCmd(options: QuotesOptions): Promise<void> {
 
   const result = importQuotesFromFile(options.file, {
     author: options.author,
-    theme: options.theme,
     source: "imported",
   });
 
@@ -153,11 +149,9 @@ export function printQuotesUsage(): void {
 Quotes Commands:
   list                     List all quotes
   list --status available  Filter by status (available/cooldown/retired)
-  list --theme motivation  Filter by theme
   add "text"               Add a single quote
-  add "text" --author X --theme motivation
+  add "text" --author X
   import --file path       Import from text file (one quote per line)
-  import --file path --theme motivation
   stats                    Show pool statistics
   expire                   Recycle expired cooldowns
 `);

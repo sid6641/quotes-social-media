@@ -91,8 +91,7 @@ export async function runGenerate(
   print.info(`📝 Using prompt template: ${promptName}`);
 
   // 2. Pick quote + template combinations
-  // If account has themes, filter quotes by those themes
-  const combos = pickCombinations(targetCount, account?.theme);
+  const combos = pickCombinations(targetCount);
   print.info(`📋 Picked ${combos.length} quote + template combinations`);
 
   // 3. Ensure output directory exists

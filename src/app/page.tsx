@@ -77,18 +77,18 @@ export default function ReviewPage() {
   const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
 
   // Accounts
-  const [accounts, setAccounts] = useState<Array<{ id: string; name: string; enabled: boolean; theme?: string[]; cooldownDays?: number }>>([]);
+  const [accounts, setAccounts] = useState<Array<{ id: string; name: string; enabled: boolean; cooldownDays?: number }>>([]);
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [newAccountId, setNewAccountId] = useState("");
   const [newAccountName, setNewAccountName] = useState("");
-  const [newAccountTheme, setNewAccountTheme] = useState("");
+  const [newAccountDesc, setNewAccountDesc] = useState("");
 
   // Quotes pool
-  const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; theme?: string; status: string; usageCount: number }>>([]);
+  const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; status: string; usageCount: number }>>([]);
   const [poolStats, setPoolStats] = useState<{ total: number; available: number; cooldown: number; retired: number } | null>(null);
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [newQuoteText, setNewQuoteText] = useState("");
-  const [newQuoteTheme, setNewQuoteTheme] = useState("");
+  const [newQuoteAuthor, setNewQuoteAuthor] = useState("");
   const [quoteFilter, setQuoteFilter] = useState<string>("all");
 
   // Templates
@@ -408,7 +408,7 @@ export default function ReviewPage() {
     id: string;
     name: string;
     description: string;
-    theme: string;
+    scope: string;
     scheduleTime: string;
     scheduleTimezone: string;
     postsPerDay: string;
@@ -437,7 +437,7 @@ export default function ReviewPage() {
       id: account.id,
       name: account.name || "",
       description: (account as any).description || "",
-      theme: Array.isArray(account.theme) ? account.theme.join(", ") : "",
+      scope: "",
       scheduleTime: (account as any).schedule?.time || "09:00",
       scheduleTimezone: (account as any).schedule?.timezone || "America/New_York",
       postsPerDay: String((account as any).schedule?.postsPerDay ?? 1),
@@ -459,7 +459,7 @@ export default function ReviewPage() {
         id: e.id,
         name: e.name || e.id,
         description: e.description || undefined,
-        theme: e.theme ? e.theme.split(",").map((t) => t.trim()).filter(Boolean) : [],
+        scope: e.scope ? e.scope.split(",").map((t) => t.trim()).filter(Boolean) : [],
         schedule: {
           time: e.scheduleTime || "09:00",
           timezone: e.scheduleTimezone || "America/New_York",
@@ -497,13 +497,13 @@ export default function ReviewPage() {
         body: JSON.stringify({
           id: newAccountId.trim(),
           name: newAccountName.trim() || newAccountId.trim(),
-          theme: newAccountTheme.trim() ? newAccountTheme.split(",").map((t) => t.trim()) : undefined,
+          scope: newAccountDesc.trim() ? newAccountDesc.split(",").map((t) => t.trim()) : undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to create account");
       setNewAccountId("");
       setNewAccountName("");
-      setNewAccountTheme("");
+      setNewAccountDesc("");
       await fetchAccounts();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
@@ -568,12 +568,12 @@ export default function ReviewPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text,
-          theme: newQuoteTheme.trim() || undefined,
+          author: newQuoteAuthor.trim() || undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to add quote");
       setNewQuoteText("");
-      setNewQuoteTheme("");
+      setNewQuoteAuthor("");
       await fetchPoolQuotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add quote");
@@ -1597,9 +1597,9 @@ export default function ReviewPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleAddQuote()}
               />
               <input
-                value={newQuoteTheme}
-                onChange={(e) => setNewQuoteTheme(e.target.value)}
-                placeholder="Theme (optional)"
+                value={newQuoteAuthor}
+                onChange={(e) => setNewQuoteAuthor(e.target.value)}
+                placeholder="Author (optional)"
                 className="w-40 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
               <button
@@ -1655,11 +1655,6 @@ export default function ReviewPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-700">&ldquo;{q.text}&rdquo;</p>
                     <div className="flex gap-2 mt-1">
-                      {q.theme && (
-                        <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                          {q.theme}
-                        </span>
-                      )}
                       <span className="text-xs text-gray-400">
                         Used {q.usageCount}x
                       </span>
@@ -1682,7 +1677,7 @@ export default function ReviewPage() {
       {viewMode === "accounts" && (
         <div className="max-w-3xl">
           <p className="text-sm text-gray-500 mb-6">
-            Manage your Instagram accounts. Each account has its own theme, schedule,
+            Manage your Instagram accounts. Each account has its own schedule,
             Instagram auth, and isolated publish queue.
           </p>
 
@@ -1703,9 +1698,9 @@ export default function ReviewPage() {
                 className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
               />
               <input
-                value={newAccountTheme}
-                onChange={(e) => setNewAccountTheme(e.target.value)}
-                placeholder="Themes (comma-separated)"
+                value={newAccountDesc}
+                onChange={(e) => setNewAccountDesc(e.target.value)}
+                placeholder="Description (optional)"
                 className="flex-[2] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[200px]"
               />
               <button
@@ -1763,9 +1758,6 @@ export default function ReviewPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-                    {a.theme && a.theme.length > 0 && (
-                      <span>Themes: {a.theme.join(", ")}</span>
-                    )}
                     {a.cooldownDays && <span>Cooldown: {a.cooldownDays}d</span>}
                     {(a as any).schedule?.time && <span>Schedule: {(a as any).schedule.time}</span>}
                   </div>
@@ -1836,16 +1828,7 @@ export default function ReviewPage() {
               {/* Content */}
               <fieldset>
                 <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Content</legend>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Themes (comma-separated)</label>
-                  <input
-                    value={editingAccount.theme}
-                    onChange={(e) => setEditingAccount({ ...editingAccount, theme: e.target.value })}
-                    placeholder="motivation, life, wisdom"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Cooldown (days)</label>
                     <input

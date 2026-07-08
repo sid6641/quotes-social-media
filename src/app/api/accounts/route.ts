@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       id,
       name: body.name || id,
       description: body.description,
-      theme: body.theme,
+      scope: body.scope,
       schedule: body.schedule,
       instagram: body.instagram,
       cooldownDays: body.cooldownDays ?? 30,

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="luxury">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Organization Proposal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    .tree { font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.8; }
+    .tree-folder { color: oklch(0.7 0.15 280); }
+    .tree-file { color: oklch(0.8 0.05 100); }
+    .tree-arrow { color: oklch(0.5 0.05 240); }
+    .tree-comment { color: oklch(0.5 0.05 160); font-style: italic; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300 text-base-content">
+  <div class="max-w-5xl mx-auto p-4 md:p-8">
+
+    <section class="mb-8">
+      <div class="hero rounded-2xl bg-gradient-to-br from-base-200 to-base-100 border border-base-content/10 p-8">
+        <div class="hero-content text-center">
+          <div class="max-w-3xl">
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-3">📁 File Organization Proposal</h1>
+            <p class="text-base text-base-content/70">What if your project folder read like a <strong class="text-primary">content calendar</strong>?</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CURRENT -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-3 text-error">❌ Current (scattered)</h2>
+      <div class="card card-border bg-base-200">
+        <div class="card-body">
+          <div class="tree">
+            <span class="tree-folder">📂 output/</span><br>
+            <span class="tree-arrow">  ├──</span><span class="tree-folder"> 📂 accounts/</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 dailygrind/</span><span class="tree-comment">   ← images + manifest here</span><br>
+            <span class="tree-arrow">  │   │   ├──</span><span class="tree-file"> 📄 images/... </span><br>
+            <span class="tree-arrow">  │   │   └──</span><span class="tree-file"> 📄 manifest.json</span><br>
+            <span class="tree-arrow">  │   └──</span><span class="tree-file"> 📄 accounts.json</span><br>
+            <span class="tree-arrow">  ├──</span><span class="tree-folder"> 📂 exports/</span><span class="tree-comment">         ← content calendars here</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-file"> 📄 calendar-dailygrind-...</span><br>
+            <span class="tree-arrow">  │   └──</span><span class="tree-folder"> 📂 dailygrind-content/</span><br>
+            <span class="tree-arrow">  └──</span><span class="tree-folder"> 📂 published/</span><span class="tree-comment">         ← published here</span><br>
+            <span class="tree-arrow">      └──</span><span class="tree-folder"> 📂 dailygrind/</span><br>
+            <span class="tree-arrow" style="color:transparent;">  </span><span class="tree-comment">  Things are split across 3 different folders.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROPOSAL -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-3 text-success">✅ Proposed — One folder per account</h2>
+      <div class="card card-border bg-base-200">
+        <div class="card-body">
+          <div class="tree">
+            <span class="tree-folder">📂 output/</span><br>
+            <span class="tree-arrow">  ├──</span><span class="tree-file"> 📄 accounts.json</span><span class="tree-comment">       ← master account list</span><br>
+            <span class="tree-arrow">  ├──</span><span class="tree-folder"> 📂 dailygrind/</span><span class="tree-comment">        ← every account is a folder</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 batches/</span><span class="tree-comment">        ← each generation run</span><br>
+            <span class="tree-arrow">  │   │   ├──</span><span class="tree-folder"> 📂 2026-07-08-001/</span><br>
+            <span class="tree-arrow">  │   │   │   ├──</span><span class="tree-file"> 📄 01-great-work.png</span><br>
+            <span class="tree-arrow">  │   │   │   ├──</span><span class="tree-file"> 📄 01-great-work.caption.txt</span><br>
+            <span class="tree-arrow">  │   │   │   ├──</span><span class="tree-file"> 📄 02-difficulty.png</span><br>
+            <span class="tree-arrow">  │   │   │   ├──</span><span class="tree-file"> 📄 02-difficulty.caption.txt</span><br>
+            <span class="tree-arrow">  │   │   │   └──</span><span class="tree-file"> 📄 manifest.json</span><br>
+            <span class="tree-arrow">  │   │   └──</span><span class="tree-folder"> 📂 2026-07-08-002/</span><span class="tree-comment">  ← next run</span><br>
+            <span class="tree-arrow">  │   │       ├──</span><span class="tree-file"> 📄 01-...png</span><br>
+            <span class="tree-arrow">  │   │       └──</span><span class="tree-file"> 📄 01-....caption.txt</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 calendar/</span><span class="tree-comment">        ← approved, ready to post</span><br>
+            <span class="tree-arrow">  │   │   ├──</span><span class="tree-file"> 📄 2026-07-09.png</span><br>
+            <span class="tree-arrow">  │   │   ├──</span><span class="tree-file"> 📄 2026-07-09.caption.txt</span><br>
+            <span class="tree-arrow">  │   │   ├──</span><span class="tree-file"> 📄 2026-07-10.png</span><br>
+            <span class="tree-arrow">  │   │   └──</span><span class="tree-file"> 📄 2026-07-10.caption.txt</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 archive/</span><span class="tree-comment">         ← already posted</span><br>
+            <span class="tree-arrow">  │   │   └──</span><span class="tree-file"> 📄 2026-07-09.png</span><br>
+            <span class="tree-arrow">  │   └──</span><span class="tree-file"> 📄 queue.json</span><span class="tree-comment">            ← publish schedule</span><br>
+            <span class="tree-arrow">  ├──</span><span class="tree-folder"> 📂 deepthoughts/</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 batches/</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 calendar/</span><br>
+            <span class="tree-arrow">  │   ├──</span><span class="tree-folder"> 📂 archive/</span><br>
+            <span class="tree-arrow">  │   └──</span><span class="tree-file"> 📄 queue.json</span><br>
+            <span class="tree-arrow">  └──</span><span class="tree-folder"> 📂 morningwisdom/</span><br>
+            <span class="tree-arrow" style="color:transparent;">      </span><span class="tree-folder">  📂 ...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section class="mb-6">
+      <h2 class="text-xl font-bold mb-3">🤔 Why this works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">👁️ Open folder → see accounts</h3>
+            <p class="text-sm text-base-content/70">No more digging through nested directories. Each account is a top-level folder inside <code>output/</code>.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">📋 Batches by date</h3>
+            <p class="text-sm text-base-content/70">Every generation run is a dated batch folder. Open a batch → see all images with their captions side-by-side.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">📅 Calendar = to-do list</h3>
+            <p class="text-sm text-base-content/70">The <code>calendar/</code> folder is your posting queue. Each day you don't need to think — just open the day's folder and post.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">📦 Archive = ledger</h3>
+            <p class="text-sm text-base-content/70">Published content moves to <code>archive/</code>. You can look back at any date and see exactly what posted.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">🔍 Find by account + date</h3>
+            <p class="text-sm text-base-content/70">Looking for a specific post? <code>output/dailygrind/batches/2026-07-08-001/</code> — it's always the same pattern.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold">🔄 CLI + UI match</h3>
+            <p class="text-sm text-base-content/70">The file structure mirrors how the tool works: generate → batch → approve → calendar → archive.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <h2 class="text-xl font-bold mb-3">📋 What changes</h2>
+      <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-200">
+        <table class="table table-sm">
+          <thead><tr><th>Current</th><th>→</th><th>Proposed</th></tr></thead>
+          <tbody>
+            <tr><td><code>output/accounts/dailygrind/</code></td><td>→</td><td><code>output/dailygrind/</code></td></tr>
+            <tr><td><code>output/accounts/dailygrind/images/*.png</code></td><td>→</td><td><code>output/dailygrind/batches/2026-07-08-001/*.png</code></td></tr>
+            <tr><td><code>output/accounts/dailygrind/manifest.json</code></td><td>→</td><td><code>output/dailygrind/batches/2026-07-08-001/manifest.json</code></td></tr>
+            <tr><td><code>output/accounts/dailygrind/publish-queue.json</code></td><td>→</td><td><code>output/dailygrind/queue.json</code></td></tr>
+            <tr><td><code>output/exports/dailygrind-content/</code></td><td>→</td><td><code>output/dailygrind/calendar/</code></td></tr>
+            <tr><td><code>output/published/dailygrind/</code></td><td>→</td><td><code>output/dailygrind/archive/</code></td></tr>
+            <tr><td><code>output/accounts/accounts.json</code></td><td>→</td><td><code>output/accounts.json</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="card card-border bg-base-200">
+      <div class="card-body">
+        <p class="text-sm text-base-content/70">What do you think? If this looks right, I'll implement the migration + update all the paths in the code.</p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

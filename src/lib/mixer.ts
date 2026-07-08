@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { getLatestBatch } from "./manifest";
 import { getAvailableQuotes, getPoolStats, importQuotesFromFile } from "./quote-pool";
+import { getAccountTemplatesDir } from "./account";
 
 const QUOTES_DIR = path.resolve(process.cwd(), "quotes");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
@@ -22,12 +23,11 @@ interface QuoteEntry {
 }
 
 /**
- * Load quotes from the quote pool. Falls back to importing from text files
- * if the pool is empty (auto-seed on first run).
- * Returns quote texts with optional pool IDs for usage tracking.
+ * Load quotes from the quote pool, scoped to an account if provided.
+ * Falls back to importing from text files if the pool is empty (auto-seed).
  */
-function loadQuotes(themeFilter?: string[]): QuoteEntry[] {
-  const stats = getPoolStats();
+function loadQuotes(accountId?: string): QuoteEntry[] {
+  const stats = getPoolStats(accountId);
 
   // Seed from text files if pool is empty
   if (stats.total === 0) {
@@ -44,7 +44,7 @@ function loadQuotes(themeFilter?: string[]): QuoteEntry[] {
     for (const file of files) {
       const result = importQuotesFromFile(path.join(QUOTES_DIR, file), {
         source: "imported",
-      });
+      }, accountId);
       totalSeeded += result.imported;
     }
 
@@ -56,12 +56,7 @@ function loadQuotes(themeFilter?: string[]): QuoteEntry[] {
   }
 
   // Get available quotes from the pool
-  // If themeFilter is set, try matching themes first, then fall back to any
-  let available = getAvailableQuotes(100, themeFilter?.join(","));
-  if (available.length === 0 && themeFilter) {
-    // Fall back to any available quote
-    available = getAvailableQuotes(100);
-  }
+  let available = getAvailableQuotes(100, accountId);
   if (available.length === 0) {
     throw new Error(
       "No available quotes in the pool. Run `npm run cli quotes expire` to recycle expired ones."
@@ -72,9 +67,21 @@ function loadQuotes(themeFilter?: string[]): QuoteEntry[] {
 }
 
 /**
- * Discover available template images from the templates/ directory.
+ * Discover available template images.
+ * Checks account-specific templates/ first, falls back to global templates/.
  */
-function loadTemplates(): string[] {
+function loadTemplates(accountId?: string): string[] {
+  // Try account-specific templates first
+  if (accountId) {
+    const accountTemplatesDir = getAccountTemplatesDir(accountId);
+    if (fs.existsSync(accountTemplatesDir)) {
+      const files = fs.readdirSync(accountTemplatesDir).sort();
+      const images = files.filter((f) => IMAGE_EXTS.has(path.extname(f).toLowerCase()));
+      if (images.length > 0) return images;
+    }
+  }
+
+  // Fall back to global templates/
   if (!fs.existsSync(TEMPLATES_DIR)) {
     throw new Error(`Templates directory not found: ${TEMPLATES_DIR}`);
   }
@@ -95,9 +102,9 @@ function loadTemplates(): string[] {
  * Get a set of recently used quote texts from the latest batch manifest
  * to avoid immediate repeats.
  */
-function getRecentlyUsedQuotes(): Set<string> {
+function getRecentlyUsedQuotes(accountId?: string): Set<string> {
   try {
-    const batch = getLatestBatch();
+    const batch = getLatestBatch(accountId);
     if (!batch) return new Set();
     return new Set(batch.images.map((img) => img.quote));
   } catch {
@@ -106,24 +113,23 @@ function getRecentlyUsedQuotes(): Set<string> {
 }
 
 /**
- * Pick quote+template combinations.
+ * Pick quote+template combinations for a specific account.
  *
- * - Cycles through quotes if fewer than `count` unique quotes exist
- * - Cycles through templates if fewer than `count` unique templates exist
+ * - Quotes sourced from the account's pool (or global if no account)
+ * - Templates sourced from account's templates/ dir, fallback to global
  * - Avoids reusing the same quote+template combo in one batch
  * - Soft-deduplicates quotes from the most recent batch
- * - If themeFilter is provided, only picks quotes matching those themes
  *
  * @param count Number of combinations to pick (default: 10)
- * @param themeFilter Optional array of theme names to filter quotes
+ * @param accountId Optional account ID for scoped templates and quotes
  */
 export function pickCombinations(
   count: number = 10,
-  themeFilter?: string[]
+  accountId?: string
 ): QuoteTemplateCombo[] {
-  const allQuotes = loadQuotes(themeFilter);
-  const allTemplates = loadTemplates();
-  const recentlyUsed = getRecentlyUsedQuotes();
+  const allQuotes = loadQuotes(accountId);
+  const allTemplates = loadTemplates(accountId);
+  const recentlyUsed = getRecentlyUsedQuotes(accountId);
   const targetCount = count;
 
   // Prefer quotes not recently used

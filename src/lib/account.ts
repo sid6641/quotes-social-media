@@ -35,7 +35,7 @@ export interface AccountConfig {
   id: string;
   name: string;
   description?: string;
-  theme?: string[];         // which quote themes to pull from
+  scope?: string[];
   schedule?: AccountSchedule;
   instagram?: InstagramAuth;
   cooldownDays: number;
@@ -195,6 +195,25 @@ export function getAccountArchiveDir(accountId: string): string {
 }
 
 /**
+ * Get the templates directory for a specific account.
+ * Each account can have its own template images for visual differentiation.
+ */
+export function getAccountTemplatesDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "templates");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the quotes pool path for a specific account.
+ * Each account has its own isolated quote pool.
+ */
+export function getAccountQuotesPath(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "quotes.json");
+  return dir;
+}
+
+/**
  * Get the path to an account-specific file (like queue.json, manifest.json).
  * Falls back to global output/ if no accountId.
  */
@@ -209,14 +228,14 @@ export function getAccountsSummary(): Array<{
   id: string;
   name: string;
   enabled: boolean;
-  themeCount: number;
+  scopeCount: number;
   hasSchedule: boolean;
 }> {
   return readAccounts().map((a) => ({
     id: a.id,
     name: a.name,
     enabled: a.enabled,
-    themeCount: a.theme?.length ?? 0,
+    scopeCount: a.scope?.length ?? 0,
     hasSchedule: !!a.schedule,
   }));
 }

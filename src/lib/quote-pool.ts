@@ -1,17 +1,16 @@
 /**
  * Quote Pool — structured quote management with lifecycle.
  *
+ * Each account has its own isolated quote pool at output/<account>/quotes.json.
  * Replaces the flat quotes/*.txt approach with a self-managing pool
- * that tracks state (available → used → cooldown → recycle),
- * theme categories, usage history, and per-account tracking.
- *
- * Stored at: output/quote-pool.json
+ * that tracks state (available → used → cooldown → recycle).
  */
 
 import fs from "fs";
 import path from "path";
+import { getAccountQuotesPath } from "./account";
 
-const POOL_PATH = path.resolve(process.cwd(), "output", "quote-pool.json");
+const GLOBAL_POOL_PATH = path.resolve(process.cwd(), "output", "quote-pool.json");
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -21,12 +20,10 @@ export interface QuoteEntry {
   id: string;
   text: string;
   author?: string;
-  theme?: string;
   source: "imported" | "ai-generated" | "manual";
   status: QuoteStatus;
   usageCount: number;
   lastUsedAt?: string;
-  /** Account IDs that have used this quote (for cross-account dedup). */
   usedByAccounts: string[];
   cooldownUntil?: string;
   createdAt: string;
@@ -39,76 +36,88 @@ interface QuotePool {
 
 // ─── Store ────────────────────────────────────────────────────────────
 
-let poolCache: QuotePool | null = null;
+const poolCaches = new Map<string, QuotePool | null>();
 
-function ensureDir(): void {
-  const dir = path.dirname(POOL_PATH);
+function getPoolPath(accountId?: string): string {
+  if (accountId) return getAccountQuotesPath(accountId);
+  return GLOBAL_POOL_PATH;
+}
+
+function ensurePoolDir(accountId?: string): void {
+  const p = getPoolPath(accountId);
+  const dir = path.dirname(p);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function readPool(): QuotePool {
-  if (poolCache) return poolCache;
-  ensureDir();
-  if (!fs.existsSync(POOL_PATH)) {
-    poolCache = { quotes: [] };
-    return poolCache;
+function readPool(accountId?: string): QuotePool {
+  const cacheKey = accountId || "__global__";
+  const cached = poolCaches.get(cacheKey);
+  if (cached) return cached;
+
+  const poolPath = getPoolPath(accountId);
+  ensurePoolDir(accountId);
+
+  if (!fs.existsSync(poolPath)) {
+    poolCaches.set(cacheKey, { quotes: [] });
+    return { quotes: [] };
   }
   try {
-    const raw = fs.readFileSync(POOL_PATH, "utf-8");
-    poolCache = JSON.parse(raw) as QuotePool;
-    return poolCache;
+    const raw = fs.readFileSync(poolPath, "utf-8");
+    const pool = JSON.parse(raw) as QuotePool;
+    poolCaches.set(cacheKey, pool);
+    return pool;
   } catch {
-    poolCache = { quotes: [] };
-    return poolCache;
+    poolCaches.set(cacheKey, { quotes: [] });
+    return { quotes: [] };
   }
 }
 
-function writePool(pool: QuotePool): void {
-  ensureDir();
-  fs.writeFileSync(POOL_PATH, JSON.stringify(pool, null, 2), "utf-8");
-  poolCache = pool;
+function writePool(pool: QuotePool, accountId?: string): void {
+  const poolPath = getPoolPath(accountId);
+  ensurePoolDir(accountId);
+  fs.writeFileSync(poolPath, JSON.stringify(pool, null, 2), "utf-8");
+  poolCaches.set(accountId || "__global__", pool);
 }
 
-export function invalidatePoolCache(): void {
-  poolCache = null;
-}
-
-// ─── IDs ──────────────────────────────────────────────────────────────
-
-let idCounter = 0;
-
-function generateQuoteId(): string {
-  const pool = readPool();
-  const maxId = pool.quotes.reduce((max, q) => {
-    const num = parseInt(q.id.replace("q-", ""), 10);
-    return num > max ? num : max;
-  }, idCounter);
-  idCounter = maxId + 1;
-  return `q-${String(idCounter).padStart(5, "0")}`;
+export function invalidatePoolCache(accountId?: string): void {
+  if (accountId) {
+    poolCaches.delete(accountId);
+  } else {
+    poolCaches.clear();
+  }
 }
 
 // ─── CRUD ─────────────────────────────────────────────────────────────
 
 export interface AddQuoteOptions {
   author?: string;
-  theme?: string;
   source?: QuoteEntry["source"];
 }
 
+function generateQuoteId(accountId?: string): string {
+  const pool = readPool(accountId);
+  let maxId = 0;
+  for (const q of pool.quotes) {
+    const num = parseInt(q.id.replace("q-", ""), 10);
+    if (num > maxId) maxId = num;
+  }
+  return `q-${String(maxId + 1).padStart(5, "0")}`;
+}
+
 /**
- * Add a single quote to the pool. Returns the new entry.
+ * Add a single quote to an account's pool. Returns the new entry.
  */
 export function addQuote(
   text: string,
-  options: AddQuoteOptions = {}
+  options: AddQuoteOptions = {},
+  accountId?: string
 ): QuoteEntry {
-  const pool = readPool();
+  const pool = readPool(accountId);
   const now = new Date().toISOString();
   const entry: QuoteEntry = {
-    id: generateQuoteId(),
+    id: generateQuoteId(accountId),
     text: text.trim(),
     author: options.author,
-    theme: options.theme,
     source: options.source || "manual",
     status: "available",
     usageCount: 0,
@@ -117,35 +126,33 @@ export function addQuote(
     updatedAt: now,
   };
   pool.quotes.push(entry);
-  writePool(pool);
+  writePool(pool, accountId);
   return entry;
 }
 
 /**
- * Batch import quotes from a string array. Returns the count added.
+ * Batch import quotes from a string array into an account's pool.
  */
 export function importQuotes(
   texts: string[],
-  options: AddQuoteOptions = {}
+  options: AddQuoteOptions = {},
+  accountId?: string
 ): number {
-  const pool = readPool();
+  const pool = readPool(accountId);
   const now = new Date().toISOString();
-  const source = options.source || "imported";
   let count = 0;
 
   for (const raw of texts) {
     const text = raw.trim();
     if (!text) continue;
-    // Skip duplicates
     if (pool.quotes.some((q) => q.text.toLowerCase() === text.toLowerCase())) {
       continue;
     }
     pool.quotes.push({
-      id: generateQuoteId(),
+      id: generateQuoteId(accountId),
       text,
       author: options.author,
-      theme: options.theme,
-      source,
+      source: options.source || "manual",
       status: "available",
       usageCount: 0,
       usedByAccounts: [],
@@ -155,16 +162,17 @@ export function importQuotes(
     count++;
   }
 
-  if (count > 0) writePool(pool);
+  if (count > 0) writePool(pool, accountId);
   return count;
 }
 
 /**
- * Import quotes from a text file (one quote per line, # for comments).
+ * Import quotes from a text file into an account's pool.
  */
 export function importQuotesFromFile(
   filePath: string,
-  options: AddQuoteOptions = {}
+  options: AddQuoteOptions = {},
+  accountId?: string
 ): { imported: number; skipped: number; errors: string[] } {
   const errors: string[] = [];
   if (!fs.existsSync(filePath)) {
@@ -177,20 +185,19 @@ export function importQuotesFromFile(
     .map((l) => l.trim())
     .filter((l) => l.length > 0 && !l.startsWith("#") && !l.startsWith("//"));
 
-  const imported = importQuotes(lines, options);
+  const imported = importQuotes(lines, options, accountId);
   return { imported, skipped: lines.length - imported, errors };
 }
 
 /**
- * Get quotes from the pool, optionally filtered.
+ * Get quotes from an account's pool, optionally filtered.
  */
 export function getQuotes(filters?: {
   status?: QuoteStatus | QuoteStatus[];
-  theme?: string;
   limit?: number;
   offset?: number;
-}): QuoteEntry[] {
-  const pool = readPool();
+}, accountId?: string): QuoteEntry[] {
+  const pool = readPool(accountId);
   let results = [...pool.quotes];
 
   if (filters?.status) {
@@ -200,11 +207,6 @@ export function getQuotes(filters?: {
     results = results.filter((q) => statuses.includes(q.status));
   }
 
-  if (filters?.theme) {
-    results = results.filter((q) => q.theme === filters.theme);
-  }
-
-  // Sort: newest first
   results.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -215,21 +217,14 @@ export function getQuotes(filters?: {
 }
 
 /**
- * Get N available quotes for batch generation, optionally filtered by theme.
- * Skips quotes in cooldown or retired state.
- * Prefers quotes used the fewest times / longest ago.
+ * Get N available quotes from an account's pool for batch generation.
  */
 export function getAvailableQuotes(
   count: number,
-  theme?: string
+  accountId?: string
 ): QuoteEntry[] {
-  const pool = readPool();
+  const pool = readPool(accountId);
   const now = new Date();
-
-  // Support both single theme and comma-separated themes
-  const themes = theme
-    ? theme.split(",").map((t) => t.trim()).filter(Boolean)
-    : undefined;
 
   let candidates = pool.quotes.filter((q) => {
     if (q.status === "retired") return false;
@@ -237,13 +232,9 @@ export function getAvailableQuotes(
       if (new Date(q.cooldownUntil) > now) return false;
     }
     if (q.status === "used") return false;
-    if (themes && themes.length > 0) {
-      if (!q.theme || !themes.includes(q.theme)) return false;
-    }
     return true;
   });
 
-  // Sort: least used first, then longest since last used
   candidates.sort((a, b) => {
     if (a.usageCount !== b.usageCount) return a.usageCount - b.usageCount;
     const aTime = a.lastUsedAt ? new Date(a.lastUsedAt).getTime() : 0;
@@ -255,14 +246,14 @@ export function getAvailableQuotes(
 }
 
 /**
- * Mark a quote as used by an account, moving it to cooldown.
+ * Mark a quote as used, moving it to cooldown within its account pool.
  */
 export function markQuoteUsed(
   quoteId: string,
   accountId: string,
   cooldownDays: number = 30
 ): boolean {
-  const pool = readPool();
+  const pool = readPool(accountId);
   const quote = pool.quotes.find((q) => q.id === quoteId);
   if (!quote) return false;
 
@@ -278,62 +269,59 @@ export function markQuoteUsed(
   quote.cooldownUntil = cooldownEnd.toISOString();
   quote.updatedAt = now.toISOString();
 
-  // Auto-retire after 5 uses
   if (quote.usageCount >= 5) {
     quote.status = "retired";
   }
 
-  writePool(pool);
+  writePool(pool, accountId);
   return true;
 }
 
 /**
- * Manually recycle a cooldown/retired quote back to available.
+ * Manually recycle a cooldown/retired quote back to available within its pool.
  */
-export function recycleQuote(quoteId: string): boolean {
-  const pool = readPool();
+export function recycleQuote(quoteId: string, accountId?: string): boolean {
+  const pool = readPool(accountId);
   const quote = pool.quotes.find((q) => q.id === quoteId);
   if (!quote) return false;
 
   quote.status = "available";
   quote.cooldownUntil = undefined;
   quote.updatedAt = new Date().toISOString();
-  writePool(pool);
+  writePool(pool, accountId);
   return true;
 }
 
 /**
- * Delete a quote from the pool.
+ * Delete a quote from an account's pool.
  */
-export function deleteQuote(quoteId: string): boolean {
-  const pool = readPool();
+export function deleteQuote(quoteId: string, accountId?: string): boolean {
+  const pool = readPool(accountId);
   const idx = pool.quotes.findIndex((q) => q.id === quoteId);
   if (idx === -1) return false;
 
   pool.quotes.splice(idx, 1);
-  writePool(pool);
+  writePool(pool, accountId);
   return true;
 }
 
 /**
- * Get pool statistics.
+ * Get pool statistics for an account.
  */
-export function getPoolStats(): {
+export function getPoolStats(accountId?: string): {
   total: number;
   available: number;
   cooldown: number;
   retired: number;
   used: number;
-  byTheme: Record<string, number>;
 } {
-  const pool = readPool();
+  const pool = readPool(accountId);
   const stats = {
     total: pool.quotes.length,
     available: 0,
     cooldown: 0,
     retired: 0,
     used: 0,
-    byTheme: {} as Record<string, number>,
   };
 
   for (const q of pool.quotes) {
@@ -341,10 +329,6 @@ export function getPoolStats(): {
     else if (q.status === "cooldown") stats.cooldown++;
     else if (q.status === "retired") stats.retired++;
     else if (q.status === "used") stats.used++;
-
-    if (q.theme) {
-      stats.byTheme[q.theme] = (stats.byTheme[q.theme] || 0) + 1;
-    }
   }
 
   return stats;
@@ -352,10 +336,9 @@ export function getPoolStats(): {
 
 /**
  * Run cooldown expiry — recycle any quotes whose cooldown has passed.
- * Returns the number of quotes recycled.
  */
-export function expireCooldowns(): number {
-  const pool = readPool();
+export function expireCooldowns(accountId?: string): number {
+  const pool = readPool(accountId);
   const now = new Date();
   let recycled = 0;
 
@@ -372,6 +355,6 @@ export function expireCooldowns(): number {
     }
   }
 
-  if (recycled > 0) writePool(pool);
+  if (recycled > 0) writePool(pool, accountId);
   return recycled;
 }

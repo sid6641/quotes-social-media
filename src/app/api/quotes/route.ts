@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
 
   // List
   const status = searchParams.get("status") || undefined;
-  const theme = searchParams.get("theme") || undefined;
   const limit = searchParams.get("limit")
     ? parseInt(searchParams.get("limit")!, 10)
     : undefined;
@@ -44,7 +43,6 @@ export async function GET(request: NextRequest) {
 
   const quotes = getQuotes({
     status: status as any,
-    theme,
     limit,
     offset,
   });
@@ -55,9 +53,9 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/quotes — add quote(s) or import from file.
  *
- * Add single: { text, author?, theme? }
- * Batch:       { texts: string[], author?, theme? }
- * Import file: { filePath: string, author?, theme? }
+ * Add single: { text, author? }
+ * Batch:       { texts: string[], author? }
+ * Import file: { filePath: string, author? }
  * Cooldowns:   { action: "expire-cooldowns" }
  */
 export async function POST(request: NextRequest) {
@@ -74,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (body.filePath) {
       const result = importQuotesFromFile(
         path.resolve(body.filePath),
-        { author: body.author, theme: body.theme, source: "imported" }
+        { author: body.author, source: "imported" }
       );
       return NextResponse.json({ success: true, ...result });
     }
@@ -83,7 +81,6 @@ export async function POST(request: NextRequest) {
     if (body.texts && Array.isArray(body.texts)) {
       const count = importQuotes(body.texts, {
         author: body.author,
-        theme: body.theme,
         source: body.source || "imported",
       });
       return NextResponse.json({ success: true, imported: count });
@@ -93,7 +90,6 @@ export async function POST(request: NextRequest) {
     if (body.text) {
       const entry = addQuote(body.text, {
         author: body.author,
-        theme: body.theme,
         source: body.source || "manual",
       });
       return NextResponse.json({ success: true, quote: entry });

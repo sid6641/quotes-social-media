@@ -147,8 +147,11 @@ export function createBatch(
 /**
  * Get the most recent batch, or null if none exist.
  */
-export function getLatestBatch(): Manifest | null {
-  const manifests = readManifest();
+export function getLatestBatch(accountId?: string): Manifest | null {
+  const dir = accountId
+    ? path.resolve(process.cwd(), "output", accountId)
+    : undefined;
+  const manifests = readManifestFromDir(dir);
   return manifests.length > 0 ? manifests[manifests.length - 1] : null;
 }
 

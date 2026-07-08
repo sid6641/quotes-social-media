@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="luxury">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>quotes-social-media — User Mindsets</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :where(.grid, .flex) > * { min-width: 0; }
+    :where(p, h1, h2, h3, h4, h5, h6, li, dd, blockquote, figcaption, td, th, .badge, .label) { overflow-wrap: anywhere; }
+    :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+    .mindset-card { transition: all 0.2s ease; }
+    .mindset-card:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300 text-base-content">
+
+  <div class="max-w-5xl mx-auto p-4 md:p-8">
+
+    <!-- ═══ HERO ═══ -->
+    <section class="mb-12">
+      <div class="hero rounded-2xl bg-gradient-to-br from-base-200 to-base-100 border border-base-content/10 p-8 md:p-12">
+        <div class="hero-content text-center">
+          <div class="max-w-3xl">
+            <h1 class="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight mb-4 break-words">
+              🧠 Who Uses This Tool?
+            </h1>
+            <p class="text-lg text-base-content/70 mb-6">
+              A brainstorming session on the <strong class="text-primary">mindsets, motivations, and mental models</strong>
+              of people who run automated quote-image Instagram accounts.
+            </p>
+            <div class="flex flex-wrap justify-center gap-2">
+              <span class="badge badge-primary badge-lg">Curator</span>
+              <span class="badge badge-secondary badge-lg">Automator</span>
+              <span class="badge badge-accent badge-lg">Growth Hacker</span>
+              <span class="badge badge-info badge-lg">Brand Builder</span>
+              <span class="badge badge-warning badge-lg">Side Hustler</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ THE FIVE MINDSETS ═══ -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <span class="text-primary">🎭</span> The Five Mindsets
+      </h2>
+      <p class="text-sm text-base-content/60 mb-6">
+        These aren't different people — they're different modes any user switches between depending on the day, the account, or the goal.
+        Annotate which ones resonate and which ones the tool serves well (or poorly).
+      </p>
+
+      <!-- 1. The Curator -->
+      <div class="mindset-card card card-border bg-base-200 mb-4">
+        <div class="card-body">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center text-2xl flex-shrink-0">🔍</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-bold">The Curator</h3>
+                <span class="badge badge-soft badge-primary">Quality-first</span>
+                <span class="badge badge-soft badge-neutral">High touch</span>
+              </div>
+              <p class="text-sm text-base-content/70 mt-1">
+                <em>"Every single post represents my brand. I'd rather post nothing than post something mediocre."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-primary">🧠 Mental Model</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Sees each image as a reflection of taste</li>
+                <li>• Reviews every single image before it goes out</li>
+                <li>• Tweaks captions manually — AI is a draft, not final</li>
+                <li>• Curates which quotes make the cut</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-success">✅ Tool Serves Well</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Review UI — approve/reject per image</li>
+                <li>• 5 caption options to pick from</li>
+                <li>• Custom caption editing</li>
+                <li>• Export Calendar — manual control over what posts</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">⚠️ Missing / Could Improve</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• No way to re-generate a single image</li>
+                <li>• Can't preview all 5 captions side-by-side</li>
+                <li>• No "reject and retry" for bad generations</li>
+                <li>• No notes/annotation on rejected images</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs text-base-content/40">Satisfaction:</span>
+            <progress class="progress progress-primary w-32" value="75" max="100"></progress>
+            <span class="text-xs text-base-content/60">75%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. The Automator -->
+      <div class="mindset-card card card-border bg-base-200 mb-4">
+        <div class="card-body">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="w-14 h-14 rounded-2xl bg-secondary/20 flex items-center justify-center text-2xl flex-shrink-0">⚙️</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-bold">The Automator</h3>
+                <span class="badge badge-soft badge-secondary">Efficiency-first</span>
+                <span class="badge badge-soft badge-neutral">Low touch</span>
+              </div>
+              <p class="text-sm text-base-content/70 mt-1">
+                <em>"I want to wake up to fresh content every morning without touching a thing."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-secondary">🧠 Mental Model</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Trusts the AI to produce good enough content</li>
+                <li>• Wants a fully unattended pipeline</li>
+                <li>• Measures success by "did it post today?" not perfection</li>
+                <li>• Runs multiple accounts at scale</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-success">✅ Tool Serves Well</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Autopilot — generate on cron schedule</li>
+                <li>• Multi-account — all accounts in one command</li>
+                <li>• CLI pipeable — can chain with other tools</li>
+                <li>• Cron setup — `--setup-cron`</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">⚠️ Missing / Could Improve</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• No auto-approve (by design — user wanted manual)</li>
+                <li>• No way to auto-post when IG API unblocks</li>
+                <li>• No notifications — "generation complete" ping</li>
+                <li>• No dashboard showing "health" of all accounts</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs text-base-content/40">Satisfaction:</span>
+            <progress class="progress progress-secondary w-32" value="60" max="100"></progress>
+            <span class="text-xs text-base-content/60">60%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. The Growth Hacker -->
+      <div class="mindset-card card card-border bg-base-200 mb-4">
+        <div class="card-body">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-bold">The Growth Hacker</h3>
+                <span class="badge badge-soft badge-accent">Data-driven</span>
+                <span class="badge badge-soft badge-neutral">Experimental</span>
+              </div>
+              <p class="text-sm text-base-content/70 mt-1">
+                <em>"Which caption style gets more engagement? What time should I post? Let's A/B test everything."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-accent">🧠 Mental Model</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Obsessed with engagement metrics</li>
+                <li>• Tests caption tones against each other</li>
+                <li>• Schedules posts at peak times per timezone</li>
+                <li>• Iterates on hashtag sets constantly</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-success">✅ Tool Serves Well</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• 5 caption options per image — natural A/B testing</li>
+                <li>• Hashtag bank — reusable sets, fast switching</li>
+                <li>• Per-account schedule with timezone</li>
+                <li>• Caption learning store — tracks popular picks</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">⚠️ Missing / Could Improve</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• No engagement tracking — what performed well?</li>
+                <li>• Can't link caption choice → post performance</li>
+                <li>• No hashtag analytics — which tags drive reach?</li>
+                <li>• No posting time optimization based on history</li>
+                <li>• Caption learning is manual (user picks) not automatic</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs text-base-content/40">Satisfaction:</span>
+            <progress class="progress progress-accent w-32" value="45" max="100"></progress>
+            <span class="text-xs text-base-content/60">45%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. The Brand Builder -->
+      <div class="mindset-card card card-border bg-base-200 mb-4">
+        <div class="card-body">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="w-14 h-14 rounded-2xl bg-info/20 flex items-center justify-center text-2xl flex-shrink-0">🎨</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-bold">The Brand Builder</h3>
+                <span class="badge badge-soft badge-info">Aesthetic-driven</span>
+                <span class="badge badge-soft badge-neutral">Long-term</span>
+              </div>
+              <p class="text-sm text-base-content/70 mt-1">
+                <em>"All my accounts need to feel cohesive. Each one has its own voice, its own look, its own audience."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-info">🧠 Mental Model</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Each account has a distinct personality</li>
+                <li>• Visual consistency matters — templates, colors, mood</li>
+                <li>• Voice/tone is tailored per account (motivation vs philosophy)</li>
+                <li>• Thinks in "content pillars" and "brand guidelines"</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-success">✅ Tool Serves Well</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Per-account themes — filter quotes by vibe</li>
+                <li>• Per-account config — name, description, identity</li>
+                <li>• Isolated directories — no cross-contamination</li>
+                <li>• Per-account publish schedule</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">⚠️ Missing / Could Improve</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Per-account prompt templates (one prompt fits all)</li>
+                <li>• Per-account visual style guide in prompts</li>
+                <li>• No "brand voice" setting for captions</li>
+                <li>• Can't preview an account's feed as a grid</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs text-base-content/40">Satisfaction:</span>
+            <progress class="progress progress-info w-32" value="55" max="100"></progress>
+            <span class="text-xs text-base-content/60">55%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. The Side Hustler -->
+      <div class="mindset-card card card-border bg-base-200 mb-4">
+        <div class="card-body">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="w-14 h-14 rounded-2xl bg-warning/20 flex items-center justify-center text-2xl flex-shrink-0">💰</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-bold">The Side Hustler</h3>
+                <span class="badge badge-soft badge-warning">Monetization-first</span>
+                <span class="badge badge-soft badge-neutral">ROI-focused</span>
+              </div>
+              <p class="text-sm text-base-content/70 mt-1">
+                <em>"These accounts aren't just for fun — they're assets. I need to know which ones earn and which ones cost me."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">🧠 Mental Model</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Runs 5-20+ accounts as a portfolio</li>
+                <li>• Monetizes via shoutouts, affiliate links, digital products</li>
+                <li>• Wants minimum time per account — scale is the game</li>
+                <li>• Measures: followers gained, engagement rate, revenue</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-success">✅ Tool Serves Well</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• Multi-account — unlimited accounts</li>
+                <li>• Autopilot — generate for all in one command</li>
+                <li>• CLI + JSON — can script, automate, pipe</li>
+                <li>• Low overhead — text files, no database</li>
+              </ul>
+            </div>
+            <div class="bg-base-100 rounded-xl p-4">
+              <h4 class="font-semibold text-sm mb-2 text-warning">⚠️ Missing / Could Improve</h4>
+              <ul class="text-xs text-base-content/70 space-y-1">
+                <li>• No analytics — zero insight into account performance</li>
+                <li>• No monetization tracking</li>
+                <li>• No "account health" dashboard</li>
+                <li>• Manual posting still required (IG API restricted)</li>
+                <li>• No content calendar view across ALL accounts</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs text-base-content/40">Satisfaction:</span>
+            <progress class="progress progress-warning w-32" value="50" max="100"></progress>
+            <span class="text-xs text-base-content/60">50%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ MINDSET MAP ═══ -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+        <span class="text-primary">🗺️</span> Mindset Map — Features vs Personas
+      </h2>
+      <div class="overflow-x-auto rounded-box border border-base-content/10 bg-base-200">
+        <table class="table table-zebra table-pin-rows table-sm">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="text-center text-primary">🔍 Curator</th>
+              <th class="text-center text-secondary">⚙️ Automator</th>
+              <th class="text-center text-accent">📈 Growth Hacker</th>
+              <th class="text-center text-info">🎨 Brand Builder</th>
+              <th class="text-center text-warning">💰 Side Hustler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Review UI (approve/reject)</td><td class="text-center text-success">✅</td><td class="text-center text-error">❌</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center text-warning">⚠️</td></tr>
+            <tr><td>5 caption options</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center">—</td></tr>
+            <tr><td>Autopilot cron</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center text-warning">⚠️</td><td class="text-center">—</td><td class="text-center text-success">✅</td></tr>
+            <tr><td>Multi-account sandboxes</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td></tr>
+            <tr><td>Export calendar</td><td class="text-center text-success">✅</td><td class="text-center text-error">❌</td><td class="text-center text-warning">⚠️</td><td class="text-center text-success">✅</td><td class="text-center text-warning">⚠️</td></tr>
+            <tr><td>Hashtag bank</td><td class="text-center">—</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center">—</td></tr>
+            <tr><td>Caption learning store</td><td class="text-center">—</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center">—</td></tr>
+            <tr><td>Account schedule/timezone</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center text-success">✅</td></tr>
+            <tr><td>Quote pool lifecycle</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center">—</td><td class="text-center">—</td><td class="text-center">—</td></tr>
+            <tr><td>CLI + JSON output</td><td class="text-center">—</td><td class="text-center text-success">✅</td><td class="text-center text-success">✅</td><td class="text-center">—</td><td class="text-center text-success">✅</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══ PAIN POINTS ACROSS ALL ═══ -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+        <span class="text-error">🔥</span> Universal Pain Points
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold text-lg">🚫 Instagram API Blocked</h3>
+            <p class="text-sm text-base-content/70">Every mindset is blocked by Meta's anti-spam restriction. No auto-publishing possible. Export calendar is the workaround, but it's manual.</p>
+            <div class="mt-2 badge badge-soft badge-error">Affects: All 5</div>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold text-lg">📊 Zero Analytics</h3>
+            <p class="text-sm text-base-content/70">No feedback loop. Users don't know which posts perform well. The Growth Hacker and Side Hustler are flying blind.</p>
+            <div class="mt-2 badge badge-soft badge-error">Affects: Growth Hacker, Side Hustler</div>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold text-lg">🎨 One Prompt Fits All</h3>
+            <p class="text-sm text-base-content/70">All accounts use the same image generation prompt template. The Brand Builder can't differentiate visual styles per account.</p>
+            <div class="mt-2 badge badge-soft badge-warning">Affects: Brand Builder, Curator</div>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body">
+            <h3 class="font-semibold text-lg">🔋 No "Set & Forget"</h3>
+            <p class="text-sm text-base-content/70">Autopilot generates, but someone still needs to review, export, and post manually. True automation is blocked by the API restriction.</p>
+            <div class="mt-2 badge badge-soft badge-warning">Affects: Automator, Side Hustler</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ OPEN QUESTIONS ═══ -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+        <span class="text-primary">❓</span> Open Questions for You
+      </h2>
+      <div class="space-y-3">
+        <div class="card card-border bg-base-200">
+          <div class="card-body p-4">
+            <p class="font-semibold">1️⃣ Which mindset are <em>you</em> in right now?</p>
+            <p class="text-sm text-base-content/60 mt-1">Curator, Automator, or a mix? The tool's design decisions depend on this.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body p-4">
+            <p class="font-semibold">2️⃣ How many accounts do you want to run?</p>
+            <p class="text-sm text-base-content/60 mt-1">3? 10? 50? The scaling strategy changes a lot after ~5 accounts.</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body p-4">
+            <p class="font-semibold">3️⃣ What does "success" look like for each account?</p>
+            <p class="text-sm text-base-content/60 mt-1">Followers? Engagement? Revenue? Creative satisfaction?</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body p-4">
+            <p class="font-semibold">4️⃣ Would you ever auto-publish without reviewing?</p>
+            <p class="text-sm text-base-content/60 mt-1">If the AI gets good enough, would you trust it to post directly? Or is review always non-negotiable?</p>
+          </div>
+        </div>
+        <div class="card card-border bg-base-200">
+          <div class="card-body p-4">
+            <p class="font-semibold">5️⃣ What's your biggest bottleneck right now?</p>
+            <p class="text-sm text-base-content/60 mt-1">Generating enough images? Reviewing them? Posting? Sourcing quotes? Getting followers?</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="border-t border-base-content/10 pt-6 pb-12 text-center text-sm text-base-content/40">
+      <p>Add your thoughts — annotate, select text, or queue prompts to dive deeper.</p>
+    </footer>
+
+  </div>
+</body>
+</html>
