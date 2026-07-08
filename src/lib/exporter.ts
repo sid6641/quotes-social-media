@@ -187,7 +187,7 @@ export async function exportContentCalendar(
   }
 
   // Resolve image source directory
-  const imagesDir = accountId ? getAccountImagesDir(accountId) : path.resolve(process.cwd(), "output", "images");
+  const imagesDir = getAccountImagesDir(accountId);
 
   // Collect approved images
   const approved = collectApprovedImages(accountId);

@@ -249,10 +249,12 @@ export default function ReviewPage() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Export failed");
+      const relPath = data.result.contentDir.replace(/^.*?output\//, "output/");
       setExportResult(
-        `📅 Content calendar exported! ${data.result.totalImages} images over ${data.result.totalDays} days. Files in: ${data.result.contentDir}`
+        `📅 Exported ${data.result.totalImages} images for the next ${data.result.totalDays} days. ` +
+        `Files ready in: ${relPath}/`
       );
-      setTimeout(() => setExportResult(null), 8000);
+      setTimeout(() => setExportResult(null), 10000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Export failed");
     } finally {
