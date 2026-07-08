@@ -14,7 +14,7 @@
 import fs from "fs";
 import path from "path";
 import { createLogger } from "./logger";
-import { getAccount, getAccountDir, getAccountImagesDir } from "./account";
+import { getAccount, getAccountDir, getAccountImagesDir, getAccountCalendarDir } from "./account";
 import { getQueue } from "./queue";
 import type { ImageEntry, Manifest } from "./manifest";
 
@@ -207,8 +207,10 @@ export async function exportContentCalendar(
     };
   }
 
-  // Build the content directory
-  const contentDir = path.join(exportRoot, `${accountSlug}-content`);
+  // Build the content directory — use account's calendar/ dir when scoped
+  const contentDir = accountId
+    ? getAccountCalendarDir(accountId)
+    : path.join(exportRoot, `default-content`);
   ensureDir(contentDir);
 
   // Schedule images over days

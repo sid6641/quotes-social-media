@@ -1,8 +1,8 @@
 /**
  * Account management — multi-account sandboxing.
  *
- * Each account gets an isolated directory under output/accounts/<id>/
- * with its own config, queue, manifest, and generated images.
+ * Each account gets an isolated directory under output/<id>/
+ * with its own config, queue, manifest, calendar, and archive.
  *
  * The global output/ directory acts as the default account for
  * backward compatibility.
@@ -11,7 +11,8 @@
 import fs from "fs";
 import path from "path";
 
-const ACCOUNTS_DIR = path.resolve(process.cwd(), "output", "accounts");
+const ACCOUNTS_DIR = path.resolve(process.cwd(), "output");
+const ACCOUNTS_FILE = path.resolve(process.cwd(), "output", "accounts.json");
 const GLOBAL_OUTPUT = path.resolve(process.cwd(), "output");
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -108,10 +109,12 @@ export function createAccount(config: Omit<AccountConfig, "createdAt" | "updated
   accounts.push(account);
   writeAccounts(accounts);
 
-  // Create isolated directory
+  // Create isolated directory with subdirectories
   const accountDir = path.join(ACCOUNTS_DIR, account.id);
   ensureDir(accountDir);
   ensureDir(path.join(accountDir, "images"));
+  ensureDir(path.join(accountDir, "calendar"));
+  ensureDir(path.join(accountDir, "archive"));
 
   return account;
 }
@@ -169,6 +172,24 @@ export function getAccountDir(accountId?: string): string {
 export function getAccountImagesDir(accountId?: string): string {
   if (!accountId) return GLOBAL_OUTPUT;
   const dir = path.join(ACCOUNTS_DIR, accountId, "images");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the calendar (export) directory for a specific account.
+ */
+export function getAccountCalendarDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "calendar");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the archive (published) directory for a specific account.
+ */
+export function getAccountArchiveDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "archive");
   ensureDir(dir);
   return dir;
 }

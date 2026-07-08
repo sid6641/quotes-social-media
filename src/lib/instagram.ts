@@ -11,7 +11,7 @@
  * 4. IG User ID (from /me/accounts → /{page-id}?fields=instagram_business_account)
  */
 
-import { getAccount } from "./account";
+import { getAccount, getAccountArchiveDir } from "./account";
 
 const IG_GRAPH_API = "https://graph.facebook.com/v22.0";
 
@@ -162,10 +162,9 @@ async function simulateLocalPublish(
   const fs = await import("fs");
   const path = await import("path");
 
-  const publishedRoot = path.resolve(process.cwd(), "output", "published");
   const publishedDir = accountId
-    ? path.join(publishedRoot, accountId)
-    : publishedRoot;
+    ? getAccountArchiveDir(accountId)
+    : path.resolve(process.cwd(), "output", "archive");
 
   if (!fs.existsSync(publishedDir)) {
     fs.mkdirSync(publishedDir, { recursive: true });
