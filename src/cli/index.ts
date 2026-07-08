@@ -108,6 +108,9 @@ function parseArgs(): {
       } else if (arg === "--template" && i + 1 < args.length) {
         result.flags.template = args[i + 1];
         i += 2;
+      } else if (arg === "--account" && i + 1 < args.length) {
+        result.flags.account = args[i + 1];
+        i += 2;
       } else if (arg === "--json") {
         result.flags.json = true;
         i += 1;
@@ -135,6 +138,9 @@ function parseArgs(): {
       } else if (arg === "--dry-run") {
         result.flags["dry-run"] = true;
         i += 1;
+      } else if (arg === "--account" && i + 1 < args.length) {
+        result.flags.account = args[i + 1];
+        i += 2;
       } else if (arg === "--help" || arg === "-h") {
         result.command = "help";
         i += 1;
@@ -243,8 +249,10 @@ async function main(): Promise<void> {
       const templateName =
         typeof flags.template === "string" ? flags.template : undefined;
       const jsonOutput = flags.json === true;
+      const accountId =
+        typeof flags.account === "string" ? flags.account : undefined;
 
-      await runGenerate({ count, templateName, jsonOutput });
+      await runGenerate({ count, templateName, jsonOutput, accountId });
       return;
     }
 
@@ -252,8 +260,10 @@ async function main(): Promise<void> {
       const status = flags.status === true;
       const force = flags.force === true;
       const dryRun = flags["dry-run"] === true;
+      const accountId =
+        typeof flags.account === "string" ? flags.account : undefined;
 
-      await runPublish({ status, force, dryRun });
+      await runPublish({ status, force, dryRun, accountId });
       return;
     }
     case "account": {

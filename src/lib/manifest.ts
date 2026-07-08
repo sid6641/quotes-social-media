@@ -35,33 +35,57 @@ export interface Manifest {
 
 let manifestCache: Manifest[] | null = null;
 
-function ensureOutputDir(): void {
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+function ensureOutputDir(dir?: string): void {
+  const target = dir || OUTPUT_DIR;
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
   }
 }
 
-function readManifest(): Manifest[] {
-  if (manifestCache) return manifestCache;
-  ensureOutputDir();
-  if (!fs.existsSync(MANIFEST_PATH)) {
-    manifestCache = [];
-    return manifestCache;
+/** Resolve manifest path for a given output directory. */
+function getManifestPath(dir?: string): string {
+  return path.join(dir || OUTPUT_DIR, "manifest.json");
+}
+
+function readManifestFromDir(dir?: string): Manifest[] {
+  const targetDir = dir || OUTPUT_DIR;
+  const manifestPath = getManifestPath(targetDir);
+
+  // Use cache only for global manifest
+  if (!dir && manifestCache) return manifestCache;
+
+  ensureOutputDir(targetDir);
+  if (!fs.existsSync(manifestPath)) {
+    if (!dir) manifestCache = [];
+    return [];
   }
   try {
-    const raw = fs.readFileSync(MANIFEST_PATH, "utf-8");
+    const raw = fs.readFileSync(manifestPath, "utf-8");
     const data = JSON.parse(raw);
-    manifestCache = Array.isArray(data) ? data : [data];
-    return manifestCache;
+    const result = Array.isArray(data) ? data : [data];
+    if (!dir) manifestCache = result;
+    return result;
   } catch {
-    manifestCache = [];
-    return manifestCache;
+    if (!dir) manifestCache = [];
+    return [];
   }
+}
+
+function writeManifestToDir(data: Manifest[], dir?: string): void {
+  const targetDir = dir || OUTPUT_DIR;
+  const manifestPath = getManifestPath(targetDir);
+  ensureOutputDir(targetDir);
+  fs.writeFileSync(manifestPath, JSON.stringify(data, null, 2), "utf-8");
+  if (!dir) manifestCache = data;
+}
+
+// Legacy wrappers for backward compat
+function readManifest(): Manifest[] {
+  return readManifestFromDir();
 }
 
 function writeManifest(data: Manifest[]): void {
-  ensureOutputDir();
-  fs.writeFileSync(MANIFEST_PATH, JSON.stringify(data, null, 2), "utf-8");
+  writeManifestToDir(data);
 }
 
 export function generateBatchId(): string {
@@ -85,9 +109,12 @@ export function createBatch(
   images: Array<{ quote: string; template: string; filename: string }>,
   trigger: "cli" | "web",
   promptTemplate: string = "default.md",
-  captions?: CaptionData[][]
+  captions?: CaptionData[][],
+  outputDir?: string
 ): Manifest {
-  const manifests = readManifest();
+  // Use account-specific dir if provided, otherwise global
+  const targetDir = outputDir || OUTPUT_DIR;
+  const manifests = readManifestFromDir(targetDir);
   const batchId = generateBatchId();
 
   const manifest: Manifest = {
@@ -113,7 +140,7 @@ export function createBatch(
   };
 
   manifests.push(manifest);
-  writeManifest(manifests);
+  writeManifestToDir(manifests, targetDir);
   return manifest;
 }
 

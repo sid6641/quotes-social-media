@@ -15,6 +15,7 @@ import {
   addToQueue,
 } from "../lib/queue";
 import { getLatestBatch } from "../lib/manifest";
+import { getAccount, getAccountDir } from "../lib/account";
 import { createLogger } from "../lib/logger";
 const log = createLogger("publish");
 
@@ -22,6 +23,7 @@ export interface PublishOptions {
   force?: boolean;
   dryRun?: boolean;
   status?: boolean;
+  accountId?: string;
 }
 
 function formatDate(iso: string): string {
@@ -54,12 +56,14 @@ function showStatus(): void {
  * Run the publish pipeline.
  */
 export async function runPublish(options: PublishOptions = {}): Promise<void> {
+  const { force, dryRun, accountId } = options;
+  const accountDir = accountId ? getAccountDir(accountId) : undefined;
+
   if (options.status) {
-    showStatus();
+    const stats = getQueueStats(accountDir);
+    log.info(stats, "📊 Publish Queue Status");
     return;
   }
-
-  const { force, dryRun } = options;
 
   // If --force, queue all pending items from the latest approved batch
   if (force) {
@@ -76,15 +80,15 @@ export async function runPublish(options: PublishOptions = {}): Promise<void> {
           quote: img.quote,
           template: img.template,
           caption: img.caption,
-        });
+        }, accountDir);
       }
     }
   }
 
-  const dueItems = getDueItems();
+  const dueItems = getDueItems(accountDir);
 
   if (dueItems.length === 0) {
-    const queued = getQueue("queued");
+    const queued = getQueue("queued", accountDir);
     if (queued.length > 0) {
       log.info({ queued: queued.length, nextAt: queued[0].scheduledAt }, "📭 No items due yet");
     } else {
@@ -100,7 +104,7 @@ export async function runPublish(options: PublishOptions = {}): Promise<void> {
     return;
   }
 
-  const results = await processQueue();
+  const results = await processQueue(accountDir);
 
   const published = results.filter((r) => r.status === "published");
   const failed = results.filter((r) => r.status === "failed");

@@ -226,13 +226,20 @@ export function getAvailableQuotes(
   const pool = readPool();
   const now = new Date();
 
+  // Support both single theme and comma-separated themes
+  const themes = theme
+    ? theme.split(",").map((t) => t.trim()).filter(Boolean)
+    : undefined;
+
   let candidates = pool.quotes.filter((q) => {
     if (q.status === "retired") return false;
     if (q.status === "cooldown" && q.cooldownUntil) {
       if (new Date(q.cooldownUntil) > now) return false;
     }
     if (q.status === "used") return false;
-    if (theme && q.theme !== theme) return false;
+    if (themes && themes.length > 0) {
+      if (!q.theme || !themes.includes(q.theme)) return false;
+    }
     return true;
   });
 

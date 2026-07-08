@@ -12,9 +12,11 @@ import { pickCombinations } from "../lib/mixer";
 import { generateQuoteImage } from "../lib/gemini";
 import { generateCaptionOptions } from "../lib/caption";
 import { createBatch, generateBatchId } from "../lib/manifest";
+import { getAccount, getAccountDir, getAccountImagesDir } from "../lib/account";
+import { markQuoteUsed } from "../lib/quote-pool";
 import { createLogger as createAppLogger } from "../lib/logger";
 
-const OUTPUT_DIR = path.resolve(process.cwd(), "output");
+const GLOBAL_OUTPUT = path.resolve(process.cwd(), "output");
 const logger = createAppLogger("generate");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
@@ -25,6 +27,8 @@ export interface GenerateOptions {
   templateName?: string;
   /** If true, print JSON result instead of formatted output */
   jsonOutput?: boolean;
+  /** Account ID for scoped generation (uses account's theme, dir, cooldown) */
+  accountId?: string;
 }
 
 export interface GenerateResult {
@@ -48,8 +52,14 @@ export interface GenerateResult {
 export async function runGenerate(
   options: GenerateOptions = {}
 ): Promise<GenerateResult> {
-  const { templateName, jsonOutput } = options;
+  const { templateName, jsonOutput, accountId } = options;
   const targetCount = options.count ?? 10;
+
+  // Resolve account-specific paths
+  const account = accountId ? getAccount(accountId) : undefined;
+  const outputDir = account ? getAccountDir(accountId) : GLOBAL_OUTPUT;
+  const imagesDir = account ? getAccountImagesDir(accountId) : GLOBAL_OUTPUT;
+  const cooldownDays = account?.cooldownDays ?? 30;
 
   const print = jsonOutput
     ? { info: () => {}, step: () => {}, successMsg: () => {}, errorMsg: () => {} }
@@ -61,7 +71,8 @@ export async function runGenerate(
       };
 
   if (!jsonOutput) {
-    print.info("📸 Quotes Social Media — Batch Generator");
+    const scope = account ? ` for account "${accountId}"` : "";
+    print.info(`📸 Quotes Social Media — Batch Generator${scope}`);
   }
 
   // 1. Load prompt template
@@ -80,12 +91,16 @@ export async function runGenerate(
   print.info(`📝 Using prompt template: ${promptName}`);
 
   // 2. Pick quote + template combinations
-  const combos = pickCombinations(targetCount);
+  // If account has themes, filter quotes by those themes
+  const combos = pickCombinations(targetCount, account?.theme);
   print.info(`📋 Picked ${combos.length} quote + template combinations`);
 
   // 3. Ensure output directory exists
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
   }
 
   // 4. Generate each image
@@ -120,7 +135,7 @@ export async function runGenerate(
 
     try {
       const imageBuffer = await generateQuoteImage(templatePath, quote, prompt);
-      fs.writeFileSync(path.join(OUTPUT_DIR, filename), imageBuffer);
+      fs.writeFileSync(path.join(imagesDir, filename), imageBuffer);
       if (!jsonOutput) print.successMsg();
       results.push({ quote, template, filename, success: true });
     } catch (err) {
@@ -144,7 +159,7 @@ export async function runGenerate(
     }
     for (let i = 0; i < successfulImages.length; i++) {
       const image = successfulImages[i];
-      const imagePath = path.join(OUTPUT_DIR, image.filename);
+      const imagePath = path.join(imagesDir, image.filename);
       if (!jsonOutput) {
         print.step(`     [${i + 1}/${successfulImages.length}] "${image.quote.substring(0, 35)}..." `);
       }
@@ -199,8 +214,8 @@ export async function runGenerate(
     logger.info({ batchId: result.batchId, successCount: result.successCount }, "Batch complete");
   } else {
     const { successCount, failCount } = result;
-    logger.info({ successCount, failCount, batchId: result.batchId }, "Generation summary");
-    logger.info({ successCount, failCount, outputDir: OUTPUT_DIR }, `📊 Summary: ${successCount} generated, ${failCount} failed`);
+    logger.info({ successCount, failCount, batchId: result.batchId, outputDir, account: accountId }, "Generation summary");
+    logger.info({ successCount, failCount, outputDir }, `📊 Summary: ${successCount} generated, ${failCount} failed`);
 
     if (captionOptionsList.length > 0) {
       logger.info({ captionCount: captionOptionsList.length }, `📝 ${captionOptionsList.length} images have 5 caption options each`);

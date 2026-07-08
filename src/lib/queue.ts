@@ -4,13 +4,24 @@
  * When images are approved, they go into the publish queue and are
  * scheduled for the next daily publish slot. A CLI command processes
  * due items and publishes them.
+ *
+ * Supports per-account queues via an optional accountDir parameter.
+ * When accountDir is provided, the queue file lives at:
+ *   <accountDir>/publish-queue.json
  */
 import fs from "fs";
 import path from "path";
 import type { CaptionData } from "./caption";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
-const QUEUE_PATH = path.join(OUTPUT_DIR, "publish-queue.json");
+const GLOBAL_QUEUE_PATH = path.join(OUTPUT_DIR, "publish-queue.json");
+
+/** Resolve the queue file path for a given account directory. */
+function getQueuePath(accountDir?: string): string {
+  return accountDir
+    ? path.join(accountDir, "publish-queue.json")
+    : GLOBAL_QUEUE_PATH;
+}
 
 export interface QueueEntry {
   id: string;
@@ -28,32 +39,38 @@ export interface QueueEntry {
 
 let queueCache: QueueEntry[] | null = null;
 
-function ensureOutputDir(): void {
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+function ensureOutputDir(dir?: string): void {
+  const target = dir || OUTPUT_DIR;
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
   }
 }
 
-function readQueue(): QueueEntry[] {
-  if (queueCache) return queueCache;
-  ensureOutputDir();
-  if (!fs.existsSync(QUEUE_PATH)) {
-    queueCache = [];
-    return queueCache;
+function readQueue(accountDir?: string): QueueEntry[] {
+  if (!accountDir && queueCache) return queueCache;
+  const qPath = getQueuePath(accountDir);
+  ensureOutputDir(accountDir);
+  if (!fs.existsSync(qPath)) {
+    if (!accountDir) queueCache = [];
+    return [];
   }
   try {
-    const raw = fs.readFileSync(QUEUE_PATH, "utf-8");
-    queueCache = JSON.parse(raw);
-    return Array.isArray(queueCache) ? queueCache : [];
+    const raw = fs.readFileSync(qPath, "utf-8");
+    const data = JSON.parse(raw);
+    const entries = Array.isArray(data) ? data : [];
+    if (!accountDir) queueCache = entries;
+    return entries;
   } catch {
-    queueCache = [];
-    return queueCache;
+    if (!accountDir) queueCache = [];
+    return [];
   }
 }
 
-function writeQueue(data: QueueEntry[]): void {
-  ensureOutputDir();
-  fs.writeFileSync(QUEUE_PATH, JSON.stringify(data, null, 2), "utf-8");
+function writeQueue(data: QueueEntry[], accountDir?: string): void {
+  const qPath = getQueuePath(accountDir);
+  ensureOutputDir(accountDir);
+  fs.writeFileSync(qPath, JSON.stringify(data, null, 2), "utf-8");
+  if (!accountDir) queueCache = data;
 }
 
 export function invalidateQueueCache(): void {
@@ -96,8 +113,8 @@ export function getNextScheduledTime(): string {
 /**
  * Generate a unique queue entry ID.
  */
-function generateQueueId(): string {
-  const entries = readQueue();
+function generateQueueId(accountDir?: string): string {
+  const entries = readQueue(accountDir);
   const seq = entries.length + 1;
   return `pub-${String(seq).padStart(3, "0")}`;
 }
@@ -106,15 +123,18 @@ function generateQueueId(): string {
  * Add an image to the publish queue.
  * Returns the created queue entry.
  */
-export function addToQueue(params: {
-  batchId: string;
-  imageId: string;
-  filename: string;
-  quote: string;
-  template: string;
-  caption?: CaptionData;
-}): QueueEntry {
-  const queue = readQueue();
+export function addToQueue(
+  params: {
+    batchId: string;
+    imageId: string;
+    filename: string;
+    quote: string;
+    template: string;
+    caption?: CaptionData;
+  },
+  accountDir?: string
+): QueueEntry {
+  const queue = readQueue(accountDir);
 
   // Avoid duplicates — if already queued, skip
   const existing = queue.find(
@@ -123,7 +143,7 @@ export function addToQueue(params: {
   if (existing) return existing;
 
   const entry: QueueEntry = {
-    id: generateQueueId(),
+    id: generateQueueId(accountDir),
     batchId: params.batchId,
     imageId: params.imageId,
     filename: params.filename,
@@ -135,22 +155,20 @@ export function addToQueue(params: {
   };
 
   queue.push(entry);
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return entry;
 }
 
 /**
  * Remove an entry from the publish queue.
  */
-export function removeFromQueue(id: string): boolean {
-  const queue = readQueue();
+export function removeFromQueue(id: string, accountDir?: string): boolean {
+  const queue = readQueue(accountDir);
   const index = queue.findIndex((e) => e.id === id);
   if (index === -1) return false;
 
   queue.splice(index, 1);
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return true;
 }
 
@@ -159,17 +177,17 @@ export function removeFromQueue(id: string): boolean {
  */
 export function removeImageFromQueue(
   batchId: string,
-  imageId: string
+  imageId: string,
+  accountDir?: string
 ): boolean {
-  const queue = readQueue();
+  const queue = readQueue(accountDir);
   const index = queue.findIndex(
     (e) => e.batchId === batchId && e.imageId === imageId
   );
   if (index === -1) return false;
 
   queue.splice(index, 1);
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return true;
 }
 
@@ -177,9 +195,10 @@ export function removeImageFromQueue(
  * Get all queue entries, optionally filtered by status.
  */
 export function getQueue(
-  status?: QueueEntry["status"]
+  status?: QueueEntry["status"],
+  accountDir?: string
 ): QueueEntry[] {
-  const queue = readQueue();
+  const queue = readQueue(accountDir);
   if (!status) return [...queue];
   return queue.filter((e) => e.status === status);
 }
@@ -187,9 +206,9 @@ export function getQueue(
 /**
  * Get queue entries that are due for publishing.
  */
-export function getDueItems(): QueueEntry[] {
+export function getDueItems(accountDir?: string): QueueEntry[] {
   const now = new Date();
-  return readQueue().filter(
+  return readQueue(accountDir).filter(
     (e) => e.status === "queued" && new Date(e.scheduledAt) <= now
   );
 }
@@ -197,30 +216,28 @@ export function getDueItems(): QueueEntry[] {
 /**
  * Mark a queue entry as published.
  */
-export function markPublished(id: string): boolean {
-  const queue = readQueue();
+export function markPublished(id: string, accountDir?: string): boolean {
+  const queue = readQueue(accountDir);
   const entry = queue.find((e) => e.id === id);
   if (!entry) return false;
 
   entry.status = "published";
   entry.publishedAt = new Date().toISOString();
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return true;
 }
 
 /**
  * Mark a queue entry as failed.
  */
-export function markFailed(id: string, error: string): boolean {
-  const queue = readQueue();
+export function markFailed(id: string, error: string, accountDir?: string): boolean {
+  const queue = readQueue(accountDir);
   const entry = queue.find((e) => e.id === id);
   if (!entry) return false;
 
   entry.status = "failed";
   entry.error = error;
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return true;
 }
 
@@ -231,31 +248,31 @@ export function markFailed(id: string, error: string): boolean {
 export function updateQueueEntryCaption(
   batchId: string,
   imageId: string,
-  caption: { commentary: string; hashtags: string[] }
+  caption: { commentary: string; hashtags: string[] },
+  accountDir?: string
 ): boolean {
-  const queue = readQueue();
+  const queue = readQueue(accountDir);
   const entry = queue.find(
     (e) => e.batchId === batchId && e.imageId === imageId && e.status === "queued"
   );
   if (!entry) return false;
 
   entry.caption = caption;
-  writeQueue(queue);
-  queueCache = queue;
+  writeQueue(queue, accountDir);
   return true;
 }
 
 /**
  * Get queue statistics.
  */
-export function getQueueStats(): {
+export function getQueueStats(accountDir?: string): {
   total: number;
   queued: number;
   published: number;
   failed: number;
   nextScheduledAt: string | null;
 } {
-  const queue = readQueue();
+  const queue = readQueue(accountDir);
   const nextDue = queue
     .filter((e) => e.status === "queued")
     .sort(
@@ -278,12 +295,15 @@ export function getQueueStats(): {
  * items as published. When IG is unblocked, the actual publish logic
  * plugs in here.
  *
+ * @param accountDir Optional account directory for per-account queues
  * @returns Array of processed entry IDs with their result status
  */
-export async function processQueue(): Promise<
+export async function processQueue(
+  accountDir?: string
+): Promise<
   Array<{ id: string; status: "published" | "failed"; error?: string }>
 > {
-  const dueItems = getDueItems();
+  const dueItems = getDueItems(accountDir);
   const results: Array<{
     id: string;
     status: "published" | "failed";
@@ -292,9 +312,7 @@ export async function processQueue(): Promise<
 
   for (const item of dueItems) {
     try {
-      // TODO: Replace with actual Instagram publish call when IG is unblocked
-      // For now, simulate success
-      const success = markPublished(item.id);
+      const success = markPublished(item.id, accountDir);
       if (success) {
         results.push({ id: item.id, status: "published" });
       } else {
@@ -302,11 +320,10 @@ export async function processQueue(): Promise<
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      markFailed(item.id, msg);
+      markFailed(item.id, msg, accountDir);
       results.push({ id: item.id, status: "failed", error: msg });
     }
   }
 
-  invalidateQueueCache();
   return results;
 }
