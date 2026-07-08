@@ -1013,48 +1013,69 @@ stateDiagram-v2
             <div class="card-body">
               <p class="mb-4 text-sm text-base-content/70">From zero to published post in 7 steps:</p>
 
-              <ol class="steps steps-vertical">
-                <li class="step step-primary">
-                  <div class="font-semibold">1. Create an account</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- account create <span class="cmd-arg">"mybrand"</span> <span class="cmd-flag">--display-name</span> <span class="cmd-arg">"My Brand"</span> <span class="cmd-flag">--themes</span> <span class="cmd-arg">motivation,wisdom</span> <span class="cmd-flag">--schedule</span> <span class="cmd-arg">09:00</span></span>
+              <div class="flex flex-col gap-4 mt-2">
+                <div class="flex items-start gap-4 bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">1</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Create an account</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- account create <span class="cmd-arg">"mybrand"</span> <span class="cmd-flag">--display-name</span> <span class="cmd-arg">"My Brand"</span> <span class="cmd-flag">--themes</span> <span class="cmd-arg">motivation,wisdom</span> <span class="cmd-flag">--schedule</span> <span class="cmd-arg">09:00</span></span>
+                    </div>
                   </div>
-                </li>
-                <li class="step step-primary">
-                  <div class="font-semibold">2. Import quotes</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- quotes import <span class="cmd-arg">./quotes/my-quotes.txt</span></span>
+                </div>
+                <div class="flex items-start gap-4 bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">2</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Import quotes</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- quotes import <span class="cmd-arg">./quotes/my-quotes.txt</span></span>
+                    </div>
                   </div>
-                </li>
-                <li class="step step-primary">
-                  <div class="font-semibold">3. Check the pool</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- quotes stats</span>
+                </div>
+                <div class="flex items-start gap-4 bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">3</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Check the pool</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- quotes stats</span>
+                    </div>
                   </div>
-                </li>
-                <li class="step step-primary">
-                  <div class="font-semibold">4. Generate images</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- generate <span class="cmd-flag">--count</span> <span class="cmd-arg">10</span> <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span></span>
+                </div>
+                <div class="flex items-start gap-4 bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-lg font-bold">4</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Generate images</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- generate <span class="cmd-flag">--count</span> <span class="cmd-arg">10</span> <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span></span>
+                    </div>
                   </div>
-                </li>
-                <li class="step step-neutral">
-                  <div class="font-semibold">5. Review in browser</div>
-                  <div class="text-sm text-base-content/70">Start the dev server: <code class="font-mono text-xs">npm run dev</code> → open <code class="font-mono text-xs">http://localhost:3000</code> → Review tab → Approve/Reject</div>
-                </li>
-                <li class="step step-neutral">
-                  <div class="font-semibold">6. Check the queue</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--status</span></span>
+                </div>
+                <div class="flex items-start gap-4 bg-neutral/5 rounded-xl p-4 border border-neutral/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center text-lg font-bold">5</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Review in browser</div>
+                    <div class="text-sm text-base-content/70 mt-1">Start the dev server: <code class="font-mono text-xs">npm run dev</code> → open <code class="font-mono text-xs">http://localhost:3000</code> → Review tab → Approve/Reject</div>
                   </div>
-                </li>
-                <li class="step step-neutral">
-                  <div class="font-semibold">7. Publish</div>
-                  <div class="cmd-block mt-1">
-                    <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--force</span></span>
+                </div>
+                <div class="flex items-start gap-4 bg-neutral/5 rounded-xl p-4 border border-neutral/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center text-lg font-bold">6</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Check the queue</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--status</span></span>
+                    </div>
                   </div>
-                </li>
-              </ol>
+                </div>
+                <div class="flex items-start gap-4 bg-neutral/5 rounded-xl p-4 border border-neutral/20">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center text-lg font-bold">7</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg">Publish</div>
+                    <div class="cmd-block mt-2" style="white-space:normal;overflow-x:auto;">
+                      <span class="cmd-code">npm run cli -- publish <span class="cmd-flag">--account</span> <span class="cmd-arg">mybrand</span> <span class="cmd-flag">--force</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div class="alert alert-soft bg-base-100 mt-6">
                 <div class="flex items-start gap-2">
