@@ -404,6 +404,21 @@ export default function ReviewPage() {
   };
 
   // Accounts
+  const [editingAccount, setEditingAccount] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    theme: string;
+    scheduleTime: string;
+    scheduleTimezone: string;
+    postsPerDay: string;
+    cooldownDays: string;
+    igUserId: string;
+    igPageId: string;
+    igAccessToken: string;
+    enabled: boolean;
+  } | null>(null);
+
   const fetchAccounts = useCallback(async () => {
     try {
       setAccountsLoading(true);
@@ -416,6 +431,62 @@ export default function ReviewPage() {
       setAccountsLoading(false);
     }
   }, []);
+
+  const openAccountEditor = (account: typeof accounts[0]) => {
+    setEditingAccount({
+      id: account.id,
+      name: account.name || "",
+      description: (account as any).description || "",
+      theme: Array.isArray(account.theme) ? account.theme.join(", ") : "",
+      scheduleTime: (account as any).schedule?.time || "09:00",
+      scheduleTimezone: (account as any).schedule?.timezone || "America/New_York",
+      postsPerDay: String((account as any).schedule?.postsPerDay ?? 1),
+      cooldownDays: String(account.cooldownDays ?? 30),
+      igUserId: (account as any).instagram?.igUserId || "",
+      igPageId: (account as any).instagram?.pageId || "",
+      igAccessToken: (account as any).instagram?.accessToken || "",
+      enabled: account.enabled,
+    });
+  };
+
+  const closeAccountEditor = () => setEditingAccount(null);
+
+  const handleSaveAccount = async () => {
+    if (!editingAccount) return;
+    const e = editingAccount;
+    try {
+      const body: Record<string, unknown> = {
+        id: e.id,
+        name: e.name || e.id,
+        description: e.description || undefined,
+        theme: e.theme ? e.theme.split(",").map((t) => t.trim()).filter(Boolean) : [],
+        schedule: {
+          time: e.scheduleTime || "09:00",
+          timezone: e.scheduleTimezone || "America/New_York",
+          postsPerDay: parseInt(e.postsPerDay) || 1,
+          reelsPerWeek: 0,
+        },
+        instagram: {
+          igUserId: e.igUserId || undefined,
+          pageId: e.igPageId || undefined,
+          accessToken: e.igAccessToken || undefined,
+        },
+        cooldownDays: parseInt(e.cooldownDays) || 30,
+        enabled: e.enabled,
+      };
+
+      const res = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Failed to save account");
+      closeAccountEditor();
+      await fetchAccounts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save account");
+    }
+  };
 
   const handleCreateAccount = async () => {
     if (!newAccountId.trim()) return;
@@ -1609,40 +1680,38 @@ export default function ReviewPage() {
 
       {/* Accounts mode */}
       {viewMode === "accounts" && (
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className="text-sm text-gray-500 mb-6">
             Manage your Instagram accounts. Each account has its own theme, schedule,
-            and isolated publish queue.
+            Instagram auth, and isolated publish queue.
           </p>
 
           {/* Create new account */}
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
             <h3 className="text-sm font-medium text-gray-700 mb-3">New Account</h3>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  value={newAccountId}
-                  onChange={(e) => setNewAccountId(e.target.value)}
-                  placeholder="Account ID (e.g., dailygrind)"
-                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                />
-                <input
-                  value={newAccountName}
-                  onChange={(e) => setNewAccountName(e.target.value)}
-                  placeholder="Display name"
-                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                />
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                value={newAccountId}
+                onChange={(e) => setNewAccountId(e.target.value)}
+                placeholder="Account ID (e.g., dailygrind)"
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
+              />
+              <input
+                value={newAccountName}
+                onChange={(e) => setNewAccountName(e.target.value)}
+                placeholder="Display name"
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
+              />
               <input
                 value={newAccountTheme}
                 onChange={(e) => setNewAccountTheme(e.target.value)}
-                placeholder="Themes (comma-separated, e.g., motivation, life)"
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                placeholder="Themes (comma-separated)"
+                className="flex-[2] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[200px]"
               />
               <button
                 onClick={handleCreateAccount}
                 disabled={!newAccountId.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium whitespace-nowrap"
               >
                 Create Account
               </button>
@@ -1665,7 +1734,7 @@ export default function ReviewPage() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700">{a.name}</h4>
+                      <h4 className="text-sm font-semibold text-gray-800">{a.name}</h4>
                       <p className="text-xs text-gray-400">ID: {a.id}</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1680,6 +1749,12 @@ export default function ReviewPage() {
                         {a.enabled ? "Enabled" : "Disabled"}
                       </button>
                       <button
+                        onClick={() => openAccountEditor(a)}
+                        className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
                         onClick={() => handleDeleteAccount(a.id)}
                         className="text-xs text-red-400 hover:text-red-600 transition-colors"
                       >
@@ -1687,27 +1762,215 @@ export default function ReviewPage() {
                       </button>
                     </div>
                   </div>
-                  {a.theme && a.theme.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {a.theme.map((t) => (
-                        <span
-                          key={t}
-                          className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {a.cooldownDays && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Cooldown: {a.cooldownDays} days
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                    {a.theme && a.theme.length > 0 && (
+                      <span>Themes: {a.theme.join(", ")}</span>
+                    )}
+                    {a.cooldownDays && <span>Cooldown: {a.cooldownDays}d</span>}
+                    {(a as any).schedule?.time && <span>Schedule: {(a as any).schedule.time}</span>}
+                  </div>
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Account editor modal */}
+      {editingAccount && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={closeAccountEditor}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h3 className="text-base font-semibold text-gray-800">
+                {editingAccount.id} — Settings
+              </h3>
+              <button
+                onClick={closeAccountEditor}
+                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-4 space-y-4">
+              {/* Identity */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Identity</legend>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Account ID</label>
+                    <input
+                      value={editingAccount.id}
+                      disabled
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Display Name</label>
+                    <input
+                      value={editingAccount.name}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, name: e.target.value })}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label className="block text-xs text-gray-500 mb-1">Description</label>
+                  <input
+                    value={editingAccount.description}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, description: e.target.value })}
+                    placeholder="What's this account about?"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+              </fieldset>
+
+              {/* Content */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Content</legend>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Themes (comma-separated)</label>
+                  <input
+                    value={editingAccount.theme}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, theme: e.target.value })}
+                    placeholder="motivation, life, wisdom"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Cooldown (days)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={editingAccount.cooldownDays}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, cooldownDays: e.target.value })}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Schedule */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Publish Schedule</legend>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Time</label>
+                    <input
+                      type="time"
+                      value={editingAccount.scheduleTime}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, scheduleTime: e.target.value })}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Timezone</label>
+                    <select
+                      value={editingAccount.scheduleTimezone}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, scheduleTimezone: e.target.value })}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    >
+                      <option value="America/New_York">Eastern</option>
+                      <option value="America/Chicago">Central</option>
+                      <option value="America/Denver">Mountain</option>
+                      <option value="America/Los_Angeles">Pacific</option>
+                      <option value="America/Anchorage">Alaska</option>
+                      <option value="Pacific/Honolulu">Hawaii</option>
+                      <option value="Europe/London">London</option>
+                      <option value="Europe/Paris">Paris</option>
+                      <option value="Europe/Berlin">Berlin</option>
+                      <option value="Asia/Tokyo">Tokyo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Posts/day</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={editingAccount.postsPerDay}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, postsPerDay: e.target.value })}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Instagram Auth */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Instagram API</legend>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">IG User ID</label>
+                    <input
+                      value={editingAccount.igUserId}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, igUserId: e.target.value })}
+                      placeholder="From Meta Graph API"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Facebook Page ID</label>
+                    <input
+                      value={editingAccount.igPageId}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, igPageId: e.target.value })}
+                      placeholder="Linked page ID"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label className="block text-xs text-gray-500 mb-1">Access Token</label>
+                  <input
+                    value={editingAccount.igAccessToken}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, igAccessToken: e.target.value })}
+                    placeholder="IG Graph API access token"
+                    type="password"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+              </fieldset>
+
+              {/* Status */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status</legend>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingAccount.enabled}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, enabled: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Account enabled</span>
+                </label>
+              </fieldset>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={closeAccountEditor}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAccount}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
