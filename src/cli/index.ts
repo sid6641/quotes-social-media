@@ -37,12 +37,14 @@ Usage:
 Options (generate):
   --count <n>       Number of images to generate (default: 10)
   --template <name>  Prompt template to use (default: first in prompts/)
+  --account <id>    Scope generation to an account (uses its themes + directory)
   --json             Output results as JSON (no fancy formatting)
 
 Options (publish):
   --status           Show queue status (no publishing)
   --force            Queue all approved images, then publish due
   --dry-run          Show what would be published without doing it
+  --account <id>     Scope publish to an account's queue
 
 Account commands:
   create <id>                   Create a new account
@@ -66,11 +68,16 @@ Quotes commands:
 Resources (list):
   templates         List all template images
   prompts           List all prompt templates
+  accounts          List all accounts
+  hashtags          Info on managing hashtag sets
 
 Examples:
   npm run cli generate
   npm run cli generate -- --count 5
+  npm run cli generate -- --account dailygrind
   npm run cli publish -- --status
+  npm run cli publish -- --account dailygrind
+  npm run cli account list
   npm run cli quotes list
   npm run cli quotes add "Be yourself." --author Wilde --theme life
   npm run cli quotes import --file quotes/sample.txt --theme motivation
@@ -300,8 +307,15 @@ async function main(): Promise<void> {
           return;
         case "prompts":
           listPrompts();
+          return;        case "accounts":
+          // Delegate to the account CLI
+          const { runAccount } = await import("./account");
+          await runAccount({ subcommand: "list" });
           return;
-        default:
+        case "hashtags":
+          log.info("Use the Hashtag Bank tab in the web UI to manage hashtag sets.");
+          log.info("API: GET /api/hashtags, POST /api/hashtags, DELETE /api/hashtags");
+          return;        default:
           log.warn({ subcommand }, `Unknown resource: "${subcommand}"`);
           process.exit(1);
       }
