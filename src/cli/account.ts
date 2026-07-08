@@ -27,6 +27,7 @@ export interface AccountOptions {
   theme?: string;
   enabled?: boolean;
   cooldownDays?: number;
+  jsonOutput?: boolean;
 }
 
 export async function runAccount(options: AccountOptions): Promise<void> {
@@ -36,7 +37,7 @@ export async function runAccount(options: AccountOptions): Promise<void> {
     case "create":
       return createCmd(options);
     case "list":
-      return listCmd();
+      return listCmd(options);
     case "get":
       return getCmd(options);
     case "update":
@@ -51,7 +52,7 @@ export async function runAccount(options: AccountOptions): Promise<void> {
 
 async function createCmd(options: AccountOptions): Promise<void> {
   if (!options.accountId) {
-    log.warn("Missing account ID. Usage: npm run cli account create <id> --name ...");
+    log.warn("Missing account ID.");
     return;
   }
 
@@ -64,17 +65,31 @@ async function createCmd(options: AccountOptions): Promise<void> {
       cooldownDays: options.cooldownDays ?? 30,
       enabled: options.enabled ?? true,
     });
-    log.info({ id: account.id, themes: account.theme }, `✅ Account "${account.id}" created`);
+    if (options.jsonOutput) {
+      console.log(JSON.stringify({ success: true, account }));
+    } else {
+      log.info({ id: account.id, themes: account.theme }, `✅ Account "${account.id}" created`);
+    }
   } catch (err) {
-    log.error({ err }, `Failed to create account`);
+    const msg = err instanceof Error ? err.message : String(err);
+    if (options.jsonOutput) {
+      console.log(JSON.stringify({ success: false, error: msg }));
+    } else {
+      log.error({ err }, `Failed to create account`);
+    }
   }
 }
 
-async function listCmd(): Promise<void> {
+async function listCmd(options: AccountOptions): Promise<void> {
   const accounts = getAllAccounts();
 
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, accounts }));
+    return;
+  }
+
   if (accounts.length === 0) {
-    log.info("No accounts configured. Create one with `npm run cli account create <id>`.");
+    log.info("No accounts configured.");
     return;
   }
 
@@ -97,11 +112,19 @@ async function getCmd(options: AccountOptions): Promise<void> {
 
   const account = getAccount(options.accountId);
   if (!account) {
-    log.warn({ id: options.accountId }, `Account not found`);
+    if (options.jsonOutput) {
+      console.log(JSON.stringify({ success: false, error: "Account not found" }));
+    } else {
+      log.warn({ id: options.accountId }, `Account not found`);
+    }
     return;
   }
 
-  log.info({ ...account }, `📄 ${account.id}`);
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, account }));
+  } else {
+    log.info({ ...account }, `📄 ${account.id}`);
+  }
 }
 
 async function updateCmd(options: AccountOptions): Promise<void> {

@@ -27,6 +27,7 @@ export interface QuotesOptions {
   text?: string;
   author?: string;
   file?: string;
+  jsonOutput?: boolean;
 }
 
 export async function runQuotes(options: QuotesOptions): Promise<void> {
@@ -40,9 +41,9 @@ export async function runQuotes(options: QuotesOptions): Promise<void> {
     case "import":
       return importCmd(options);
     case "stats":
-      return showStats();
+      return showStats(options);
     case "expire":
-      return expireCmd();
+      return expireCmd(options);
     default:
       log.warn({ subcommand }, `Unknown quotes subcommand: "${subcommand}"`);
       log.info("Available: list, add, import, stats, expire");
@@ -55,6 +56,11 @@ async function listQuotes(options: QuotesOptions): Promise<void> {
     theme: options.theme,
   });
 
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, quotes }));
+    return;
+  }
+
   if (quotes.length === 0) {
     log.info("No quotes found matching the filters.");
     return;
@@ -65,7 +71,6 @@ async function listQuotes(options: QuotesOptions): Promise<void> {
     `📋 ${quotes.length} quote(s)`
   );
 
-  // Print details for smaller sets
   if (quotes.length <= 50) {
     for (const q of quotes) {
       const tags = [q.status, q.theme, `used ${q.usageCount}x`]
@@ -79,7 +84,7 @@ async function listQuotes(options: QuotesOptions): Promise<void> {
 
 async function addQuoteCmd(options: QuotesOptions): Promise<void> {
   if (!options.text) {
-    log.warn("Missing quote text. Usage: npm run cli quotes add \"text\" --author ... --theme ...");
+    log.warn("Missing quote text.");
     return;
   }
 
@@ -89,12 +94,16 @@ async function addQuoteCmd(options: QuotesOptions): Promise<void> {
     source: "manual",
   });
 
-  log.info({ id: entry.id, theme: entry.theme }, `✅ Quote added: "${entry.text.substring(0, 60)}..."`);
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, quote: entry }));
+  } else {
+    log.info({ id: entry.id, theme: entry.theme }, `✅ Quote added: "${entry.text.substring(0, 60)}..."`);
+  }
 }
 
 async function importCmd(options: QuotesOptions): Promise<void> {
   if (!options.file) {
-    log.warn("Missing --file path. Usage: npm run cli quotes import --file quotes/sample.txt");
+    log.warn("Missing --file path.");
     return;
   }
 
@@ -103,6 +112,11 @@ async function importCmd(options: QuotesOptions): Promise<void> {
     theme: options.theme,
     source: "imported",
   });
+
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, ...result }));
+    return;
+  }
 
   if (result.errors.length > 0) {
     for (const err of result.errors) {
@@ -116,14 +130,22 @@ async function importCmd(options: QuotesOptions): Promise<void> {
   );
 }
 
-async function showStats(): Promise<void> {
+async function showStats(options: QuotesOptions): Promise<void> {
   const stats = getPoolStats();
-  log.info(stats, "📊 Quote Pool Statistics");
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, stats }));
+  } else {
+    log.info(stats, "📊 Quote Pool Statistics");
+  }
 }
 
-async function expireCmd(): Promise<void> {
+async function expireCmd(options: QuotesOptions): Promise<void> {
   const recycled = expireCooldowns();
-  log.info({ recycled }, `♻️ Recycled ${recycled} quotes from cooldown`);
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, recycled }));
+  } else {
+    log.info({ recycled }, `♻️ Recycled ${recycled} quotes from cooldown`);
+  }
 }
 
 export function printQuotesUsage(): void {

@@ -50,19 +50,25 @@ Account commands:
   create <id>                   Create a new account
   create <id> --name "X" --theme motivation,life
   list                          List all accounts
+  list --json                   JSON output for piping
   get <id>                      Show account details
+  get <id> --json               JSON output
   update <id> --enabled false   Update account settings
   delete <id>                   Delete an account
 
 Quotes commands:
   list                          List all quotes in the pool
+  list --json                   JSON output for piping
   list --status available       Filter by status
   list --theme motivation       Filter by theme
   add "text"                    Add a single quote to the pool
   add "text" --author X --theme motivation
+  add "text" --json             JSON output
   import --file path            Import quotes from a text file
   import --file path --theme motivation
+  import --file path --json     JSON output
   stats                         Show pool statistics
+  stats --json                  JSON output
   expire                        Recycle expired cooldowns
 
 Resources (list):
@@ -185,6 +191,9 @@ function parseArgs(): {
       } else if (arg === "--cooldown" && i + 1 < args.length) {
         result.flags.cooldownDays = parseInt(args[i + 1], 10);
         i += 2;
+      } else if (arg === "--json") {
+        result.flags.json = true;
+        i += 1;
       } else if (arg === "--help" || arg === "-h") {
         result.command = "help";
         i += 1;
@@ -216,6 +225,9 @@ function parseArgs(): {
       } else if (arg === "--file" && i + 1 < args.length) {
         result.flags.file = args[i + 1];
         i += 2;
+      } else if (arg === "--json") {
+        result.flags.json = true;
+        i += 1;
       } else if (arg === "--help" || arg === "-h") {
         result.command = "help";
         i += 1;
@@ -282,6 +294,7 @@ async function main(): Promise<void> {
         theme: typeof flags.theme === "string" ? flags.theme : undefined,
         enabled: typeof flags.enabled === "boolean" ? flags.enabled : undefined,
         cooldownDays: typeof flags.cooldownDays === "number" ? flags.cooldownDays : undefined,
+        jsonOutput: flags.json === true,
       });
       return;
     }
@@ -294,6 +307,7 @@ async function main(): Promise<void> {
         text: typeof flags.text === "string" ? flags.text : undefined,
         author: typeof flags.author === "string" ? flags.author : undefined,
         file: typeof flags.file === "string" ? flags.file : undefined,
+        jsonOutput: flags.json === true,
       });
       return;
     }
