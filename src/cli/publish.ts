@@ -15,6 +15,8 @@ import {
   addToQueue,
 } from "../lib/queue";
 import { getLatestBatch } from "../lib/manifest";
+import { createLogger } from "../lib/logger";
+const log = createLogger("publish");
 
 export interface PublishOptions {
   force?: boolean;
@@ -37,35 +39,14 @@ function formatDate(iso: string): string {
  */
 function showStatus(): void {
   const stats = getQueueStats();
-
-  console.log("📊 Publish Queue Status\n");
-  console.log(`   Total entries: ${stats.total}`);
-  console.log(`   ⏳ Queued:      ${stats.queued}`);
-  console.log(`   ✅ Published:   ${stats.published}`);
-  console.log(`   ❌ Failed:      ${stats.failed}`);
-
-  if (stats.nextScheduledAt) {
-    console.log(`   📅 Next publish: ${formatDate(stats.nextScheduledAt)}`);
-  }
+  log.info(stats, "📊 Publish Queue Status");
 
   if (stats.queued > 0) {
-    const queued = getQueue("queued");
-    console.log(`\n📋 Queued Items:`);
-    for (const item of queued) {
-      console.log(
-        `   • "${item.quote.substring(0, 50)}..." → ${formatDate(item.scheduledAt)}`
-      );
-    }
+    log.info({ queuedCount: stats.queued }, `📋 ${stats.queued} queued items`);
   }
 
   if (stats.failed > 0) {
-    const failed = getQueue("failed");
-    console.log(`\n❌ Failed Items:`);
-    for (const item of failed) {
-      console.log(
-        `   • "${item.quote.substring(0, 50)}..." — ${item.error || "Unknown error"}`
-      );
-    }
+    log.warn({ failedCount: stats.failed }, `❌ ${stats.failed} failed items`);
   }
 }
 
@@ -103,31 +84,19 @@ export async function runPublish(options: PublishOptions = {}): Promise<void> {
   const dueItems = getDueItems();
 
   if (dueItems.length === 0) {
-    console.log("📭 No items due for publishing.");
     const queued = getQueue("queued");
     if (queued.length > 0) {
-      console.log(`   ${queued.length} item(s) queued but not yet due.`);
-      console.log(
-        `   First scheduled: ${formatDate(queued[0].scheduledAt)}`
-      );
+      log.info({ queued: queued.length, nextAt: queued[0].scheduledAt }, "📭 No items due yet");
     } else {
-      console.log("   Queue is empty. Approve some images first.");
+      log.info("📭 Queue is empty. Approve images first.");
     }
     return;
   }
 
-  console.log(`📤 Publishing ${dueItems.length} item(s)...\n`);
+  log.info({ dueCount: dueItems.length }, `📤 ${dueItems.length} item(s) due`);
 
   if (dryRun) {
-    for (const item of dueItems) {
-      console.log(`   [DRY RUN] Would publish:`);
-      console.log(`      Quote: "${item.quote}"`);
-      console.log(`      Caption: ${item.caption.commentary}`);
-      console.log(`      Hashtags: ${item.caption.hashtags.join(" ")}`);
-      console.log(`      File: ${item.filename}`);
-      console.log();
-    }
-    console.log(`✅ Dry run complete. ${dueItems.length} item(s) ready to publish.`);
+    log.info({ dryRun: true, items: dueItems.map(i => ({ quote: i.quote.substring(0, 40), file: i.filename })) }, "📋 Dry run preview");
     return;
   }
 
@@ -136,13 +105,5 @@ export async function runPublish(options: PublishOptions = {}): Promise<void> {
   const published = results.filter((r) => r.status === "published");
   const failed = results.filter((r) => r.status === "failed");
 
-  for (const r of results) {
-    if (r.status === "published") {
-      console.log(`   ✅ Published: ${r.id}`);
-    } else {
-      console.log(`   ❌ Failed: ${r.id} — ${r.error || "Unknown error"}`);
-    }
-  }
-
-  console.log(`\n📊 Results: ${published.length} published, ${failed.length} failed`);
+  log.info({ published: published.length, failed: failed.length }, `📊 ${published.length} published, ${failed.length} failed`);
 }

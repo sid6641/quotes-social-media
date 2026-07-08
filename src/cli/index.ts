@@ -17,6 +17,8 @@ import "dotenv/config";
 import { runGenerate } from "./generate";
 import { runPublish } from "./publish";
 import { listQuotes, listTemplates, listPrompts } from "./list";
+import { createLogger } from "../lib/logger";
+const log = createLogger("cli");
 
 function printUsage(): void {
   console.log(`
@@ -180,9 +182,7 @@ async function main(): Promise<void> {
           listPrompts();
           return;
         default:
-          console.log(
-            `Unknown resource: "${subcommand}". Available: quotes, templates, prompts`
-          );
+          log.warn({ subcommand }, `Unknown resource: "${subcommand}"`);
           process.exit(1);
       }
     }
@@ -194,7 +194,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error("\n❌ CLI Error:");
-  console.error(err instanceof Error ? err.message : String(err));
+  log.error({ err }, "CLI Error");
   process.exit(1);
 });

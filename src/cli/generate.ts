@@ -12,8 +12,10 @@ import { pickCombinations } from "../lib/mixer";
 import { generateQuoteImage } from "../lib/gemini";
 import { generateCaptionOptions } from "../lib/caption";
 import { createBatch, generateBatchId } from "../lib/manifest";
+import { createLogger as createAppLogger } from "../lib/logger";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
+const logger = createAppLogger("generate");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 export interface GenerateOptions {
@@ -49,17 +51,17 @@ export async function runGenerate(
   const { templateName, jsonOutput } = options;
   const targetCount = options.count ?? 10;
 
-  const log = jsonOutput
+  const print = jsonOutput
     ? { info: () => {}, step: () => {}, successMsg: () => {}, errorMsg: () => {} }
     : {
-        info: (msg: string) => console.log(msg),
+        info: (msg: string) => { logger.info(msg); },
         step: (msg: string) => process.stdout.write(msg),
-        successMsg: () => console.log("✅"),
-        errorMsg: () => console.log("❌"),
+        successMsg: () => { logger.info("✅ Done"); },
+        errorMsg: () => { logger.error("❌ Failed"); },
       };
 
   if (!jsonOutput) {
-    log.info("📸 Quotes Social Media — Batch Generator\n");
+    print.info("📸 Quotes Social Media — Batch Generator");
   }
 
   // 1. Load prompt template
@@ -75,11 +77,11 @@ export async function runGenerate(
       ? templateName
       : availableTemplates[0];
   const rawTemplate = loadTemplate(promptName);
-  log.info(`📝 Using prompt template: ${promptName}`);
+  print.info(`📝 Using prompt template: ${promptName}`);
 
   // 2. Pick quote + template combinations
   const combos = pickCombinations(targetCount);
-  log.info(`📋 Picked ${combos.length} quote + template combinations\n`);
+  print.info(`📋 Picked ${combos.length} quote + template combinations`);
 
   // 3. Ensure output directory exists
   if (!fs.existsSync(OUTPUT_DIR)) {
@@ -111,7 +113,7 @@ export async function runGenerate(
     });
 
     if (!jsonOutput) {
-      log.step(
+      print.step(
         `  ⏳ [${i + 1}/${combos.length}] Generating "${quote.substring(0, 40)}..." `
       );
     }
@@ -119,13 +121,13 @@ export async function runGenerate(
     try {
       const imageBuffer = await generateQuoteImage(templatePath, quote, prompt);
       fs.writeFileSync(path.join(OUTPUT_DIR, filename), imageBuffer);
-      if (!jsonOutput) log.successMsg();
+      if (!jsonOutput) print.successMsg();
       results.push({ quote, template, filename, success: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (!jsonOutput) {
-        log.errorMsg();
-        console.log(`      Error: ${msg}`);
+        print.errorMsg();
+        logger.error({ err: msg }, "Image generation failed");
       }
       results.push({ quote, template, filename, success: false, error: msg });
     }
@@ -138,23 +140,23 @@ export async function runGenerate(
 
   if (successfulImages.length > 0) {
     if (!jsonOutput) {
-      log.step(`\n  💬 Generating captions (${successfulImages.length} images, 5 options each)...\n`);
+      print.step(`\n  💬 Generating captions (${successfulImages.length} images, 5 options each)...\n`);
     }
     for (let i = 0; i < successfulImages.length; i++) {
       const image = successfulImages[i];
       const imagePath = path.join(OUTPUT_DIR, image.filename);
       if (!jsonOutput) {
-        log.step(`     [${i + 1}/${successfulImages.length}] "${image.quote.substring(0, 35)}..." `);
+        print.step(`     [${i + 1}/${successfulImages.length}] "${image.quote.substring(0, 35)}..." `);
       }
       try {
         const options = await generateCaptionOptions(image.quote, imagePath);
         captionOptionsList.push(options);
-        if (!jsonOutput) console.log(`✅ (${options.length} options)`);
+        if (!jsonOutput) logger.info(`✅ (${options.length} options)`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         if (!jsonOutput) {
-          console.log(`❌`);
-          console.log(`      Caption generation failed: ${msg}`);
+          logger.error("❌");
+          logger.error({ err: msg }, "Caption generation failed");
         }
         captionOptionsList.push([]);
       }
@@ -194,32 +196,16 @@ export async function runGenerate(
   // 8. Output
   if (jsonOutput) {
     console.log(JSON.stringify(result, null, 2));
+    logger.info({ batchId: result.batchId, successCount: result.successCount }, "Batch complete");
   } else {
     const { successCount, failCount } = result;
-    console.log(`\n📊 Summary:`);
-    console.log(`   ✅ ${successCount} images generated successfully`);
-    if (failCount > 0) {
-      console.log(`   ❌ ${failCount} images failed`);
-    }
-    console.log(`   📁 Output directory: ${OUTPUT_DIR}`);
+    logger.info({ successCount, failCount, batchId: result.batchId }, "Generation summary");
+    logger.info({ successCount, failCount, outputDir: OUTPUT_DIR }, `📊 Summary: ${successCount} generated, ${failCount} failed`);
 
     if (captionOptionsList.length > 0) {
-      console.log(`\n📝 Caption Options (5 per image, option 1 selected by default):`);
-      for (let i = 0; i < Math.min(captionOptionsList.length, 3); i++) {
-        const image = successfulImages[i];
-        const opts = captionOptionsList[i];
-        console.log(`\n   ${i + 1}. "${image.quote.substring(0, 50)}..."`);
-        if (opts.length > 0) {
-          console.log(`      → ${opts[0].commentary.substring(0, 80)}...`);
-        }
-      }
-      if (captionOptionsList.length > 3) {
-        console.log(`   ... and ${captionOptionsList.length - 3} more`);
-      }
-      console.log(`\n   ✏️  Review & pick in the web UI`);
+      logger.info({ captionCount: captionOptionsList.length }, `📝 ${captionOptionsList.length} images have 5 caption options each`);
+      logger.info("✏️  Review at http://localhost:3000");
     }
-
-    console.log(`\n👉 Review at http://localhost:3000 (run: npm run dev)`);
   }
 
   return result;
@@ -232,8 +218,7 @@ const isDirectRun =
 
 if (isDirectRun) {
   runGenerate().catch((err) => {
-    console.error("\n❌ Generation failed:");
-    console.error(err instanceof Error ? err.message : String(err));
+    logger.error({ err }, "Generation failed");
     process.exit(1);
   });
 }
