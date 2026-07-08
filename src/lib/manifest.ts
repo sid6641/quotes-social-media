@@ -20,7 +20,12 @@ export interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  /** All generated caption options (usually 5). */
+  captions?: CaptionData[];
+  /** The currently active/selected caption (picked from options or edited). */
   caption?: CaptionData;
+  /** Index into captions[] that was picked, or -1 if custom-edited. */
+  selectedCaptionIndex?: number;
 }
 
 export interface Manifest {
@@ -71,13 +76,16 @@ export function generateBatchId(): string {
 
 /**
  * Create a new batch entry in the manifest.
- * Optionally accepts an array of CaptionData aligned with the images array.
+ *
+ * @param captions - Array of CaptionData[] — each element is an array of
+ *                   options for that image (e.g. 5 options). The first option
+ *                   is used as the default active caption.
  */
 export function createBatch(
   images: Array<{ quote: string; template: string; filename: string }>,
   trigger: "cli" | "web",
   promptTemplate: string = "default.md",
-  captions?: CaptionData[]
+  captions?: CaptionData[][]
 ): Manifest {
   const manifests = readManifest();
   const batchId = generateBatchId();
@@ -88,15 +96,20 @@ export function createBatch(
       generatedAt: new Date().toISOString(),
       trigger,
     },
-    images: images.map((img, index) => ({
-      id: `img-${String(index + 1).padStart(3, "0")}`,
-      filename: img.filename,
-      quote: img.quote,
-      template: img.template,
-      promptTemplate,
-      status: "pending",
-      caption: captions?.[index],
-    })),
+    images: images.map((img, index) => {
+      const options = captions?.[index];
+      return {
+        id: `img-${String(index + 1).padStart(3, "0")}`,
+        filename: img.filename,
+        quote: img.quote,
+        template: img.template,
+        promptTemplate,
+        status: "pending",
+        captions: options && options.length > 0 ? options : undefined,
+        caption: options?.[0],
+        selectedCaptionIndex: options && options.length > 0 ? 0 : undefined,
+      };
+    }),
   };
 
   manifests.push(manifest);
@@ -134,11 +147,13 @@ export function updateImageStatus(
 
 /**
  * Update the caption (commentary + hashtags) of a specific image in a batch.
+ * Optionally records which option was selected from captions[].
  */
 export function updateImageCaption(
   batchId: string,
   imageId: string,
-  caption: CaptionData
+  caption: CaptionData,
+  selectedIndex: number = 0
 ): boolean {
   const manifests = readManifest();
   const batch = manifests.find((m) => m.batch.id === batchId);
@@ -148,6 +163,29 @@ export function updateImageCaption(
   if (!image) return false;
 
   image.caption = caption;
+  image.selectedCaptionIndex = selectedIndex;
+  writeManifest(manifests);
+  return true;
+}
+
+/**
+ * Update just the selected caption index (picking from existing options).
+ */
+export function updateSelectedCaptionIndex(
+  batchId: string,
+  imageId: string,
+  selectedIndex: number
+): boolean {
+  const manifests = readManifest();
+  const batch = manifests.find((m) => m.batch.id === batchId);
+  if (!batch) return false;
+
+  const image = batch.images.find((img) => img.id === imageId);
+  if (!image) return false;
+  if (!image.captions || !image.captions[selectedIndex]) return false;
+
+  image.selectedCaptionIndex = selectedIndex;
+  image.caption = image.captions[selectedIndex];
   writeManifest(manifests);
   return true;
 }

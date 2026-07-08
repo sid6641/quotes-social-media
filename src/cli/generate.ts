@@ -10,7 +10,7 @@ import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "../lib/prompts";
 import { pickCombinations } from "../lib/mixer";
 import { generateQuoteImage } from "../lib/gemini";
-import { generateCaptions } from "../lib/caption";
+import { generateCaptionOptions } from "../lib/caption";
 import { createBatch, generateBatchId } from "../lib/manifest";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
@@ -133,23 +133,30 @@ export async function runGenerate(
 
   // 5. Generate captions for successful images
   const successfulImages = results.filter((r) => r.success);
-  let captions: Awaited<ReturnType<typeof generateCaptions>> = [];
+  // Each element is an array of 5 options for that image
+  const captionOptionsList: Awaited<ReturnType<typeof generateCaptionOptions>>[] = [];
 
   if (successfulImages.length > 0) {
     if (!jsonOutput) {
-      log.step(`\n  💬 Generating captions... `);
+      log.step(`\n  💬 Generating captions (${successfulImages.length} images, 5 options each)...\n`);
     }
-    try {
-      captions = await generateCaptions(successfulImages.map((r) => r.quote));
+    for (let i = 0; i < successfulImages.length; i++) {
+      const image = successfulImages[i];
+      const imagePath = path.join(OUTPUT_DIR, image.filename);
       if (!jsonOutput) {
-        console.log(`✅ (${captions.length} captions)`);
+        log.step(`     [${i + 1}/${successfulImages.length}] "${image.quote.substring(0, 35)}..." `);
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (!jsonOutput) {
-        console.log(`❌`);
-        console.log(`      Caption generation failed: ${msg}`);
-        console.log(`      Continuing without captions.`);
+      try {
+        const options = await generateCaptionOptions(image.quote, imagePath);
+        captionOptionsList.push(options);
+        if (!jsonOutput) console.log(`✅ (${options.length} options)`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!jsonOutput) {
+          console.log(`❌`);
+          console.log(`      Caption generation failed: ${msg}`);
+        }
+        captionOptionsList.push([]);
       }
     }
   }
@@ -164,11 +171,15 @@ export async function runGenerate(
       })),
       "cli",
       promptName,
-      captions.length > 0 ? captions : undefined
+      captionOptionsList.length > 0 ? captionOptionsList : undefined
     );
   }
 
   // 7. Build result
+  const defaultCaptions = captionOptionsList.map((opts) =>
+    opts.length > 0 ? opts[0] : undefined
+  );
+
   const result: GenerateResult = {
     batchId,
     successCount: successfulImages.length,
@@ -176,7 +187,7 @@ export async function runGenerate(
     images: results.map((r, i) => ({
       ...r,
       caption:
-        r.success && captions[i] ? captions[i] : undefined,
+        r.success && defaultCaptions[i] ? defaultCaptions[i] : undefined,
     })),
   };
 
@@ -192,15 +203,20 @@ export async function runGenerate(
     }
     console.log(`   📁 Output directory: ${OUTPUT_DIR}`);
 
-    if (captions.length > 0) {
-      console.log(`\n📝 Generated Captions:`);
-      for (let i = 0; i < captions.length; i++) {
+    if (captionOptionsList.length > 0) {
+      console.log(`\n📝 Caption Options (5 per image, option 1 selected by default):`);
+      for (let i = 0; i < Math.min(captionOptionsList.length, 3); i++) {
         const image = successfulImages[i];
-        const cap = captions[i];
+        const opts = captionOptionsList[i];
         console.log(`\n   ${i + 1}. "${image.quote.substring(0, 50)}..."`);
-        console.log(`      ${cap.commentary}`);
-        console.log(`      ${cap.hashtags.join(" ")}`);
+        if (opts.length > 0) {
+          console.log(`      → ${opts[0].commentary.substring(0, 80)}...`);
+        }
       }
+      if (captionOptionsList.length > 3) {
+        console.log(`   ... and ${captionOptionsList.length - 3} more`);
+      }
+      console.log(`\n   ✏️  Review & pick in the web UI`);
     }
 
     console.log(`\n👉 Review at http://localhost:3000 (run: npm run dev)`);

@@ -4,7 +4,7 @@ import fs from "fs";
 import { loadTemplate, applyTemplate, listTemplates } from "@/lib/prompts";
 import { pickCombinations } from "@/lib/mixer";
 import { generateQuoteImage } from "@/lib/gemini";
-import { generateCaptions } from "@/lib/caption";
+import { generateCaptionOptions } from "@/lib/caption";
 import { createBatch, generateBatchId, invalidateCache } from "@/lib/manifest";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
@@ -72,15 +72,17 @@ export async function POST(_request: NextRequest) {
 
     // 5. Generate captions for successful images
     const successfulImages = results.filter((r) => r.success);
-    let captions: Awaited<ReturnType<typeof generateCaptions>> = [];
+    const captionOptionsList: Awaited<ReturnType<typeof generateCaptionOptions>>[] = [];
 
     if (successfulImages.length > 0) {
-      try {
-        captions = await generateCaptions(
-          successfulImages.map((r) => r.quote)
-        );
-      } catch {
-        // Non-fatal — captions are a nice-to-have
+      for (const image of successfulImages) {
+        try {
+          const imagePath = path.join(OUTPUT_DIR, image.filename);
+          const options = await generateCaptionOptions(image.quote, imagePath);
+          captionOptionsList.push(options);
+        } catch {
+          captionOptionsList.push([]);
+        }
       }
     }
 
@@ -94,16 +96,18 @@ export async function POST(_request: NextRequest) {
         })),
         "web",
         promptName,
-        captions.length > 0 ? captions : undefined
+        captionOptionsList.length > 0 ? captionOptionsList : undefined
       );
       invalidateCache();
     }
+
+    const totalOptions = captionOptionsList.reduce((s, o) => s + o.length, 0);
 
     return NextResponse.json({
       success: true,
       batchId,
       imageCount: successfulImages.length,
-      captionCount: captions.length,
+      captionOptionsCount: totalOptions,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

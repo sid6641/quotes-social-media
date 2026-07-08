@@ -16,7 +16,12 @@ interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  /** All 5 generated caption options */
+  captions?: CaptionData[];
+  /** The currently active/selected caption */
   caption?: CaptionData;
+  /** Index into captions[] that is selected, or -1 if custom-edited */
+  selectedCaptionIndex?: number;
 }
 
 interface BatchInfo {
@@ -156,6 +161,39 @@ export default function ReviewPage() {
       setError(
         err instanceof Error ? err.message : "Failed to remove from queue"
       );
+    }
+  };
+
+  const handlePickCaptionOption = async (
+    batchId: string,
+    imageId: string,
+    optionIndex: number
+  ) => {
+    try {
+      const res = await fetch("/api/caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batchId, imageId, selectedOption: optionIndex }),
+      });
+      if (!res.ok) throw new Error("Failed to pick caption");
+
+      setManifest((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          images: prev.images.map((img) =>
+            img.id === imageId
+              ? {
+                  ...img,
+                  selectedCaptionIndex: optionIndex,
+                  caption: img.captions?.[optionIndex] ?? img.caption,
+                }
+              : img
+          ),
+        };
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to pick caption");
     }
   };
 
@@ -551,102 +589,163 @@ export default function ReviewPage() {
                       Template: {image.template}
                     </p>
 
-                    {/* Caption section */}
-                    {(image.caption || editingCaptions[image.id]) && (
+                    {/* Caption options — 5 pickable choices */}
+                    {image.captions && image.captions.length > 0 && (
                       <div className="mb-3 border-t border-gray-100 pt-2">
-                        {editingCaptions[image.id] ? (
-                          <>
-                            <textarea
-                              value={editingCaptions[image.id].commentary}
-                              onChange={(e) =>
-                                handleCaptionEdit(
-                                  image.id,
-                                  "commentary",
-                                  e.target.value
-                                )
-                              }
-                              rows={3}
-                              className="w-full text-xs text-gray-600 border border-gray-200 rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400"
-                              placeholder="Write a commentary..."
-                            />
-                            <input
-                              value={
-                                editingCaptions[image.id].hashtags.join(" ")
-                              }
-                              onChange={(e) => {
-                                const tags = e.target.value
-                                  .split(/\s+/)
-                                  .filter((t) => t.length > 0)
-                                  .map((t) =>
-                                    t.startsWith("#") ? t : `#${t}`
-                                  );
-                                handleCaptionEdit(
-                                  image.id,
-                                  "hashtags",
-                                  tags
-                                );
-                              }}
-                              className="w-full text-xs text-gray-500 border border-gray-200 rounded-md p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                              placeholder="#tags #separated #by spaces"
-                            />
-                            <div className="flex gap-1.5 mt-1.5">
-                              <button
-                                onClick={() =>
-                                  handleCaptionSave(
-                                    manifest.batch.id,
-                                    image.id
-                                  )
-                                }
-                                disabled={savingCaption === image.id}
-                                className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors text-xs font-medium disabled:opacity-50"
-                              >
-                                {savingCaption === image.id
-                                  ? "Saving..."
-                                  : "Save"}
-                              </button>
-                              <button
-                                onClick={() =>
-                                  cancelEditingCaption(image.id)
-                                }
-                                className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors text-xs"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </>
-                        ) : image.caption ? (
-                          <>
-                            <p className="text-xs text-gray-600 leading-relaxed mb-1.5">
-                              {image.caption.commentary}
-                            </p>
-                            <div className="flex flex-wrap gap-1 mb-1.5">
-                              {image.caption.hashtags.map((tag, ti) => (
-                                <span
-                                  key={ti}
-                                  className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                        <p className="text-xs font-medium text-gray-500 mb-1.5">
+                          Choose caption style:
+                        </p>
+                        <div className="space-y-1">
+                          {image.captions.map((opt, oi) => {
+                            const isSelected =
+                              image.selectedCaptionIndex === oi;
+                            const isEditing =
+                              editingCaptions[image.id] !== undefined &&
+                              image.selectedCaptionIndex === oi;
+                            return (
+                              <div key={oi}>
+                                <button
+                                  onClick={() =>
+                                    handlePickCaptionOption(
+                                      manifest.batch.id,
+                                      image.id,
+                                      oi
+                                    )
+                                  }
+                                  className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                    isSelected
+                                      ? "border-blue-400 bg-blue-50 ring-1 ring-blue-200"
+                                      : "border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100"
+                                  }`}
                                 >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
+                                  <div className="flex items-start gap-2">
+                                    <span
+                                      className={`text-xs font-bold mt-0.5 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                        isSelected
+                                          ? "bg-blue-500 text-white"
+                                          : "bg-gray-200 text-gray-500"
+                                      }`}
+                                    >
+                                      {oi + 1}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <p
+                                        className={`text-xs leading-relaxed ${
+                                          isSelected
+                                            ? "text-blue-800"
+                                            : "text-gray-600"
+                                        }`}
+                                      >
+                                        {opt.commentary}
+                                      </p>
+                                      <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                        {opt.hashtags
+                                          .slice(0, 4)
+                                          .map((tag, ti) => (
+                                            <span
+                                              key={ti}
+                                              className={`text-[10px] ${
+                                                isSelected
+                                                  ? "text-blue-500"
+                                                  : "text-gray-400"
+                                              }`}
+                                            >
+                                              {tag}
+                                            </span>
+                                          ))}
+                                        {opt.hashtags.length > 4 && (
+                                          <span className="text-[10px] text-gray-400">
+                                            +{opt.hashtags.length - 4}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </button>
+                                {/* Inline editor for selected option */}
+                                {isEditing && (
+                                  <div className="ml-6 mt-1 p-2 bg-white border border-blue-200 rounded-lg">
+                                    <textarea
+                                      value={
+                                        editingCaptions[image.id].commentary
+                                      }
+                                      onChange={(e) =>
+                                        handleCaptionEdit(
+                                          image.id,
+                                          "commentary",
+                                          e.target.value
+                                        )
+                                      }
+                                      rows={2}
+                                      className="w-full text-xs text-gray-600 border border-gray-200 rounded-md p-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    />
+                                    <input
+                                      value={
+                                        editingCaptions[image.id].hashtags.join(
+                                          " "
+                                        )
+                                      }
+                                      onChange={(e) => {
+                                        const tags = e.target.value
+                                          .split(/\s+/)
+                                          .filter((t) => t.length > 0)
+                                          .map((t) =>
+                                            t.startsWith("#") ? t : `#${t}`
+                                          );
+                                        handleCaptionEdit(
+                                          image.id,
+                                          "hashtags",
+                                          tags
+                                        );
+                                      }}
+                                      className="w-full text-xs text-gray-500 border border-gray-200 rounded-md p-1.5 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    />
+                                    <div className="flex gap-1.5 mt-1">
+                                      <button
+                                        onClick={() =>
+                                          handleCaptionSave(
+                                            manifest.batch.id,
+                                            image.id
+                                          )
+                                        }
+                                        disabled={
+                                          savingCaption === image.id
+                                        }
+                                        className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-[10px] font-medium"
+                                      >
+                                        {savingCaption === image.id
+                                          ? "Saving..."
+                                          : "Save Edit"}
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          cancelEditingCaption(image.id)
+                                        }
+                                        className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors text-[10px]"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Edit the selected one */}
+                        {image.selectedCaptionIndex !== undefined &&
+                          image.selectedCaptionIndex >= 0 &&
+                          !editingCaptions[image.id] && (
                             <button
-                              onClick={() => startEditingCaption(image)}
-                              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                              onClick={() =>
+                                startEditingCaption(image)
+                              }
+                              className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors mt-1"
                             >
-                              ✏️ Edit caption
+                              ✏️ Custom edit selected option
                             </button>
-                          </>
-                        ) : null}
+                          )}
                       </div>
-                    )}
-
-                    {!image.caption && !editingCaptions[image.id] && (
-                      <button
-                        onClick={() => startEditingCaption(image)}
-                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors mb-2 block"
-                      >
-                        ✏️ Add caption
-                      </button>
                     )}
 
                     {/* Action buttons */}
