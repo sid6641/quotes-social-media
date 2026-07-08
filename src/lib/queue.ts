@@ -225,6 +225,27 @@ export function markFailed(id: string, error: string): boolean {
 }
 
 /**
+ * Update the caption of a queue entry (e.g., when user picks a different option
+ * after the image was already approved and queued).
+ */
+export function updateQueueEntryCaption(
+  batchId: string,
+  imageId: string,
+  caption: { commentary: string; hashtags: string[] }
+): boolean {
+  const queue = readQueue();
+  const entry = queue.find(
+    (e) => e.batchId === batchId && e.imageId === imageId && e.status === "queued"
+  );
+  if (!entry) return false;
+
+  entry.caption = caption;
+  writeQueue(queue);
+  queueCache = queue;
+  return true;
+}
+
+/**
  * Get queue statistics.
  */
 export function getQueueStats(): {

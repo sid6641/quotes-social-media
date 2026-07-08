@@ -6,6 +6,7 @@ import {
   getLatestBatch,
 } from "@/lib/manifest";
 import { recordCaptionPick } from "@/lib/caption-learning";
+import { updateQueueEntryCaption } from "@/lib/queue";
 
 /**
  * POST /api/caption — pick a caption option or save an edited caption.
@@ -43,11 +44,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Record this pick for self-learning
+      // Also update the queue entry if this image is already queued
       const batch = getLatestBatch();
       if (batch && batch.batch.id === batchId) {
         const image = batch.images.find((img) => img.id === imageId);
         if (image?.captions?.[selectedOption]) {
+          // Sync queue entry caption to match the newly picked option
+          updateQueueEntryCaption(batchId, imageId, image.captions[selectedOption]);
+
           recordCaptionPick({
             quote: image.quote,
             template: image.template,
@@ -86,7 +90,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Record custom-edit for self-learning
+    // Sync queue entry and record for self-learning
+    updateQueueEntryCaption(batchId, imageId, caption);
+
     const batch = getLatestBatch();
     if (batch && batch.batch.id === batchId) {
       const image = batch.images.find((img) => img.id === imageId);
