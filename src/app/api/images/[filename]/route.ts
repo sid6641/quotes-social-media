@@ -3,9 +3,10 @@ import fs from "fs";
 import path from "path";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
+const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 /**
- * Serve generated images from the output/ directory.
+ * Serve generated images from output/ or template images from templates/.
  * Images are stored outside public/ so we need this custom route.
  */
 export async function GET(
@@ -19,7 +20,11 @@ export async function GET(
     return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
   }
 
-  const filePath = path.join(OUTPUT_DIR, filename);
+  // Try output/ first, then templates/
+  let filePath = path.join(OUTPUT_DIR, filename);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(TEMPLATES_DIR, filename);
+  }
 
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: "Image not found" }, { status: 404 });

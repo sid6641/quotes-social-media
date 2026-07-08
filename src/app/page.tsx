@@ -36,7 +36,7 @@ interface Manifest {
 }
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
-type ViewMode = "review" | "queue";
+type ViewMode = "review" | "queue" | "templates" | "hashtags";
 
 interface QueueEntry {
   id: string;
@@ -65,11 +65,24 @@ export default function ReviewPage() {
   const [queueLoading, setQueueLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Batch selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   // Batch history
   const [allBatches, setAllBatches] = useState<
     Array<{ id: string; generatedAt: string; trigger: string; imageCount: number; approvedCount: number }>
   >([]);
   const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
+
+  // Templates
+  const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string }>>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+
+  // Hashtag bank
+  const [hashtagSets, setHashtagSets] = useState<Array<{ name: string; tags: string[] }>>([]);
+  const [hashtagSetsLoading, setHashtagSetsLoading] = useState(false);
+  const [newHashtagSetName, setNewHashtagSetName] = useState("");
+  const [newHashtagSetTags, setNewHashtagSetTags] = useState("");
 
   // Preview modal
   const [previewImage, setPreviewImage] = useState<ImageEntry | null>(null);
@@ -257,6 +270,112 @@ export default function ReviewPage() {
     }
   };
 
+  // Batch selection
+  const toggleSelect = (imageId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(imageId)) next.delete(imageId);
+      else next.add(imageId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const pending = manifest?.images.filter((i) => i.status === "pending") ?? [];
+    if (selectedIds.size === pending.length && pending.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pending.map((i) => i.id)));
+    }
+  };
+
+  const handleBulkStatus = async (status: "approved" | "rejected") => {
+    if (!manifest || selectedIds.size === 0) return;
+    try {
+      const res = await fetch("/api/batch-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          batchId: manifest.batch.id,
+          imageIds: Array.from(selectedIds),
+          status,
+        }),
+      });
+      if (!res.ok) throw new Error("Batch status update failed");
+      await fetchLatestBatch();
+      setSelectedIds(new Set());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Batch update failed");
+    }
+  };
+
+  // Hashtag bank
+  const fetchHashtagSets = useCallback(async () => {
+    try {
+      setHashtagSetsLoading(true);
+      const res = await fetch("/api/hashtags");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setHashtagSets(data.sets || []);
+    } catch {
+      // non-fatal
+    } finally {
+      setHashtagSetsLoading(false);
+    }
+  }, []);
+
+  const handleAddHashtagSet = async () => {
+    const name = newHashtagSetName.trim();
+    const tags = newHashtagSetTags
+      .split(/\s+/)
+      .filter((t) => t.length > 0)
+      .map((t) => (t.startsWith("#") ? t : `#${t}`));
+    if (!name || tags.length === 0) return;
+
+    try {
+      const res = await fetch("/api/hashtags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, tags }),
+      });
+      if (!res.ok) throw new Error("Failed to save hashtag set");
+      await fetchHashtagSets();
+      setNewHashtagSetName("");
+      setNewHashtagSetTags("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save hashtag set");
+    }
+  };
+
+  const handleDeleteHashtagSet = async (name: string) => {
+    try {
+      const res = await fetch("/api/hashtags", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) throw new Error("Failed to delete hashtag set");
+      await fetchHashtagSets();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete hashtag set");
+    }
+  };
+
+  // Templates
+  const fetchTemplates = useCallback(async () => {
+    try {
+      setTemplatesLoading(true);
+      const res = await fetch("/api/templates");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setTemplates(data.templates || []);
+    } catch {
+      // non-fatal
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
   // Copy caption to clipboard
   const copyCaption = async (image: ImageEntry) => {
     const caption = image.caption;
@@ -282,9 +401,10 @@ export default function ReviewPage() {
   // Switch view and fetch data
   const switchView = (mode: ViewMode) => {
     setViewMode(mode);
-    if (mode === "queue") {
-      fetchQueue();
-    }
+    setSelectedIds(new Set());
+    if (mode === "queue") fetchQueue();
+    if (mode === "templates") fetchTemplates();
+    if (mode === "hashtags") fetchHashtagSets();
   };
 
   const handlePublishToInstagram = async () => {
@@ -605,13 +725,33 @@ export default function ReviewPage() {
               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
-          Publish Queue
+          Queue
+        </button>
+        <button
+          onClick={() => switchView("templates")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "templates"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Templates
+        </button>
+        <button
+          onClick={() => switchView("hashtags")}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            viewMode === "hashtags"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Hashtag Bank
         </button>
       </div>
 
-      {/* Filter tabs (review mode only) */}
+      {/* Filter tabs + select-all (review mode only) */}
       {manifest && viewMode === "review" && (
-        <div className="flex gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-6">
           {(
             [
               { key: "all", label: "All" },
@@ -622,7 +762,10 @@ export default function ReviewPage() {
           ).map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setStatusFilter(key)}
+              onClick={() => {
+                setStatusFilter(key);
+                setSelectedIds(new Set());
+              }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 statusFilter === key
                   ? "bg-gray-900 text-white"
@@ -632,6 +775,49 @@ export default function ReviewPage() {
               {label} ({statusCounts[key]})
             </button>
           ))}
+          <div className="ml-auto flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={
+                  filteredImages.length > 0 &&
+                  filteredImages.every((i) => selectedIds.has(i.id))
+                }
+                onChange={toggleSelectAll}
+                className="rounded border-gray-300"
+              />
+              Select all
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Floating batch action bar */}
+      {manifest && viewMode === "review" && selectedIds.size > 0 && (
+        <div className="sticky top-4 z-10 mb-4 flex items-center justify-between bg-white border border-blue-200 rounded-xl shadow-lg px-5 py-3">
+          <span className="text-sm text-gray-700 font-medium">
+            {selectedIds.size} selected
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleBulkStatus("approved")}
+              className="px-4 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
+            >
+              ✅ Approve ({selectedIds.size})
+            </button>
+            <button
+              onClick={() => handleBulkStatus("rejected")}
+              className="px-4 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+            >
+              ❌ Reject ({selectedIds.size})
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
 
@@ -663,6 +849,7 @@ export default function ReviewPage() {
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
+                    {/* Status badge */}
                     {image.status === "approved" && (
                       <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
                         ✓ Approved
@@ -673,6 +860,16 @@ export default function ReviewPage() {
                         ✗ Rejected
                       </div>
                     )}
+                    {/* Selection checkbox */}
+                    <div className="absolute top-2 right-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(image.id)}
+                        onChange={() => toggleSelect(image.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 shadow-sm cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
                   </div>
 
                   {/* Info */}
@@ -1061,6 +1258,117 @@ export default function ReviewPage() {
           )}
         </div>
       )}
+
+      {/* Templates mode — template preview */}
+      {viewMode === "templates" && (
+        <div>
+          {templatesLoading ? (
+            <div className="text-center py-20 text-gray-500">Loading templates...</div>
+          ) : templates.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400 mb-2">No template images found.</p>
+              <p className="text-sm text-gray-400">Add .jpg, .png, or .webp files to the templates/ folder.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {templates.map((t) => (
+                <div
+                  key={t.filename}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className="aspect-square bg-gray-100">
+                    <img
+                      src={`/api/images/${t.filename}`}
+                      alt={t.filename}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-2.5">
+                    <p className="text-xs text-gray-700 truncate font-medium">{t.filename}</p>
+                    <p className="text-[10px] text-gray-400">{t.sizeKB} KB</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hashtag Bank mode */}
+      {viewMode === "hashtags" && (
+        <div className="max-w-2xl">
+          <p className="text-sm text-gray-500 mb-6">
+            Create reusable hashtag sets you can apply to any post. Tags will be merged
+            into the caption alongside the AI-generated ones.
+          </p>
+
+          {/* Add new set */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">New Hashtag Set</h3>
+            <div className="space-y-2">
+              <input
+                value={newHashtagSetName}
+                onChange={(e) => setNewHashtagSetName(e.target.value)}
+                placeholder="Set name (e.g., motivation, philosophy)"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <input
+                value={newHashtagSetTags}
+                onChange={(e) => setNewHashtagSetTags(e.target.value)}
+                placeholder="Tags separated by spaces (e.g., #motivation #inspiration #goals)"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                onClick={handleAddHashtagSet}
+                disabled={!newHashtagSetName.trim() || !newHashtagSetTags.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                Add Set
+              </button>
+            </div>
+          </div>
+
+          {/* Existing sets */}
+          {hashtagSetsLoading ? (
+            <div className="text-center py-10 text-gray-500">Loading hashtag sets...</div>
+          ) : hashtagSets.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              No hashtag sets yet. Create your first one above.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {hashtagSets.map((set) => (
+                <div
+                  key={set.name}
+                  className="bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-700">{set.name}</h4>
+                    <button
+                      onClick={() => handleDeleteHashtagSet(set.name)}
+                      className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {set.tags.map((tag, ti) => (
+                      <span
+                        key={ti}
+                        className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Preview modal */}
       {previewImage && (
         <div
