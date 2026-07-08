@@ -191,6 +191,33 @@ export function updateSelectedCaptionIndex(
 }
 
 /**
+ * Get all batches (summaries for history listing).
+ */
+export function getAllBatches(): Array<{
+  id: string;
+  generatedAt: string;
+  trigger: "cli" | "web";
+  imageCount: number;
+  approvedCount: number;
+}> {
+  return readManifest().map((m) => ({
+    id: m.batch.id,
+    generatedAt: m.batch.generatedAt,
+    trigger: m.batch.trigger,
+    imageCount: m.images.length,
+    approvedCount: m.images.filter((i) => i.status === "approved").length,
+  }));
+}
+
+/**
+ * Get a specific batch by ID.
+ */
+export function getBatchById(batchId: string): Manifest | null {
+  const manifests = readManifest();
+  return manifests.find((m) => m.batch.id === batchId) || null;
+}
+
+/**
  * Get approved images from the latest batch.
  */
 export function getApprovedImages(): ImageEntry[] {

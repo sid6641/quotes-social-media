@@ -63,6 +63,16 @@ export default function ReviewPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("review");
   const [queue, setQueue] = useState<QueueEntry[]>([]);
   const [queueLoading, setQueueLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Batch history
+  const [allBatches, setAllBatches] = useState<
+    Array<{ id: string; generatedAt: string; trigger: string; imageCount: number; approvedCount: number }>
+  >([]);
+  const [batchSelectorOpen, setBatchSelectorOpen] = useState(false);
+
+  // Preview modal
+  const [previewImage, setPreviewImage] = useState<ImageEntry | null>(null);
 
   const fetchLatestBatch = useCallback(async () => {
     try {
@@ -217,6 +227,55 @@ export default function ReviewPage() {
       setError(err instanceof Error ? err.message : "Publish failed");
     } finally {
       setPublishing(false);
+    }
+  };
+
+  // Batch history
+  const fetchAllBatches = useCallback(async () => {
+    try {
+      const res = await fetch("/api/manifest?all=true");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setAllBatches(data.batches || []);
+    } catch {
+      // non-fatal
+    }
+  }, []);
+
+  const switchBatch = async (batchId: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/manifest?batchId=${batchId}`);
+      if (!res.ok) throw new Error("Failed to load batch");
+      const data = await res.json();
+      setManifest(data);
+      setBatchSelectorOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load batch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Copy caption to clipboard
+  const copyCaption = async (image: ImageEntry) => {
+    const caption = image.caption;
+    if (!caption) return;
+    const text = `${caption.commentary}\n\n${caption.hashtags.join(" ")}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(image.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // fallback for insecure contexts
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopiedId(image.id);
+      setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
@@ -406,11 +465,47 @@ export default function ReviewPage() {
             Quote Image Review
           </h1>
           {manifest && (
-            <p className="text-sm text-gray-500 mt-1">
-              Batch: {manifest.batch.id} &middot; Generated{" "}
-              {new Date(manifest.batch.generatedAt).toLocaleString()} &middot;
-              Trigger: {manifest.batch.trigger}
-            </p>
+            <div className="text-sm text-gray-500 mt-1 relative">
+              {/* Batch selector */}
+              <span
+                className="cursor-pointer hover:text-gray-700 transition-colors"
+                onClick={() => {
+                  fetchAllBatches();
+                  setBatchSelectorOpen(!batchSelectorOpen);
+                }}
+              >
+                📦 Batch: {manifest.batch.id} ▾
+              </span>
+              &middot; Generated{" "}
+              {new Date(manifest.batch.generatedAt).toLocaleString()}
+              &middot; Trigger: {manifest.batch.trigger}
+
+              {batchSelectorOpen && allBatches.length > 0 && (
+                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[280px] max-h-60 overflow-y-auto">
+                  {allBatches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => switchBatch(b.id)}
+                      className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 ${
+                        b.id === manifest.batch.id
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      <span className="font-medium">{b.id}</span>
+                      <span className="text-gray-400 ml-2">
+                        {b.imageCount} image{b.imageCount !== 1 ? "s" : ""}
+                        {b.approvedCount > 0 && ` · ${b.approvedCount} approved`}
+                      </span>
+                      <br />
+                      <span className="text-gray-400">
+                        {new Date(b.generatedAt).toLocaleString()} · {b.trigger}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
         <div className="flex gap-3">
@@ -805,6 +900,24 @@ export default function ReviewPage() {
                         Move to Approved
                       </button>
                     )}
+
+                    {/* Preview & Copy buttons */}
+                    {image.caption && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => setPreviewImage(image)}
+                          className="flex-1 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors text-xs font-medium"
+                        >
+                          👁️ Preview
+                        </button>
+                        <button
+                          onClick={() => copyCaption(image)}
+                          className="flex-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors text-xs font-medium"
+                        >
+                          {copiedId === image.id ? "✅ Copied!" : "📋 Copy Caption"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -946,6 +1059,61 @@ export default function ReviewPage() {
               </div>
             </>
           )}
+        </div>
+      )}
+      {/* Preview modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Phone-like frame */}
+            <div className="bg-gray-100 p-4">
+              <img
+                src={`/api/images/${previewImage.filename}`}
+                alt="Post preview"
+                className="w-full aspect-square rounded-lg object-cover shadow-md"
+              />
+            </div>
+            {/* Caption overlay */}
+            {previewImage.caption && (
+              <div className="p-5">
+                <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                  {previewImage.caption.commentary}
+                </p>
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {previewImage.caption.hashtags.map((tag, ti) => (
+                    <span
+                      key={ti}
+                      className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => copyCaption(previewImage)}
+                    className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                  >
+                    {copiedId === previewImage.id
+                      ? "✅ Copied!"
+                      : "📋 Copy Caption"}
+                  </button>
+                  <button
+                    onClick={() => setPreviewImage(null)}
+                    className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </main>
