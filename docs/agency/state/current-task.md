@@ -26,4 +26,6 @@
 
 ## Next Micro-Step
 
-Run daily: generate → approve → export. Post manually to Instagram from the exported content folder.
+Autopilot is set up. Run `npm run cli autopilot` to execute the full pipeline.
+Use `--setup-cron` to install daily cron at 08:00.
+Next feature: Phase C — AI Quote Generation.

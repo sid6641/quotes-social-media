@@ -17,6 +17,7 @@ import "dotenv/config";
 import { runGenerate } from "./generate";
 import { runPublish } from "./publish";
 import { runExport, printExportUsage } from "./export";
+import { runAutopilotCmd, printAutopilotUsage } from "./autopilot";
 import { runQuotes, printQuotesUsage } from "./quotes";
 import { runAccount, printAccountUsage } from "./account";
 import { listQuotes, listTemplates, listPrompts } from "./list";
@@ -31,6 +32,7 @@ Usage:
   npm run cli generate  [options]    Generate a batch of quote images
   npm run cli publish   [options]    Process the publish queue
   npm run cli export    [options]    Export a content calendar for manual posting
+  npm run cli autopilot [options]    Run the full pipeline (generate → approve → export)
   npm run cli account   <command>    Manage accounts
   npm run cli quotes    <command>    Manage the quote pool
   npm run cli list      <resource>   List available resources
@@ -52,6 +54,15 @@ Options (export):
   --days <n>         Number of days to schedule (default: 7)
   --account <id>     Scope to a specific account
   --json             Output results as JSON (for piping)
+
+Options (autopilot):
+  --account <id>     Run for a specific account only
+  --count <n>        Images per account (default: 10)
+  --dry-run          Show what would happen without doing it
+  --setup-cron       Install daily cron job at 08:00
+  --remove-cron      Remove the cron job
+  --cron-status      Check if cron is installed
+  --json             JSON output (for piping)
 
 Account commands:
   create <id>                   Create a new account
@@ -96,6 +107,11 @@ Examples:
   npm run cli export                           Export 7-day content calendar
   npm run cli export -- --days 14              Export 14-day calendar
   npm run cli export -- --account deepthoughts Export for a specific account
+  npm run cli autopilot                        Run full pipeline for all accounts
+  npm run cli autopilot -- --account dailygrind  Single account
+  npm run cli autopilot -- --dry-run           Preview without executing
+  npm run cli autopilot -- --setup-cron        Install daily cron job (08:00)
+  npm run cli autopilot -- --cron-status       Check if cron is installed
   npm run --silent cli account list -- --json | jq '.accounts[].id'
   npm run --silent cli quotes stats -- --json | jq '{available, cooldown}'
   npm run cli quotes add "Be yourself." --author Wilde --theme life
@@ -160,6 +176,42 @@ function parseArgs(): {
       } else if (arg === "--account" && i + 1 < args.length) {
         result.flags.account = args[i + 1];
         i += 2;
+      } else if (arg === "--json") {
+        result.flags.json = true;
+        i += 1;
+      } else if (arg === "--help" || arg === "-h") {
+        result.command = "help";
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return result;
+  }
+
+  if (command === "autopilot") {
+    result.command = "autopilot";
+    let i = 1;
+    while (i < args.length) {
+      const arg = args[i];
+      if (arg === "--account" && i + 1 < args.length) {
+        result.flags.account = args[i + 1];
+        i += 2;
+      } else if (arg === "--count" && i + 1 < args.length) {
+        result.flags.count = parseInt(args[i + 1], 10);
+        i += 2;
+      } else if (arg === "--dry-run") {
+        result.flags["dry-run"] = true;
+        i += 1;
+      } else if (arg === "--setup-cron") {
+        result.flags["setup-cron"] = true;
+        i += 1;
+      } else if (arg === "--remove-cron") {
+        result.flags["remove-cron"] = true;
+        i += 1;
+      } else if (arg === "--cron-status") {
+        result.flags["cron-status"] = true;
+        i += 1;
       } else if (arg === "--json") {
         result.flags.json = true;
         i += 1;
@@ -331,6 +383,30 @@ async function main(): Promise<void> {
         typeof flags.account === "string" ? flags.account : undefined;
 
       await runExport({ accountId, days: exportDays, jsonOutput });
+      return;
+    }
+    case "autopilot": {
+      const accountId =
+        typeof flags.account === "string" ? flags.account : undefined;
+      const count =
+        typeof flags.count === "number" && flags.count > 0
+          ? flags.count
+          : undefined;
+      const dryRun = flags["dry-run"] === true;
+      const jsonOutput = flags.json === true;
+      const setupCron = flags["setup-cron"] === true;
+      const removeCron = flags["remove-cron"] === true;
+      const cronStatus = flags["cron-status"] === true;
+
+      await runAutopilotCmd({
+        accountId,
+        count,
+        dryRun,
+        jsonOutput,
+        setupCron,
+        removeCron,
+        cronStatus,
+      });
       return;
     }
     case "account": {
