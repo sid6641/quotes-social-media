@@ -22,7 +22,7 @@ export interface CaptionData {
  * Must support image input — gemini-2.0-flash does.
  * Override via GEMINI_TEXT_MODEL env var.
  */
-const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.0-flash";
+const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash-image";
 const OPTIONS_COUNT = 5;
 
 const CAPTION_PROMPT = `You are a social media caption writer for an inspirational quotes Instagram page. Your tone is warm, relatable, and slightly aspirational.

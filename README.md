@@ -154,7 +154,7 @@ quotes-social-media/
 |----------|---------|-------------|
 | `GEMINI_API_KEY` | — | **Required.** Gemini API key |
 | `GEMINI_MODEL` | `gemini-2.0-flash-exp-image-generation` | Image generation model |
-| `GEMINI_TEXT_MODEL` | `gemini-2.0-flash` | Caption generation model |
+| `GEMINI_TEXT_MODEL` | `gemini-2.5-flash-image` | Caption generation model (must support image+text input) |
 | `PUBLISH_TIME` | `09:00` | Daily publish queue processing time |
 
 ## Roadmap
