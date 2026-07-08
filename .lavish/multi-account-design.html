@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Account Quote Platform — Design Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" />
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .card-highlight { border-left: 4px solid var(--color-primary); }
+    .risk-high { border-left: 4px solid #ef4444; }
+    .risk-med { border-left: 4px solid #f59e0b; }
+    .code-badge { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.75rem; }
+  </style>
+</head>
+<body class="bg-base-300 min-h-screen">
+  <div class="max-w-6xl mx-auto p-4 lg:p-8">
+
+    <!-- Header -->
+    <header class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-4xl">🏗️</span>
+        <h1 class="text-3xl lg:text-4xl font-bold text-base-content">
+          Multi-Account Quote Platform
+        </h1>
+      </div>
+      <p class="text-base-content/70 text-lg max-w-3xl">
+        Design proposal for evolving quotes-social-media from a single-user generator
+        into an autopilot system managing <strong>20+ Instagram accounts</strong>
+        with self-sustaining quote pools, scheduled publishing, and full isolation.
+      </p>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <span class="badge badge-primary badge-lg">Phase 2</span>
+        <span class="badge badge-outline badge-lg">2026-07-08</span>
+        <span class="badge badge-outline badge-lg">v0.2 Proposal</span>
+      </div>
+    </header>
+
+    <!-- Current State / Target State comparison -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Current vs. Target</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-error">🟡 Current State</h3>
+            <ul class="text-sm space-y-2 mt-2">
+              <li>📄 Single flat <code>quotes/sample.txt</code> — manual edits</li>
+              <li>👤 One user, one Instagram account</li>
+              <li>⏰ Manual trigger — CLI or web button</li>
+              <li>📋 Single publish queue, one daily slot</li>
+              <li>🔁 No quote recycling or cooldown</li>
+              <li>🏷️ No categories or themes</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm border-2 border-primary/30">
+          <div class="card-body">
+            <h3 class="card-title text-success">🟢 Target State</h3>
+            <ul class="text-sm space-y-2 mt-2">
+              <li>🧠 Self-managing quote pool — AI inflow, cooldown, retirement</li>
+              <li>👥 20+ isolated accounts, each with theme + schedule</li>
+              <li>🤖 Fully automated — daily cron triggers everything</li>
+              <li>📅 Per-account publish queues with timezone-aware schedules</li>
+              <li>♻️ Quote lifecycle: available → used → cooldown → recycle</li>
+              <li>🏷️ Categories + engagement tracking per quote</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Diagram -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Architecture Overview</h2>
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <div class="mermaid">
+            graph TB
+              subgraph Inputs
+                QF[quotes/ text files]
+                AI[AI Quote Generator<br/>Gemini]
+                WEB[Web UI<br/>Manual add]
+              end
+
+              subgraph Core["Quote Pool (output/quote-pool.json)"]
+                AV[Available Queue]
+                CD[Cooldown Queue]
+                RT[Retired Archive]
+              end
+
+              subgraph Accts["Account Sandboxes (output/accounts/)"]
+                A1[Account: @dailygrind<br/>theme: motivation, life<br/>schedule: 9AM PST]
+                A2[Account: @deepthoughts<br/>theme: philosophy<br/>schedule: 12PM PST]
+                A3["Account: ... (up to 20+)"]
+              end
+
+              subgraph Output
+                GEN[Batch Generator<br/>pick → Gemini → save]
+                PUB[Publish Queue<br/>per account]
+                IG[Instagram<br/>Graph API]
+              end
+
+              QF --> AV
+              AI --> AV
+              WEB --> AV
+              AV --> GEN
+              CD -.->|cooldown expires| AV
+              GEN -->|marks used| CD
+              RT -.->|manual restore| AV
+
+              GEN --> A1
+              GEN --> A2
+              GEN --> A3
+              A1 --> PUB
+              PUB --> IG
+          </div>
+          <p class="text-sm text-base-content/60 mt-4">
+            Each account is a fully isolated sandbox with its own theme, schedule, queue, and Instagram connection.
+            The quote pool is shared across accounts but each quote tracks which account used it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quote Pool Lifecycle -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Quote Pool Lifecycle</h2>
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <div class="mermaid">
+            stateDiagram-v2
+              [*] --> Available: Imported / AI-generated
+              Available --> Used: Picked for batch
+              Used --> Cooldown: Posted to Instagram
+              Cooldown --> Available: 30 days elapsed
+              Available --> Retired: Never used for 90 days
+              Retired --> Available: Manual restore
+              Cooldown --> Retired: Used 5+ times
+          </div>
+          <div class="overflow-x-auto mt-6">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>State</th>
+                  <th>Definition</th>
+                  <th>Auto-transition</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">Available</span></td>
+                  <td>Ready to be picked for any account</td>
+                  <td>→ Used when selected for a batch</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">Used</span></td>
+                  <td>Picked but not yet posted (in publish queue)</td>
+                  <td>→ Cooldown after successful post</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info badge-sm">Cooldown</span></td>
+                  <td>Recently posted — hidden from selection</td>
+                  <td>→ Available after N days (configurable per account)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-neutral badge-sm">Retired</span></td>
+                  <td>Stale or overused — excluded from autopick</td>
+                  <td>→ Available only via manual restore</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Account Sandbox Model -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Account Sandbox Model</h2>
+      <p class="text-base-content/70 mb-4">
+        Each account is a first-class isolated unit. Everything lives under <code>output/accounts/&lt;account-id&gt;/</code>.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Data model card -->
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-lg">📁 Directory Layout</h3>
+            <div class="mockup-code mt-2 text-xs">
+              <pre data-prefix="$">output/accounts/</pre>
+              <pre data-prefix="">├── dailygrind/</pre>
+              <pre data-prefix="">│   ├── config.json      # Theme, schedule, IG auth</pre>
+              <pre data-prefix="">│   ├── queue.json        # Publish queue</pre>
+              <pre data-prefix="">│   ├── manifest.json     # Generated batches</pre>
+              <pre data-prefix="">│   └── images/           # Generated images + reels</pre>
+              <pre data-prefix="">├── deepthoughts/</pre>
+              <pre data-prefix="">│   └── ...</pre>
+              <pre data-prefix="">└── output/</pre>
+              <pre data-prefix="">    ├── quote-pool.json   # Shared quote pool</pre>
+              <pre data-prefix="">    └── logs/             # Structured pino logs</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Config model card -->
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-lg">⚙️ Account Config</h3>
+            <div class="mockup-code mt-2 text-xs">
+              <pre data-prefix="1">{</pre>
+              <pre data-prefix="2">  "id": "dailygrind",</pre>
+              <pre data-prefix="3">  "name": "@daily.motivation",</pre>
+              <pre data-prefix="4">  "theme": ["motivation", "life"],</pre>
+              <pre data-prefix="5">  "schedule": {</pre>
+              <pre data-prefix="6">    "time": "09:00",</pre>
+              <pre data-prefix="7">    "timezone": "America/New_York",</pre>
+              <pre data-prefix="8">    "postsPerDay": 1,</pre>
+              <pre data-prefix="9">    "reelsPerWeek": 2</pre>
+              <pre data-prefix="10">  },</pre>
+              <pre data-prefix="11">  "instagram": {</pre>
+              <pre data-prefix="12">    "igUserId": "...",</pre>
+              <pre data-prefix="13">    "pageId": "..."</pre>
+              <pre data-prefix="14">  },</pre>
+              <pre data-prefix="15">  "cooldownDays": 30,</pre>
+              <pre data-prefix="16">  "enabled": true</pre>
+              <pre data-prefix="17">}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account isolation table -->
+      <div class="overflow-x-auto mt-4">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Concern</th>
+              <th>Shared (Quote Pool)</th>
+              <th>Isolated (Per Account)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Quotes</td>
+              <td>Pool is shared — quotes can be used across accounts</td>
+              <td>Each quote tracks which accounts used it</td>
+            </tr>
+            <tr>
+              <td>Templates</td>
+              <td>Background images can be shared</td>
+              <td>Each account can have its own template set</td>
+            </tr>
+            <tr>
+              <td>Schedule</td>
+              <td>—</td>
+              <td>Per-account timezone + frequency</td>
+            </tr>
+            <tr>
+              <td>Publish Queue</td>
+              <td>—</td>
+              <td>Fully separate queue per account</td>
+            </tr>
+            <tr>
+              <td>Instagram Auth</td>
+              <td>—</td>
+              <td>Per-account IG credentials</td>
+            </tr>
+            <tr>
+              <td>Prompt Templates</td>
+              <td>Can be shared</td>
+              <td>Accounts can override with custom prompts</td>
+            </tr>
+            <tr>
+              <td>Engagement Data</td>
+              <td>—</td>
+              <td>Per-account analytics (future)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Autopilot scheduling -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Autopilot Scheduling</h2>
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <div class="mermaid">
+            timeline
+              title Daily Autopilot Flow (per account)
+              00:00 : Cron checks all enabled accounts
+                     : For each, check schedule
+              00:05 : Quote pool: AI generates N fresh quotes<br/>if pool is running low
+              00:10 : Batch generator: pick combos<br/>from available pool by theme
+              00:15 : Generate images via Gemini
+              00:20 : Generate captions (5 options)
+              00:25 : Auto-approve best option<br/>(or skip if review required)
+              09:00 : Publish to Instagram<br/>Mark quotes as used → cooldown
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="stat bg-base-200 rounded-box p-4">
+              <div class="stat-title text-sm">AI Quotes Generated</div>
+              <div class="stat-value text-primary">~5/day</div>
+              <div class="stat-desc">Per account, when pool dips below threshold</div>
+            </div>
+            <div class="stat bg-base-200 rounded-box p-4">
+              <div class="stat-title text-sm">Pool Capacity</div>
+              <div class="stat-value text-secondary">500-1000</div>
+              <div class="stat-desc">Quota before AI regeneration kicks in</div>
+            </div>
+            <div class="stat bg-base-200 rounded-box p-4">
+              <div class="stat-title text-sm">Cooldown Period</div>
+              <div class="stat-value text-accent">30 days</div>
+              <div class="stat-desc">Configurable per account</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLI commands -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Proposed CLI Commands</h2>
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+          <div class="mockup-code text-sm">
+            <pre data-prefix="$"># Account management</pre>
+            <pre data-prefix="$">npm run cli account create dailygrind --theme motivation,life --time 09:00 --tz America/New_York</pre>
+            <pre data-prefix="$">npm run cli account list</pre>
+            <pre data-prefix="$">npm run cli account config dailygrind --set cooldownDays 14</pre>
+            <pre data-prefix=" "> </pre>
+            <pre data-prefix="$"># Quote pool</pre>
+            <pre data-prefix="$">npm run cli quotes list --status available --theme motivation</pre>
+            <pre data-prefix="$">npm run cli quotes generate --count 20 --theme philosophy</pre>
+            <pre data-prefix="$">npm run cli quotes add "The unexamined life is not worth living." --theme philosophy --author Socrates</pre>
+            <pre data-prefix="$">npm run cli quotes stats</pre>
+            <pre data-prefix=" "> </pre>
+            <pre data-prefix="$"># Generation (account-scoped)</pre>
+            <pre data-prefix="$">npm run cli generate --account dailygrind --count 2</pre>
+            <pre data-prefix="$">npm run cli generate --account deepthoughts --dry-run</pre>
+            <pre data-prefix=" "> </pre>
+            <pre data-prefix="$"># Publishing</pre>
+            <pre data-prefix="$">npm run cli publish --account dailygrind</pre>
+            <pre data-prefix="$">npm run cli publish --all                    # all enabled accounts</pre>
+            <pre data-prefix="$">npm run cli publish --status</pre>
+            <pre data-prefix=" "> </pre>
+            <pre data-prefix="$"># Autopilot daemon</pre>
+            <pre data-prefix="$">npm run cli daemon start                    # starts the scheduler</pre>
+            <pre data-prefix="$">npm run cli daemon status</pre>
+            <pre data-prefix="$">npm run cli daemon stop</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Web UI Mockups -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Web UI — New Views</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="badge badge-primary">New</span>
+              <h3 class="card-title text-lg">📊 Dashboard</h3>
+            </div>
+            <ul class="text-sm space-y-2 text-base-content/80">
+              <li>✅ Overview of all accounts — status, next post, queue depth</li>
+              <li>📈 Quote pool health — available vs cooldown vs retired</li>
+              <li>⏰ Next 5 scheduled posts across all accounts</li>
+              <li>⚠️ Alerts: low pool, auth expired, publish failures</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="badge badge-primary">New</span>
+              <h3 class="card-title text-lg">📖 Quotes Manager</h3>
+            </div>
+            <ul class="text-sm space-y-2 text-base-content/80">
+              <li>📋 Browse pool by state (available / cooldown / retired)</li>
+              <li>🔍 Filter by theme, account, date range</li>
+              <li>➕ Add quotes manually or "Generate 20 about resilience"</li>
+              <li>📤 Bulk import from text files</li>
+              <li>📊 See usage stats per quote</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="badge badge-primary">New</span>
+              <h3 class="card-title text-lg">👤 Account Settings</h3>
+            </div>
+            <ul class="text-sm space-y-2 text-base-content/80">
+              <li>⚙️ Create / edit / delete accounts</li>
+              <li>🎨 Theme selection (multi-select from pool categories)</li>
+              <li>📅 Schedule config (time, timezone, frequency)</li>
+              <li>🔐 Instagram auth setup per account</li>
+              <li>🧪 Test connection button</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="badge badge-primary">New</span>
+              <h3 class="card-title text-lg">📅 Content Calendar</h3>
+            </div>
+            <ul class="text-sm space-y-2 text-base-content/80">
+              <li>🗓️ Month view of all queued/published posts</li>
+              <li>🎨 Color-coded by account</li>
+              <li>📝 Click to preview image + caption</li>
+              <li>🔄 Drag to reschedule</li>
+              <li>📊 Published vs planned ratio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data Model -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Data Model</h2>
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Contents</th>
+              <th>Scope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>output/quote-pool.json</code></td>
+              <td>All quotes with states, themes, usage history</td>
+              <td>Global</td>
+            </tr>
+            <tr>
+              <td><code>output/accounts/&lt;id&gt;/config.json</code></td>
+              <td>Account config: theme, schedule, IG auth, cooldown</td>
+              <td>Per account</td>
+            </tr>
+            <tr>
+              <td><code>output/accounts/&lt;id&gt;/manifest.json</code></td>
+              <td>Generated batches (current per-account, extended)</td>
+              <td>Per account</td>
+            </tr>
+            <tr>
+              <td><code>output/accounts/&lt;id&gt;/queue.json</code></td>
+              <td>Publish queue (replaces global queue)</td>
+              <td>Per account</td>
+            </tr>
+            <tr>
+              <td><code>output/accounts/&lt;id&gt;/learning.json</code></td>
+              <td>Caption learning store (per account style)</td>
+              <td>Per account</td>
+            </tr>
+            <tr>
+              <td><code>output/accounts/&lt;id&gt;/hashtags.json</code></td>
+              <td>Hashtag bank (per account sets)</td>
+              <td>Per account</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Implementation Phases -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Implementation Phases</h2>
+      <ul class="steps steps-vertical lg:steps-horizontal w-full">
+        <li class="step step-primary">
+          <div>
+            <div class="font-semibold">Phase A</div>
+            <div class="text-xs text-base-content/60">Quote Pool + Quotes UI</div>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <div class="font-semibold">Phase B</div>
+            <div class="text-xs text-base-content/60">Account Sandboxes</div>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <div class="font-semibold">Phase C</div>
+            <div class="text-xs text-base-content/60">AI Quote Generation</div>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <div class="font-semibold">Phase D</div>
+            <div class="text-xs text-base-content/60">Autopilot Scheduler</div>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <div class="font-semibold">Phase E</div>
+            <div class="text-xs text-base-content/60">Content Calendar UI</div>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <div class="font-semibold">Phase F</div>
+            <div class="text-xs text-base-content/60">Multi-IG Publishing</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Risks -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-bold text-base-content mb-4">Risks & Open Questions</h2>
+
+      <div class="space-y-3">
+        <div class="card bg-base-100 shadow-sm risk-high">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">🔴</span>
+              <div>
+                <h4 class="font-semibold text-sm">IG Rate Limits + Anti-Spam</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  20 accounts posting daily = ~20 API calls/day minimum. Meta's rate limits and
+                  anti-spam detection are aggressive for new accounts. Accounts need to be aged
+                  and warmed up before heavy use. We need a rate limiter and gradual ramp-up.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm risk-high">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">🔴</span>
+              <div>
+                <h4 class="font-semibold text-sm">Instagram Auth Rotation</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  Dev tokens expire in ~2 hours. Long-lived tokens last 60 days.
+                  Need a token refresh system for 20+ accounts or we'll wake up to 20 failed posts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm risk-med">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">🟡</span>
+              <div>
+                <h4 class="font-semibold text-sm">AI Quote Quality</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  AI-generated quotes can be generic. Need a quality gate: minimum length,
+                  uniqueness check against pool, sentiment/toxicity filter.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm risk-med">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">🟡</span>
+              <div>
+                <h4 class="font-semibold text-sm">Daemon Reliability</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  The autopilot scheduler needs to run 24/7. Currently the app is a Next.js server + CLI.
+                  Options: (a) cron job, (b) persistent daemon process, (c) GitHub Actions scheduler.
+                  Each has tradeoffs for 20 accounts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">❓</span>
+              <div>
+                <h4 class="font-semibold text-sm">Open Question: Template Management</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  Should each account have its own template set, or should templates be
+                  global with accounts selecting a subset? Different accounts may want
+                  distinct visual identities.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm">
+          <div class="card-body py-3 px-4">
+            <div class="flex items-start gap-3">
+              <span class="text-lg mt-0.5">❓</span>
+              <div>
+                <h4 class="font-semibold text-sm">Open Question: Content Originality</h4>
+                <p class="text-xs text-base-content/70 mt-1">
+                  With 20 accounts all pulling from the same quote pool, how do we ensure
+                  two accounts don't post the same quote on the same day? Need cross-account
+                  dedup in the picker.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Next Action -->
+    <section class="mb-10">
+      <div class="card bg-primary text-primary-content">
+        <div class="card-body text-center">
+          <h2 class="text-xl font-bold">Ready to build Phase A?</h2>
+          <p class="mt-2 opacity-90">Phase A = Quote Pool module + Quotes web UI + import from existing text file.</p>
+          <div class="flex justify-center gap-3 mt-4">
+            <button class="btn btn-accent" onclick="alert('Captain approved — proceed with Phase A!')">👍 Start Phase A</button>
+            <button class="btn btn-ghost" onclick="alert('Open a discussion point in the browser annotations.')">💬 Discuss changes</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-base-content/40 py-8 border-t border-base-content/10">
+      quotes-social-media · Design Document · 2026-07-08
+    </footer>
+
+  </div>
+</body>
+</html>
