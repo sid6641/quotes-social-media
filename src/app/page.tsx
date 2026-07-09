@@ -95,6 +95,7 @@ export default function ReviewPage() {
   // Templates
   const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string; filePath?: string; isFavorite?: boolean }>>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templateFilter, setTemplateFilter] = useState<"all" | "favorites">("all");
 
   // Hashtag bank
   const [hashtagSets, setHashtagSets] = useState<Array<{ name: string; tags: string[] }>>([]);
@@ -1610,6 +1611,30 @@ export default function ReviewPage() {
       {/* Templates mode — template preview */}
       {viewMode === "templates" && (
         <div>
+          {/* Template filter bar */}
+          {selectedAccount && templates.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              {([{ key: "all", label: "All" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setTemplateFilter(key)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    templateFilter === key
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {label}
+                  {key === "favorites" && (
+                    <span className="ml-1.5 text-xs opacity-70">
+                      ({templates.filter((t) => t.isFavorite).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
           {templatesLoading ? (
             <div className="text-center py-20 text-gray-500">Loading templates...</div>
           ) : templates.length === 0 ? (
@@ -1619,7 +1644,9 @@ export default function ReviewPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {templates.map((t) => (
+              {templates
+                .filter((t) => templateFilter === "all" || t.isFavorite)
+                .map((t) => (
                 <div
                   key={t.filename}
                   className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
