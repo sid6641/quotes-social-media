@@ -20,6 +20,7 @@ import { runExport, printExportUsage } from "./export";
 import { runAutopilotCmd, printAutopilotUsage } from "./autopilot";
 import { runQuotes, printQuotesUsage } from "./quotes";
 import { runAccount, printAccountUsage } from "./account";
+import { runReset, printResetUsage } from "./reset";
 import { listQuotes, listTemplates, listPrompts } from "./list";
 import { createLogger } from "../lib/logger";
 const log = createLogger("cli");
@@ -36,6 +37,7 @@ Usage:
   npm run cli account   <command>    Manage accounts
   npm run cli quotes    <command>    Manage the quote pool
   npm run cli list      <resource>   List available resources
+  npm run cli reset     [options]    Wipe ALL generated data for a fresh start
   npm run generate                   Shorthand: generate with defaults
 
 Options (generate):
@@ -54,6 +56,10 @@ Options (export):
   --days <n>         Number of days to schedule (default: 7)
   --account <id>     Scope to a specific account
   --json             Output results as JSON (for piping)
+
+Options (reset):
+  --force            Skip confirmation prompt
+  --json             JSON output (for scripting)
 
 Options (autopilot):
   --account <id>     Generate for a specific account only
@@ -105,6 +111,9 @@ Examples:
   npm run cli export                           Export 7-day content calendar
   npm run cli export -- --days 14              Export 14-day calendar
   npm run cli export -- --account deepthoughts Export for a specific account
+  npm run cli reset                            Wipe all data (with prompt)
+  npm run cli reset -- --force                 Wipe without prompt
+  npm run cli reset -- --json                  JSON result for scripting
   npm run cli autopilot                        Generate for all accounts
   npm run cli autopilot -- --account dailygrind  Generate for one account
   npm run cli autopilot -- --dry-run           Preview only
@@ -250,6 +259,27 @@ function parseArgs(): {
     return result;
   }
 
+  if (command === "reset") {
+    result.command = "reset";
+    let i = 1;
+    while (i < args.length) {
+      const arg = args[i];
+      if (arg === "--force") {
+        result.flags.force = true;
+        i += 1;
+      } else if (arg === "--json") {
+        result.flags.json = true;
+        i += 1;
+      } else if (arg === "--help" || arg === "-h") {
+        result.command = "help";
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return result;
+  }
+
   if (command === "list") {
     result.command = "list";
     result.subcommand = args[1];
@@ -377,6 +407,38 @@ async function main(): Promise<void> {
       await runExport({ accountId, days: exportDays, jsonOutput });
       return;
     }
+
+    case "reset": {
+      const force = flags.force === true;
+      const jsonOutput = flags.json === true;
+
+      if (!force) {
+        const readline = await import("readline");
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+        const answer = await new Promise<string>((resolve) => {
+          rl.question(
+            "⚠️  This will delete ALL accounts, images, calendars, and generated data.\n" +
+            "   Are you sure? (yes/no): ",
+            resolve
+          );
+        });
+        rl.close();
+        if (answer.toLowerCase() !== "yes" && answer.toLowerCase() !== "y") {
+          console.log("❌ Reset cancelled.");
+          return;
+        }
+      }
+
+      const result = runReset({ force: true, jsonOutput });
+      if (jsonOutput) {
+        console.log(JSON.stringify(result));
+      }
+      return;
+    }
+
     case "autopilot": {
       const accountId =
         typeof flags.account === "string" ? flags.account : undefined;
