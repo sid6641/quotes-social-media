@@ -614,7 +614,8 @@ export default function ReviewPage() {
   const fetchTemplates = useCallback(async () => {
     try {
       setTemplatesLoading(true);
-      const res = await fetch("/api/templates");
+      const accountParam = selectedAccount ? `?account=${encodeURIComponent(selectedAccount)}` : "";
+      const res = await fetch(`/api/templates${accountParam}`);
       if (!res.ok) return;
       const data = await res.json();
       if (data.success) setTemplates(data.templates || []);
@@ -623,7 +624,7 @@ export default function ReviewPage() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, []);
+  }, [selectedAccount]);
 
   // Copy caption to clipboard
   const copyCaption = async (image: ImageEntry) => {
@@ -840,7 +841,11 @@ export default function ReviewPage() {
             {/* Account selector */}
             <select
               value={selectedAccount}
-              onChange={(e) => setSelectedAccount(e.target.value)}
+              onChange={(e) => {
+                setSelectedAccount(e.target.value);
+                // Re-fetch current view's data when account changes
+                if (viewMode === "templates") fetchTemplates();
+              }}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
             >
               <option value="">All accounts</option>
