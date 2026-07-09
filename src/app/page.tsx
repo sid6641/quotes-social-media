@@ -1636,10 +1636,10 @@ export default function ReviewPage() {
                       <button
                         onClick={() => handleToggleFavorite(t.filename, !!t.isFavorite)}
                         disabled={favoriteToggling.has(t.filename)}
-                        className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                        className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
                           t.isFavorite
-                            ? "bg-yellow-400 text-white shadow-md"
-                            : "bg-white/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-yellow-50"
+                            ? "bg-yellow-400 text-white"
+                            : "bg-white text-gray-400 hover:bg-yellow-50 hover:text-yellow-500"
                         }`}
                         title={t.isFavorite ? "Remove from favorites" : "Add to favorites"}
                       >

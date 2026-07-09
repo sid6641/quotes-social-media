@@ -2,12 +2,9 @@
   {
     "id": "sid",
     "name": "sid",
-    "scope": [
-      "sid"
-    ],
     "cooldownDays": 30,
     "enabled": true,
-    "createdAt": "2026-07-09T15:02:54.343Z",
-    "updatedAt": "2026-07-09T15:02:54.343Z"
+    "createdAt": "2026-07-09T15:24:30.878Z",
+    "updatedAt": "2026-07-09T15:24:30.878Z"
   }
 ]

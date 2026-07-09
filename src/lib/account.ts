@@ -118,6 +118,7 @@ export function createAccount(config: Omit<AccountConfig, "createdAt" | "updated
   ensureDir(path.join(accountDir, "quotes"));
   ensureDir(path.join(accountDir, "templates"));
   ensureDir(path.join(accountDir, "prompts"));
+  ensureDir(path.join(accountDir, "favorites"));
 
   return account;
 }
@@ -222,6 +223,15 @@ export function getAccountQuotesDir(accountId: string): string {
  */
 export function getAccountPromptsDir(accountId: string): string {
   const dir = path.join(ACCOUNTS_DIR, accountId, "prompts");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the favorites directory for a specific account.
+ */
+export function getAccountFavoritesDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "favorites");
   ensureDir(dir);
   return dir;
 }

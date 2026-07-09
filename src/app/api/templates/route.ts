@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { getAccountTemplatesDir, getAccountDir } from "@/lib/account";
+import { getAccountTemplatesDir, getAccountFavoritesDir } from "@/lib/account";
 
 const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -24,9 +24,9 @@ interface TemplateEntry {
 export async function GET(request: NextRequest) {
   const accountId = request.nextUrl.searchParams.get("account");
 
-  // Load favorites set for this account
+  // Load favorites set for this account — stored at accounts/<id>/favorites/
   const favoritesDir = accountId
-    ? path.join(getAccountTemplatesDir(accountId), "favorites")
+    ? getAccountFavoritesDir(accountId)
     : null;
   const favorites = new Set<string>();
   if (favoritesDir && fs.existsSync(favoritesDir)) {
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     const templatesDir = getAccountTemplatesDir(accountId);
-    const favoritesDir = path.join(templatesDir, "favorites");
+    const favoritesDir = getAccountFavoritesDir(accountId);
 
     if (action === "favorite") {
       // Find the source file — check account templates first, then global
