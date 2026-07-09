@@ -93,7 +93,7 @@ export default function ReviewPage() {
   const [quoteFilter, setQuoteFilter] = useState<string>("all");
 
   // Templates
-  const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string }>>([]);
+  const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string; filePath?: string; isFavorite?: boolean }>>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
   // Hashtag bank
@@ -625,6 +625,39 @@ export default function ReviewPage() {
       setTemplatesLoading(false);
     }
   }, [selectedAccount]);
+
+  // Toggle template favorite
+  const [favoriteToggling, setFavoriteToggling] = useState<Set<string>>(new Set());
+  const handleToggleFavorite = async (filename: string, isFavorite: boolean) => {
+    if (!selectedAccount) return;
+    setFavoriteToggling((prev) => new Set(prev).add(filename));
+    try {
+      const res = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: isFavorite ? "unfavorite" : "favorite",
+          filename,
+          account: selectedAccount,
+        }),
+      });
+      if (res.ok) {
+        setTemplates((prev) =>
+          prev.map((t) =>
+            t.filename === filename ? { ...t, isFavorite: !isFavorite } : t
+          )
+        );
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setFavoriteToggling((prev) => {
+        const next = new Set(prev);
+        next.delete(filename);
+        return next;
+      });
+    }
+  };
 
   // Copy caption to clipboard
   const copyCaption = async (image: ImageEntry) => {
@@ -1589,19 +1622,37 @@ export default function ReviewPage() {
               {templates.map((t) => (
                 <div
                   key={t.filename}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
                 >
-                  <div className="aspect-square bg-gray-100">
+                  <div className="aspect-square bg-gray-100 relative">
                     <img
                       src={`/api/images/${t.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
                       alt={t.filename}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
+                    {/* Favorite star */}
+                    {selectedAccount && (
+                      <button
+                        onClick={() => handleToggleFavorite(t.filename, !!t.isFavorite)}
+                        disabled={favoriteToggling.has(t.filename)}
+                        className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          t.isFavorite
+                            ? "bg-yellow-400 text-white shadow-md"
+                            : "bg-white/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-yellow-50"
+                        }`}
+                        title={t.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        {t.isFavorite ? "★" : "☆"}
+                      </button>
+                    )}
                   </div>
                   <div className="p-2.5">
                     <p className="text-xs text-gray-700 truncate font-medium">{t.filename}</p>
                     <p className="text-[10px] text-gray-400">{t.sizeKB} KB</p>
+                    {t.filePath && (
+                      <p className="text-[9px] text-gray-300 truncate mt-0.5 font-mono">{t.filePath}</p>
+                    )}
                   </div>
                 </div>
               ))}
