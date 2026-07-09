@@ -14,6 +14,7 @@ import {
  * GET /api/accounts?id=xxx — get single account.
  */
 export async function GET(request: NextRequest) {
+  invalidateAccountsCache();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
