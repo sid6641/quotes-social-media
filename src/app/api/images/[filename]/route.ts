@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { getAccountImagesDir } from "@/lib/account";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
@@ -24,7 +25,7 @@ export async function GET(
   // Try account-specific dir first, then global output/, then templates/
   let filePath: string | null = null;
   if (accountId) {
-    const accountImagePath = path.join(OUTPUT_DIR, accountId, "images", filename);
+    const accountImagePath = path.join(getAccountImagesDir(accountId), filename);
     if (fs.existsSync(accountImagePath)) {
       filePath = accountImagePath;
     }

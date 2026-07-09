@@ -6,14 +6,32 @@ import { pickCombinations } from "@/lib/mixer";
 import { generateQuoteImage } from "@/lib/gemini";
 import { generateCaptionOptions } from "@/lib/caption";
 import { createBatch, generateBatchId, invalidateCache } from "@/lib/manifest";
+import { getAccount, getAccountDir, getAccountImagesDir, getAccountTemplatesDir } from "@/lib/account";
 
-const OUTPUT_DIR = path.resolve(process.cwd(), "output");
-const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
+const GLOBAL_OUTPUT = path.resolve(process.cwd(), "output");
+const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // 1. Load prompt template
-    const templates = listTemplates();
+    // 0. Parse optional account
+    const body = await request.json().catch(() => ({}));
+    const accountId: string | undefined = body.account;
+
+    // Resolve account-specific paths
+    const account = accountId ? getAccount(accountId) : undefined;
+    const outputDir = account ? getAccountDir(accountId!) : GLOBAL_OUTPUT;
+    const imagesDir = account ? getAccountImagesDir(accountId!) : GLOBAL_OUTPUT;
+
+    // Resolve template base directory (account first, then global)
+    const templateBaseDir = accountId
+      ? getAccountTemplatesDir(accountId)
+      : GLOBAL_TEMPLATES_DIR;
+    const templateDir = fs.existsSync(templateBaseDir)
+      ? templateBaseDir
+      : GLOBAL_TEMPLATES_DIR;
+
+    // 1. Load prompt template (account-scoped)
+    const templates = listTemplates(accountId);
     if (templates.length === 0) {
       return NextResponse.json(
         { success: false, error: "No prompt templates found in prompts/." },
@@ -22,14 +40,17 @@ export async function POST(_request: NextRequest) {
     }
 
     const promptName = templates[0];
-    const rawTemplate = loadTemplate(promptName);
+    const rawTemplate = loadTemplate(promptName, accountId);
 
-    // 2. Pick combinations
-    const combos = pickCombinations();
+    // 2. Pick combinations (account-scoped)
+    const combos = pickCombinations(10, accountId);
 
-    // 3. Ensure output directory
-    if (!fs.existsSync(OUTPUT_DIR)) {
-      fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    // 3. Ensure output directories exist
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
     }
 
     // 4. Generate images
@@ -45,7 +66,7 @@ export async function POST(_request: NextRequest) {
     for (let i = 0; i < combos.length; i++) {
       const { quote, template } = combos[i];
       const filename = `${batchId}-${String(i + 1).padStart(2, "0")}.png`;
-      const templatePath = path.join(TEMPLATES_DIR, template);
+      const templatePath = path.join(templateDir, template);
 
       const backgroundDescription =
         `A background image named "${template}"` +
@@ -62,7 +83,7 @@ export async function POST(_request: NextRequest) {
           quote,
           prompt
         );
-        fs.writeFileSync(path.join(OUTPUT_DIR, filename), imageBuffer);
+        fs.writeFileSync(path.join(imagesDir, filename), imageBuffer);
         results.push({ quote, template, filename, success: true });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -77,7 +98,7 @@ export async function POST(_request: NextRequest) {
     if (successfulImages.length > 0) {
       for (const image of successfulImages) {
         try {
-          const imagePath = path.join(OUTPUT_DIR, image.filename);
+          const imagePath = path.join(imagesDir, image.filename);
           const options = await generateCaptionOptions(image.quote, imagePath);
           captionOptionsList.push(options);
         } catch {
@@ -86,7 +107,7 @@ export async function POST(_request: NextRequest) {
       }
     }
 
-    // 6. Save manifest
+    // 6. Save manifest (account-scoped dir)
     if (successfulImages.length > 0) {
       createBatch(
         successfulImages.map((r) => ({
@@ -96,7 +117,8 @@ export async function POST(_request: NextRequest) {
         })),
         "web",
         promptName,
-        captionOptionsList.length > 0 ? captionOptionsList : undefined
+        captionOptionsList.length > 0 ? captionOptionsList : undefined,
+        outputDir
       );
       invalidateCache();
     }

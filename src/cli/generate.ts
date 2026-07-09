@@ -12,13 +12,13 @@ import { pickCombinations } from "../lib/mixer";
 import { generateQuoteImage } from "../lib/gemini";
 import { generateCaptionOptions } from "../lib/caption";
 import { createBatch, generateBatchId } from "../lib/manifest";
-import { getAccount, getAccountDir, getAccountImagesDir } from "../lib/account";
+import { getAccount, getAccountDir, getAccountImagesDir, getAccountTemplatesDir } from "../lib/account";
 import { markQuoteUsed } from "../lib/quote-pool";
 import { createLogger as createAppLogger } from "../lib/logger";
 
 const GLOBAL_OUTPUT = path.resolve(process.cwd(), "output");
 const logger = createAppLogger("generate");
-const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
+const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 export interface GenerateOptions {
   /** Number of images to generate (default: 10) */
@@ -75,8 +75,8 @@ export async function runGenerate(
     print.info(`📸 Quotes Social Media — Batch Generator${scope}`);
   }
 
-  // 1. Load prompt template
-  const availableTemplates = listTemplates();
+  // 1. Load prompt template (account-scoped if accountId provided)
+  const availableTemplates = listTemplates(accountId);
   if (availableTemplates.length === 0) {
     throw new Error(
       "No prompt templates found in prompts/. Create a default.md file."
@@ -87,11 +87,11 @@ export async function runGenerate(
     templateName && availableTemplates.includes(templateName)
       ? templateName
       : availableTemplates[0];
-  const rawTemplate = loadTemplate(promptName);
+  const rawTemplate = loadTemplate(promptName, accountId);
   print.info(`📝 Using prompt template: ${promptName}`);
 
-  // 2. Pick quote + template combinations
-  const combos = pickCombinations(targetCount);
+  // 2. Pick quote + template combinations (account-scoped)
+  const combos = pickCombinations(targetCount, accountId);
   print.info(`📋 Picked ${combos.length} quote + template combinations`);
 
   // 3. Ensure output directory exists
@@ -101,6 +101,14 @@ export async function runGenerate(
   if (!fs.existsSync(imagesDir)) {
     fs.mkdirSync(imagesDir, { recursive: true });
   }
+
+  // Resolve template base directory (account first, then global)
+  const templateBaseDir = accountId
+    ? getAccountTemplatesDir(accountId)
+    : GLOBAL_TEMPLATES_DIR;
+  const templateDir = fs.existsSync(templateBaseDir)
+    ? templateBaseDir
+    : GLOBAL_TEMPLATES_DIR;
 
   // 4. Generate each image
   const batchId = generateBatchId();
@@ -116,7 +124,7 @@ export async function runGenerate(
   for (let i = 0; i < combos.length; i++) {
     const { quote, template } = combos[i];
     const filename = `${batchId}-${String(i + 1).padStart(2, "0")}.png`;
-    const templatePath = path.join(TEMPLATES_DIR, template);
+    const templatePath = path.join(templateDir, template);
 
     const backgroundDescription =
       `A background image named "${template}"` +

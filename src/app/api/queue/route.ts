@@ -9,6 +9,7 @@ import {
   invalidateQueueCache,
 } from "@/lib/queue";
 import { getLatestBatch } from "@/lib/manifest";
+import { getAccountDir } from "@/lib/account";
 
 /**
  * GET /api/queue — list queue entries or get stats.
@@ -27,9 +28,7 @@ export async function GET(request: NextRequest) {
       | null;
     const statsOnly = searchParams.get("stats") === "true";
     const accountId = searchParams.get("account") || undefined;
-    const dir = accountId
-      ? path.join(process.cwd(), "output", accountId)
-      : undefined;
+    const dir = accountId ? getAccountDir(accountId) : undefined;
 
     if (statsOnly) {
       const stats = getQueueStats(dir);

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { CaptionData } from "./caption";
+import { getAccountDir } from "./account";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const MANIFEST_PATH = path.join(OUTPUT_DIR, "manifest.json");
@@ -148,9 +149,7 @@ export function createBatch(
  * Get the most recent batch, or null if none exist.
  */
 export function getLatestBatch(accountId?: string): Manifest | null {
-  const dir = accountId
-    ? path.resolve(process.cwd(), "output", accountId)
-    : undefined;
+  const dir = accountId ? getAccountDir(accountId) : undefined;
   const manifests = readManifestFromDir(dir);
   return manifests.length > 0 ? manifests[manifests.length - 1] : null;
 }
@@ -230,7 +229,7 @@ export function getAllBatches(accountId?: string): Array<{
   imageCount: number;
   approvedCount: number;
 }> {
-  const dir = accountId ? path.resolve(process.cwd(), "output", accountId) : undefined;
+  const dir = accountId ? getAccountDir(accountId) : undefined;
   return readManifestFromDir(dir).map((m) => ({
     id: m.batch.id,
     generatedAt: m.batch.generatedAt,
@@ -244,7 +243,7 @@ export function getAllBatches(accountId?: string): Array<{
  * Get a specific batch by ID.
  */
 export function getBatchById(batchId: string, accountId?: string): Manifest | null {
-  const dir = accountId ? path.resolve(process.cwd(), "output", accountId) : undefined;
+  const dir = accountId ? getAccountDir(accountId) : undefined;
   const manifests = readManifestFromDir(dir);
   return manifests.find((m) => m.batch.id === batchId) || null;
 }

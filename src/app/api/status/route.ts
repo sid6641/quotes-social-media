@@ -4,6 +4,7 @@ import {
   invalidateCache,
 } from "@/lib/manifest";
 import { addToQueue, removeImageFromQueue } from "@/lib/queue";
+import { getAccountDir } from "@/lib/account";
 
 /**
  * POST /api/status — update the approval status of an image.
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { batchId, imageId, status, account: accountId } = body;
-    const outputDir = accountId ? path.resolve(process.cwd(), "output", accountId) : undefined;
+    const outputDir = accountId ? getAccountDir(accountId) : undefined;
 
     if (!batchId || !imageId || !status) {
       return NextResponse.json(

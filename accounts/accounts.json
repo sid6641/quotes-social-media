@@ -1,0 +1,18 @@
+[
+  {
+    "id": "account-two",
+    "name": "Philosophical",
+    "cooldownDays": 30,
+    "enabled": true,
+    "createdAt": "2026-07-08T17:39:18.185Z",
+    "updatedAt": "2026-07-08T17:39:18.185Z"
+  },
+  {
+    "id": "sample 1",
+    "name": "sample 1",
+    "cooldownDays": 30,
+    "enabled": true,
+    "createdAt": "2026-07-08T18:02:49.392Z",
+    "updatedAt": "2026-07-08T18:02:49.392Z"
+  }
+]

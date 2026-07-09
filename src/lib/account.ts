@@ -11,8 +11,8 @@
 import fs from "fs";
 import path from "path";
 
-const ACCOUNTS_DIR = path.resolve(process.cwd(), "output");
-const ACCOUNTS_FILE = path.resolve(process.cwd(), "output", "accounts.json");
+const ACCOUNTS_DIR = path.resolve(process.cwd(), "accounts");
+const ACCOUNTS_FILE = path.resolve(process.cwd(), "accounts", "accounts.json");
 const GLOBAL_OUTPUT = path.resolve(process.cwd(), "output");
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -109,12 +109,15 @@ export function createAccount(config: Omit<AccountConfig, "createdAt" | "updated
   accounts.push(account);
   writeAccounts(accounts);
 
-  // Create isolated directory with subdirectories
+  // Create isolated directory with all subdirectories
   const accountDir = path.join(ACCOUNTS_DIR, account.id);
   ensureDir(accountDir);
-  ensureDir(path.join(accountDir, "images"));
-  ensureDir(path.join(accountDir, "calendar"));
-  ensureDir(path.join(accountDir, "archive"));
+  ensureDir(path.join(accountDir, "output", "images"));
+  ensureDir(path.join(accountDir, "output", "calendar"));
+  ensureDir(path.join(accountDir, "output", "archive"));
+  ensureDir(path.join(accountDir, "quotes"));
+  ensureDir(path.join(accountDir, "templates"));
+  ensureDir(path.join(accountDir, "prompts"));
 
   return account;
 }
@@ -157,11 +160,12 @@ export function deleteAccount(id: string): boolean {
 
 /**
  * Get the output directory for a specific account.
- * If no accountId is given, returns the global output/ dir.
+ * All outputs (images, manifest, queue) go inside <account>/output/.
+ * If no accountId is given, returns the global output/ dir for backward compat.
  */
 export function getAccountDir(accountId?: string): string {
   if (!accountId) return GLOBAL_OUTPUT;
-  const dir = path.join(ACCOUNTS_DIR, accountId);
+  const dir = path.join(ACCOUNTS_DIR, accountId, "output");
   ensureDir(dir);
   return dir;
 }
@@ -171,7 +175,7 @@ export function getAccountDir(accountId?: string): string {
  */
 export function getAccountImagesDir(accountId?: string): string {
   if (!accountId) return GLOBAL_OUTPUT;
-  const dir = path.join(ACCOUNTS_DIR, accountId, "images");
+  const dir = path.join(ACCOUNTS_DIR, accountId, "output", "images");
   ensureDir(dir);
   return dir;
 }
@@ -180,7 +184,7 @@ export function getAccountImagesDir(accountId?: string): string {
  * Get the calendar (export) directory for a specific account.
  */
 export function getAccountCalendarDir(accountId: string): string {
-  const dir = path.join(ACCOUNTS_DIR, accountId, "calendar");
+  const dir = path.join(ACCOUNTS_DIR, accountId, "output", "calendar");
   ensureDir(dir);
   return dir;
 }
@@ -189,7 +193,7 @@ export function getAccountCalendarDir(accountId: string): string {
  * Get the archive (published) directory for a specific account.
  */
 export function getAccountArchiveDir(accountId: string): string {
-  const dir = path.join(ACCOUNTS_DIR, accountId, "archive");
+  const dir = path.join(ACCOUNTS_DIR, accountId, "output", "archive");
   ensureDir(dir);
   return dir;
 }
@@ -205,12 +209,29 @@ export function getAccountTemplatesDir(accountId: string): string {
 }
 
 /**
- * Get the quotes pool path for a specific account.
- * Each account has its own isolated quote pool.
+ * Get the quotes directory for a specific account (text files for import).
+ */
+export function getAccountQuotesDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "quotes");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the prompts directory for a specific account.
+ */
+export function getAccountPromptsDir(accountId: string): string {
+  const dir = path.join(ACCOUNTS_DIR, accountId, "prompts");
+  ensureDir(dir);
+  return dir;
+}
+
+/**
+ * Get the quote pool JSON path for a specific account.
+ * Lives inside the account's output/ dir alongside manifest and queue.
  */
 export function getAccountQuotesPath(accountId: string): string {
-  const dir = path.join(ACCOUNTS_DIR, accountId, "quotes.json");
-  return dir;
+  return path.join(getAccountDir(accountId), "quotes.json");
 }
 
 /**

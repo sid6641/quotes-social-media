@@ -1,7 +1,7 @@
 /**
  * Quote Pool — structured quote management with lifecycle.
  *
- * Each account has its own isolated quote pool at output/<account>/quotes.json.
+ * Each account has its own isolated quote pool at accounts/<account>/output/quotes.json.
  * Replaces the flat quotes/*.txt approach with a self-managing pool
  * that tracks state (available → used → cooldown → recycle).
  */

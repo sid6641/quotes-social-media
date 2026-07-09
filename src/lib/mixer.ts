@@ -2,10 +2,10 @@ import fs from "fs";
 import path from "path";
 import { getLatestBatch } from "./manifest";
 import { getAvailableQuotes, getPoolStats, importQuotesFromFile } from "./quote-pool";
-import { getAccountTemplatesDir } from "./account";
+import { getAccountTemplatesDir, getAccountQuotesDir } from "./account";
 
-const QUOTES_DIR = path.resolve(process.cwd(), "quotes");
-const TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
+const GLOBAL_QUOTES_DIR = path.resolve(process.cwd(), "quotes");
+const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 /** Supported image extensions for template files. */
 const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -24,25 +24,46 @@ interface QuoteEntry {
 
 /**
  * Load quotes from the quote pool, scoped to an account if provided.
- * Falls back to importing from text files if the pool is empty (auto-seed).
+ * Seeds from account-specific quotes/ dir first, falls back to global quotes/.
  */
 function loadQuotes(accountId?: string): QuoteEntry[] {
   const stats = getPoolStats(accountId);
 
   // Seed from text files if pool is empty
   if (stats.total === 0) {
-    if (!fs.existsSync(QUOTES_DIR)) {
-      throw new Error(`Quotes directory not found: ${QUOTES_DIR}`);
+    const quoteSources: string[] = [];
+
+    // Try account-specific quotes dir first
+    if (accountId) {
+      const accountQuotesDir = getAccountQuotesDir(accountId);
+      if (fs.existsSync(accountQuotesDir)) {
+        const files = fs.readdirSync(accountQuotesDir)
+          .filter((f) => f.endsWith(".txt"))
+          .sort();
+        quoteSources.push(...files.map((f) => path.join(accountQuotesDir, f)));
+      }
     }
 
-    const files = fs
-      .readdirSync(QUOTES_DIR)
-      .filter((f) => f.endsWith(".txt"))
-      .sort();
+    // Fall back to global quotes/ dir
+    if (quoteSources.length === 0) {
+      if (!fs.existsSync(GLOBAL_QUOTES_DIR)) {
+        throw new Error(`No quotes directory found. Create accounts/<id>/quotes/ or project-level quotes/.`);
+      }
+      const files = fs.readdirSync(GLOBAL_QUOTES_DIR)
+        .filter((f) => f.endsWith(".txt"))
+        .sort();
+      quoteSources.push(...files.map((f) => path.join(GLOBAL_QUOTES_DIR, f)));
+    }
+
+    if (quoteSources.length === 0) {
+      throw new Error(
+        "No quotes found. Add .txt files to the account's quotes/ dir or the global quotes/ dir."
+      );
+    }
 
     let totalSeeded = 0;
-    for (const file of files) {
-      const result = importQuotesFromFile(path.join(QUOTES_DIR, file), {
+    for (const filePath of quoteSources) {
+      const result = importQuotesFromFile(filePath, {
         source: "imported",
       }, accountId);
       totalSeeded += result.imported;
@@ -82,11 +103,11 @@ function loadTemplates(accountId?: string): string[] {
   }
 
   // Fall back to global templates/
-  if (!fs.existsSync(TEMPLATES_DIR)) {
-    throw new Error(`Templates directory not found: ${TEMPLATES_DIR}`);
+  if (!fs.existsSync(GLOBAL_TEMPLATES_DIR)) {
+    throw new Error(`Templates directory not found: ${GLOBAL_TEMPLATES_DIR}`);
   }
 
-  const files = fs.readdirSync(TEMPLATES_DIR).sort();
+  const files = fs.readdirSync(GLOBAL_TEMPLATES_DIR).sort();
   const images = files.filter((f) => IMAGE_EXTS.has(path.extname(f).toLowerCase()));
 
   if (images.length === 0) {

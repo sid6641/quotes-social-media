@@ -1,0 +1,322 @@
+[
+  {
+    "batch": {
+      "id": "2026-07-08-001",
+      "generatedAt": "2026-07-08T17:42:18.330Z",
+      "trigger": "cli"
+    },
+    "images": [
+      {
+        "id": "img-001",
+        "filename": "2026-07-08-001-01.png",
+        "quote": "The only way to do great work is to love what you do.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "rejected",
+        "captions": [
+          {
+            "commentary": "There's something so pure about finding joy in the everyday steps, just like this little one. When you truly love what you do, every effort feels less like work and more like a gentle journey forward. Cultivate that passion and watch your path unfold beautifully.",
+            "hashtags": [
+              "#LoveWhatYouDo",
+              "#PassionDriven",
+              "#Inspiration",
+              "#DailyMotivation",
+              "#WorkWithHeart",
+              "#PurposefulLiving",
+              "#JoyInWork",
+              "#CreativeLife",
+              "#MindfulMoment",
+              "#InnerPeace"
+            ]
+          },
+          {
+            "commentary": "Hear that? It's your calling. Great work isn't an accident; it's a love affair with your craft. Go all in. No excuses, just passion.",
+            "hashtags": [
+              "#GreatWork",
+              "#PassionFirst",
+              "#GoGetIt",
+              "#Driven",
+              "#MakeItHappen",
+              "#NoLimits",
+              "#SuccessMindset",
+              "#DoWhatYouLove",
+              "#MotivationBooster",
+              "#Unstoppable"
+            ]
+          },
+          {
+            "commentary": "I remember a time when I used to dread Monday mornings, just going through the motions. But then I shifted my perspective, started chasing what truly lit me up, and everything changed. It wasn't easy, but finding that deep love for my work has made all the difference. It's not just a quote; it's how I live now.",
+            "hashtags": [
+              "#PersonalJourney",
+              "#MyStory",
+              "#FindingMyPassion",
+              "#LifeLessons",
+              "#GrowthMindset",
+              "#AuthenticLiving",
+              "#CareerChange",
+              "#WorkLifeBalance",
+              "#InspiredLife",
+              "#SelfDiscovery"
+            ]
+          },
+          {
+            "commentary": "Find your passion. Live it. Greatness follows.",
+            "hashtags": [
+              "#Passion",
+              "#Work",
+              "#Love",
+              "#Greatness",
+              "#Inspo",
+              "#Mindset",
+              "#Focus",
+              "#Purpose",
+              "#SimplyStated",
+              "#DeepTruth"
+            ]
+          },
+          {
+            "commentary": "What truly differentiates 'work' from 'great work'? Perhaps it's not the effort itself, but the internal alignment\u2014the resonance between our deepest values and the actions we undertake. When love fuels our labor, it transcends mere task completion, becoming an extension of self and a contribution to something larger. It's an alchemy of soul and skill.",
+            "hashtags": [
+              "#PhilosophicalThoughts",
+              "#MeaningOfWork",
+              "#HumanPotential",
+              "#PurposeDriven",
+              "#Existentialism",
+              "#DeepThinking",
+              "#ConsciousCreation",
+              "#InnerWisdom",
+              "#LegacyBuilding",
+              "#TheGreatWork"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "There's something so pure about finding joy in the everyday steps, just like this little one. When you truly love what you do, every effort feels less like work and more like a gentle journey forward. Cultivate that passion and watch your path unfold beautifully.",
+          "hashtags": [
+            "#LoveWhatYouDo",
+            "#PassionDriven",
+            "#Inspiration",
+            "#DailyMotivation",
+            "#WorkWithHeart",
+            "#PurposefulLiving",
+            "#JoyInWork",
+            "#CreativeLife",
+            "#MindfulMoment",
+            "#InnerPeace"
+          ]
+        },
+        "selectedCaptionIndex": 0
+      },
+      {
+        "id": "img-002",
+        "filename": "2026-07-08-001-02.png",
+        "quote": "In the middle of difficulty lies opportunity.",
+        "template": "meme_template.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "It's incredible how often our biggest breakthroughs emerge from our toughest times. This quote reminds us that challenges aren't roadblocks, but often hidden pathways to something new and exciting. Keep looking for that glimmer of possibility!",
+            "hashtags": [
+              "#OpportunityKnocks",
+              "#EmbraceChallenges",
+              "#InnerStrength",
+              "#GrowthMindset",
+              "#PositiveVibes",
+              "#InspirationDaily",
+              "#NeverGiveUp",
+              "#FindingJoy",
+              "#LifeLessons",
+              "#Motivation"
+            ]
+          },
+          {
+            "commentary": "Difficulty? Bring it on. Opportunity is waiting. \ud83d\udcaa",
+            "hashtags": [
+              "#NoExcuses",
+              "#SeizeTheDay",
+              "#ChallengeAccepted",
+              "#WinnersMindset",
+              "#GoGetIt",
+              "#MakeItHappen",
+              "#PositiveEnergy",
+              "#SuccessDriven",
+              "#MotivationBoost",
+              "#OnwardAndUpward"
+            ]
+          },
+          {
+            "commentary": "I remember a time when I felt completely stuck, like there was no way out. But it was in that very moment of despair that I stumbled upon an idea that completely changed my trajectory. This quote perfectly captures that feeling \u2013 that sometimes, you have to hit rock bottom to find the launching pad. What's your story of finding opportunity in adversity?",
+            "hashtags": [
+              "#MyStory",
+              "#RealTalk",
+              "#PersonalGrowth",
+              "#Resilience",
+              "#OvercomingObstacles",
+              "#LifeJourney",
+              "#StoryTime",
+              "#InspireOthers",
+              "#HardshipToHope",
+              "#ReflectiveMoments"
+            ]
+          },
+          {
+            "commentary": "Hidden opportunities await. \u2728",
+            "hashtags": [
+              "#Opportunity",
+              "#Difficulty",
+              "#Growth",
+              "#Mindset",
+              "#Inspiration",
+              "#Wisdom",
+              "#Life",
+              "#Potential",
+              "#QuoteOfTheDay",
+              "#Perspective"
+            ]
+          },
+          {
+            "commentary": "The very fabric of existence seems to weave challenges and chances into an intricate tapestry. Is it not in the crucible of difficulty that the raw material of our potential is refined, revealing unforeseen pathways and shaping the essence of who we are destined to become? A profound thought for a thoughtful day.",
+            "hashtags": [
+              "#PhilosophicalThoughts",
+              "#DeepThinking",
+              "#Existentialism",
+              "#LifePhilosophy",
+              "#Mindfulness",
+              "#SelfDiscovery",
+              "#CosmicJourney",
+              "#Contemplation",
+              "#HumanExperience",
+              "#WisdomQuotes"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "It's incredible how often our biggest breakthroughs emerge from our toughest times. This quote reminds us that challenges aren't roadblocks, but often hidden pathways to something new and exciting. Keep looking for that glimmer of possibility!",
+          "hashtags": [
+            "#OpportunityKnocks",
+            "#EmbraceChallenges",
+            "#InnerStrength",
+            "#GrowthMindset",
+            "#PositiveVibes",
+            "#InspirationDaily",
+            "#NeverGiveUp",
+            "#FindingJoy",
+            "#LifeLessons",
+            "#Motivation"
+          ]
+        },
+        "selectedCaptionIndex": 0
+      },
+      {
+        "id": "img-003",
+        "filename": "2026-07-08-001-03.png",
+        "quote": "Simplicity is the ultimate sophistication.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "There's a quiet strength in choosing simplicity. It's not about having less, but about embracing what truly matters and finding beauty in the understated. This little one's confident stride perfectly captures that effortless elegance.",
+            "hashtags": [
+              "#SimplicityIsKey",
+              "#UltimateSophistication",
+              "#EmbraceSimplicity",
+              "#MindfulLiving",
+              "#EffortlessStyle",
+              "#LessIsMore",
+              "#InnerPeace",
+              "#Authenticity",
+              "#DailyInspiration",
+              "#LifeQuotes",
+              "#SimpleJoys",
+              "#QuietConfidence"
+            ]
+          },
+          {
+            "commentary": "Don't overcomplicate it. True sophistication isn't about flash, it's about clarity. Own your path, keep it real, and watch how powerful simplicity can be.",
+            "hashtags": [
+              "#Sophistication",
+              "#SimplicityWins",
+              "#KeepItReal",
+              "#BoldChoices",
+              "#NoFilterNeeded",
+              "#ModernMinimalism",
+              "#PowerfulMindset",
+              "#ClarityOverChaos",
+              "#InspirationalQuote",
+              "#GameChanger"
+            ]
+          },
+          {
+            "commentary": "I used to think 'sophisticated' meant grand gestures or intricate details. But as I've grown, I've learned the profound peace that comes with stripping away the unnecessary. It\u2019s in those quiet moments, in the clean lines and clear intentions, that I truly feel like myself. This quote reminds me to always come back to that truth.",
+            "hashtags": [
+              "#MyJourney",
+              "#PersonalGrowth",
+              "#LifeLessons",
+              "#FindingMyBalance",
+              "#SimpleTruths",
+              "#AuthenticSelf",
+              "#MindsetMatters",
+              "#ReflectiveThoughts",
+              "#DailyReflections",
+              "#InspirationDaily",
+              "#SelfDiscovery",
+              "#MeaningfulLife"
+            ]
+          },
+          {
+            "commentary": "Simplicity. The ultimate sophistication.",
+            "hashtags": [
+              "#Simplicity",
+              "#Sophistication",
+              "#MinimalistVibes",
+              "#QuoteOfTheDay",
+              "#ElegantDesign",
+              "#LessButBetter",
+              "#PureElegance",
+              "#DailyMantra",
+              "#Aesthetic",
+              "#Zen"
+            ]
+          },
+          {
+            "commentary": "Perhaps true genius lies not in complexity, but in the ability to distil profound ideas into their most fundamental, elegant forms. Simplicity, then, becomes a reflection of deep understanding, a quiet mastery that transcends fleeting trends and speaks to the timeless essence of being.",
+            "hashtags": [
+              "#PhilosophicalThoughts",
+              "#DeepThinking",
+              "#TimelessWisdom",
+              "#EssenceOfLife",
+              "#Mindfulness",
+              "#Contemplation",
+              "#IntellectualGrowth",
+              "#BeyondTheSurface",
+              "#ExistentialThoughts",
+              "#ThoughtProvoking",
+              "#WisdomQuotes",
+              "#ParadoxOfSimplicity"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "There's a quiet strength in choosing simplicity. It's not about having less, but about embracing what truly matters and finding beauty in the understated. This little one's confident stride perfectly captures that effortless elegance.",
+          "hashtags": [
+            "#SimplicityIsKey",
+            "#UltimateSophistication",
+            "#EmbraceSimplicity",
+            "#MindfulLiving",
+            "#EffortlessStyle",
+            "#LessIsMore",
+            "#InnerPeace",
+            "#Authenticity",
+            "#DailyInspiration",
+            "#LifeQuotes",
+            "#SimpleJoys",
+            "#QuietConfidence"
+          ]
+        },
+        "selectedCaptionIndex": 0
+      }
+    ]
+  }
+]
