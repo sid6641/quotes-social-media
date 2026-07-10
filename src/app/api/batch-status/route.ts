@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 import {
   updateImageStatus,
   invalidateCache,
   getLatestBatch,
 } from "@/lib/manifest";
 import { addToQueue, removeImageFromQueue } from "@/lib/queue";
+import { getAccountDir } from "@/lib/account";
 
 /**
  * POST /api/batch-status — approve or reject multiple images at once.
@@ -12,13 +14,15 @@ import { addToQueue, removeImageFromQueue } from "@/lib/queue";
  * Body: {
  *   batchId: string,
  *   imageIds: string[],     // array of image IDs
- *   status: "approved" | "rejected"
+ *   status: "approved" | "rejected",
+ *   account?: string
  * }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { batchId, imageIds, status } = body;
+    const { batchId, imageIds, status, account: accountId } = body;
+    const accountDir = accountId ? getAccountDir(accountId) : undefined;
 
     if (!batchId || !imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
       return NextResponse.json(
@@ -35,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     const results: Array<{ imageId: string; success: boolean; error?: string }> = [];
-    const batch = getLatestBatch();
+    const batch = getLatestBatch(accountId);
 
     for (const imageId of imageIds) {
-      const ok = updateImageStatus(batchId, imageId, status);
+      const ok = updateImageStatus(batchId, imageId, status, accountId);
       if (ok) {
         // Auto-queue on approve, auto-remove on reject
         if (status === "approved" && batch && batch.batch.id === batchId) {
@@ -51,10 +55,10 @@ export async function POST(request: NextRequest) {
               quote: image.quote,
               template: image.template,
               caption: image.caption,
-            });
+            }, accountDir);
           }
         } else if (status === "rejected") {
-          removeImageFromQueue(batchId, imageId);
+          removeImageFromQueue(batchId, imageId, accountDir);
         }
         results.push({ imageId, success: true });
       } else {

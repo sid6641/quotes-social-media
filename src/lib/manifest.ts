@@ -160,9 +160,11 @@ export function getLatestBatch(accountId?: string): Manifest | null {
 export function updateImageStatus(
   batchId: string,
   imageId: string,
-  status: "pending" | "approved" | "rejected"
+  status: "pending" | "approved" | "rejected",
+  accountId?: string
 ): boolean {
-  const manifests = readManifest();
+  const dir = accountId ? getAccountDir(accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
   const batch = manifests.find((m) => m.batch.id === batchId);
   if (!batch) return false;
 
@@ -170,7 +172,7 @@ export function updateImageStatus(
   if (!image) return false;
 
   image.status = status;
-  writeManifest(manifests);
+  writeManifestToDir(manifests, dir);
   return true;
 }
 

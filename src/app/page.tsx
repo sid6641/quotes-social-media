@@ -442,19 +442,27 @@ export default function ReviewPage() {
   };
 
   const handleBulkStatus = async (status: "approved" | "rejected") => {
-    if (!manifest || selectedIds.size === 0) return;
+    if (selectedIds.size === 0) return;
+    // In cross-batch mode, use the first selected image's batchId
+    const firstSelected = displayEntries.find((e) => selectedIds.has(e.id));
+    const batchId = firstSelected
+      ? (firstSelected as any).batchId || manifest?.batch?.id
+      : manifest?.batch?.id;
+    if (!batchId) return;
+
     try {
       const res = await fetch("/api/batch-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          batchId: manifest.batch.id,
+          batchId,
           imageIds: Array.from(selectedIds),
           status,
+          account: selectedAccount || undefined,
         }),
       });
       if (!res.ok) throw new Error("Batch status update failed");
-      await fetchLatestBatch();
+      await Promise.all([fetchLatestBatch(), fetchAllImages(), fetchAllBatchesList()]);
       setSelectedIds(new Set());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Batch update failed");

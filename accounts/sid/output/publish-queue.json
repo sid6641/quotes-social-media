@@ -25,5 +25,58 @@
     },
     "scheduledAt": "2026-07-11T03:30:00.000Z",
     "status": "queued"
+  },
+  {
+    "id": "pub-002",
+    "batchId": "2026-07-10-001",
+    "imageId": "img-008",
+    "filename": "2026-07-10-001-08.png",
+    "quote": "The only impossible journey is the one you never begin.",
+    "template": "meme_template.jpg",
+    "caption": {
+      "commentary": "Stop waiting. Start doing. The only impossible journey is the one you never begin. What are you waiting for?",
+      "hashtags": [
+        "#NoExcuses",
+        "#TakeAction",
+        "#JustStart",
+        "#Unstoppable",
+        "#BoldMoves",
+        "#Conquer",
+        "#GoGetIt",
+        "#MotivationMonday",
+        "#HustleHard",
+        "#Limitless",
+        "#DareToBegin",
+        "#PushYourLimits"
+      ]
+    },
+    "scheduledAt": "2026-07-11T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-003",
+    "batchId": "2026-07-10-001",
+    "imageId": "img-007",
+    "filename": "2026-07-10-001-07.png",
+    "quote": "Two roads diverged in a wood, and I took the one less traveled by.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "There's something so beautiful about choosing your own path, even if it feels a little lonely at times. It's in those less traveled moments that we truly discover who we're meant to be. Embrace your unique journey, because it's leading you exactly where you need to go.",
+      "hashtags": [
+        "#PathLessTraveled",
+        "#EmbraceTheJourney",
+        "#UniquePath",
+        "#SelfDiscovery",
+        "#InnerCompass",
+        "#FollowYourHeart",
+        "#AuthenticLiving",
+        "#GrowthMindset",
+        "#InspirationalQuotes",
+        "#LiveYourTruth",
+        "#BeYou"
+      ]
+    },
+    "scheduledAt": "2026-07-11T03:30:00.000Z",
+    "status": "queued"
   }
 ]
