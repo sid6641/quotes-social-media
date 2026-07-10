@@ -1,32 +1,25 @@
 # Current Task
 
 **Agent**: Director
-**Skill**: Content Calendar Export (P0)
-**Started**: 2026-07-08
-**Updated**: 2026-07-08
-**Step Detail**: Export feature complete — CLI, API, and UI button.
+**Skill**: Architecture hardening
+**Started**: 2026-07-10
+**Updated**: 2026-07-10
+**Step Detail**: Architecture review completed. Candidates 1+3 implemented. KB updated.
 
-## Progress
+## Completed
 
-- [x] MVP implemented, reviewed, and fixed
-- [x] Caption v2 (image-aware, 5 options, self-learning)
-- [x] CLI improvements (flags, subcommands, JSON output, list)
-- [x] Publish queue (approve → scheduled post)
-- [x] Post preview, batch history, caption copy
-- [x] Template preview, hashtag bank, batch select
-- [x] Structured logging (pino)
-- [x] Phase A: Quote Pool with lifecycle
-- [x] Phase B: Account sandboxes with isolated dirs
-- [x] All CLI pipeable with --json
-- [x] **P0: Content Calendar Export** (CLI + API + UI button)
+- [x] Architecture review: 5 candidates identified via codebase-memory MCP
+- [x] HTML report: `/tmp/architecture-review-2026-07-10.html`
+- [x] Candidate 1+3: Generation pipeline collapsed + dependency leak fixed
+- [x] New: `src/lib/generate.ts` — single deep module
+- [x] CLI and API route collapsed to thin adapters
+- [x] Scheduler import fixed (lib ← lib, not lib ← CLI)
+- [x] TypeScript build verified — zero errors in src/
+- [x] All KB files updated (session-log, decisions, phase, learnings)
 
-## Open Questions
+## Next
 
-- Phase C: AI Quote Generation
-- Phase D: Autopilot Scheduler (built but CLI-only — needs cron verification)
-- Fix routing layer account-scoping gaps (5 critical, 4 medium documented in BEHAVIORS.md)
-
-## Next Micro-Step
-
-Fix the 5 critical account-scoping gaps in the routing layer (see BEHAVIORS.md "Known Behavioral Gaps").
-Next feature: Phase C — AI Quote Generation.
+Captain selects next candidate from architecture review:
+- Candidate 2: Extract file-backed store pattern (JsonStore<T>)
+- Candidate 4: Deduplicate getMimeType
+- Candidate 5: Decompose review page monolith

@@ -7,7 +7,7 @@
  */
 
 import { createLogger } from "./logger";
-import { runGenerate } from "../cli/generate";
+import { runGenerate } from "./generate";
 import { getAccount, getAllAccounts } from "./account";
 import type { AccountConfig } from "./account";
 
@@ -60,7 +60,6 @@ async function runForAccount(
     const result = await runGenerate({
       count: targetCount,
       accountId,
-      jsonOutput: true,
     });
 
     log.info(

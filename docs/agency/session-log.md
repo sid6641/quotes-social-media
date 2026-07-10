@@ -1,5 +1,39 @@
 # Session Log
 
+## 2026-07-10 — Architecture review: collapse generation pipeline + fix dependency leak
+
+### Agent
+Director (architecture review + implementation)
+
+### Skill
+improve-codebase-architecture → direct implementation
+
+### Summary
+- Full architecture review via codebase-memory MCP knowledge graph (1009 nodes, 1809 edges)
+- HTML report generated at `/tmp/architecture-review-2026-07-10.html` with 5 candidates
+- **Candidate 1+3 implemented**: Collapsed CLI/API generation pipeline into single deep module + fixed lib→CLI dependency inversion
+
+### Changes Made
+- **New**: `src/lib/generate.ts` — single deep generation module (~240 lines), single interface `runGenerate(options) → GenerateResult`
+- **Collapsed**: `src/cli/generate.ts` from ~260 lines → ~110 lines (thin CLI adapter)
+- **Collapsed**: `src/app/api/generate/route.ts` from ~190 lines → ~80 lines (thin HTTP adapter)
+- **Fixed**: `src/lib/scheduler.ts` now imports from `./generate` instead of `../cli/generate`
+- **Updated**: `src/cli/index.ts` calls `runGenerateCli` (CLI-specific wrapper)
+- TypeScript build verified — zero errors in src/
+
+### Architecture Before → After
+- Before: CLI and API each had full ~150-line pipeline copy; scheduler imported from CLI (lib→CLI leak)
+- After: One deep module (`lib/generate.ts`) with `onProgress` callback; CLI, API, scheduler are thin adapters
+- Interface: `runGenerate(options, onProgress?) → GenerateResult` — 3 callers, 1 interface to test
+
+### Learnings Captured
+- Dependency inversion pattern: lib should never import from cli/ or app/ — move shared logic down
+- Progress callbacks decouple output formatting from business logic
+- `trigger` field made configurable (cli vs web) via options rather than hardcoded
+
+### State At End
+Candidates 1+3 complete. Remaining candidates (file-backed store pattern, getMimeType dedup, page monolith) queued.
+
 ## 2026-07-07 — Builder MVP + Reviewer fixes
 
 ### Agent

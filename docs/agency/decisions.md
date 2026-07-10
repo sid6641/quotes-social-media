@@ -1,5 +1,29 @@
 # Decision Log
 
+## 2026-07-10: Architecture — Deepen generation module + fix dependency direction
+
+### Context
+Architecture review revealed two related issues: (1) CLI and API route each duplicated the same ~150-line generation pipeline, (2) `src/lib/scheduler.ts` imported from `../cli/generate` — lib code depending on CLI code.
+
+### Decision
+- Extract `runGenerate` into `src/lib/generate.ts` as the single deep module
+- CLI (`src/cli/generate.ts`) and API route (`src/app/api/generate/route.ts`) become thin adapters
+- `scheduler.ts` imports from `./generate` (same lib layer)
+- Progress reporting uses an `onProgress` callback instead of hardcoded print/write logic
+- `trigger` field (cli vs web) configurable via `GenerateOptions`
+
+### Rationale
+- Locality: generation bugs, error handling, and pipeline logic concentrate in one module
+- Leverage: one interface tested once, exercised via CLI, API, and scheduler
+- Dependency discipline: lib never imports from cli/ or app/
+- Deletion test: delete cli/generate.ts, generation still works via API and scheduler
+
+### Decided By
+Director (architecture review)
+
+### Reopens?
+No — this is a structural improvement that doesn't change behavior.
+
 ## 2026-07-07: Project Structure — Simple folder layout
 
 ### Context

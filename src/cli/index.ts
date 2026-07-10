@@ -14,7 +14,7 @@
  */
 
 import "dotenv/config";
-import { runGenerate } from "./generate";
+import { runGenerateCli } from "./generate";
 import { runPublish } from "./publish";
 import { runExport, printExportUsage } from "./export";
 import { runAutopilotCmd, printAutopilotUsage } from "./autopilot";
@@ -381,7 +381,7 @@ async function main(): Promise<void> {
       const accountId =
         typeof flags.account === "string" ? flags.account : undefined;
 
-      await runGenerate({ count, templateName, jsonOutput, accountId });
+      await runGenerateCli({ count, templateName, jsonOutput, accountId });
       return;
     }
 

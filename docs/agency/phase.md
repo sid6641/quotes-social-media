@@ -1,18 +1,19 @@
 # Phase: 2 — Iterative Improvement
-**Step**: Features complete ✅
+**Step**: Architecture hardening
 **Status**: 🟢 Active
 **Started**: 2026-07-07
-**Updated**: 2026-07-08
+**Updated**: 2026-07-10
 
 ## Current Step Details
 
-All Phase 2 features complete: Caption v2 (image-aware, 5 options, self-learning), post preview, batch history, caption copy, template preview, hashtag bank, batch select, structured logging.
-
-Phases A (Quote Pool with lifecycle) and B (Multi-Account Sandboxes with isolated dirs, per-account config, --account flag) also complete.
+Architecture review completed. Candidates 1+3 (collapse generation pipeline + fix dependency leak) implemented. Remaining candidates queued:
+- Candidate 2: Extract file-backed store pattern (JsonStore<T>)
+- Candidate 4: Deduplicate getMimeType
+- Candidate 5: Decompose review page monolith
 
 ## Next Action
 
-Phase C: AI Quote Generation or other roadmap item.
+Captain picks next candidate from the architecture review report.
 
 ## Progress
 
