@@ -1,7 +1,7 @@
-import fs from "fs";
 import path from "path";
 import type { CaptionData } from "./caption";
 import { getAccountDir } from "./account";
+import { createFileStore, type JsonStore } from "./json-store";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const MANIFEST_PATH = path.join(OUTPUT_DIR, "manifest.json");
@@ -34,53 +34,31 @@ export interface Manifest {
   images: ImageEntry[];
 }
 
-let manifestCache: Manifest[] | null = null;
+// ─── Store (replaces private read/write/cache pattern) ────────────────
 
-function ensureOutputDir(dir?: string): void {
-  const target = dir || OUTPUT_DIR;
-  if (!fs.existsSync(target)) {
-    fs.mkdirSync(target, { recursive: true });
+const globalStore = createFileStore<Manifest[]>(MANIFEST_PATH, []);
+const accountStores = new Map<string, JsonStore<Manifest[]>>();
+
+/** Get the store for a given output directory — global or per-account. */
+function getStore(dir?: string): JsonStore<Manifest[]> {
+  if (!dir) return globalStore;
+  let store = accountStores.get(dir);
+  if (!store) {
+    store = createFileStore<Manifest[]>(path.join(dir, "manifest.json"), []);
+    accountStores.set(dir, store);
   }
-}
-
-/** Resolve manifest path for a given output directory. */
-function getManifestPath(dir?: string): string {
-  return path.join(dir || OUTPUT_DIR, "manifest.json");
+  return store;
 }
 
 function readManifestFromDir(dir?: string): Manifest[] {
-  const targetDir = dir || OUTPUT_DIR;
-  const manifestPath = getManifestPath(targetDir);
-
-  // Use cache only for global manifest
-  if (!dir && manifestCache) return manifestCache;
-
-  ensureOutputDir(targetDir);
-  if (!fs.existsSync(manifestPath)) {
-    if (!dir) manifestCache = [];
-    return [];
-  }
-  try {
-    const raw = fs.readFileSync(manifestPath, "utf-8");
-    const data = JSON.parse(raw);
-    const result = Array.isArray(data) ? data : [data];
-    if (!dir) manifestCache = result;
-    return result;
-  } catch {
-    if (!dir) manifestCache = [];
-    return [];
-  }
+  return getStore(dir).get();
 }
 
 function writeManifestToDir(data: Manifest[], dir?: string): void {
-  const targetDir = dir || OUTPUT_DIR;
-  const manifestPath = getManifestPath(targetDir);
-  ensureOutputDir(targetDir);
-  fs.writeFileSync(manifestPath, JSON.stringify(data, null, 2), "utf-8");
-  if (!dir) manifestCache = data;
+  getStore(dir).set(data);
 }
 
-// Legacy wrappers for backward compat
+// Legacy wrappers for backward compat (now delegate to store)
 function readManifest(): Manifest[] {
   return readManifestFromDir();
 }
@@ -291,5 +269,5 @@ export function getAllImages(
  * Invalidate the in-memory cache so the next read gets fresh data.
  */
 export function invalidateCache(): void {
-  manifestCache = null;
+  globalStore.invalidate();
 }

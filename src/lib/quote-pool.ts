@@ -9,6 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { getAccountQuotesPath } from "./account";
+import { createFileStore, type JsonStore } from "./json-store";
 
 const GLOBAL_POOL_PATH = path.resolve(process.cwd(), "output", "quote-pool.json");
 
@@ -37,54 +38,36 @@ interface QuotePool {
 
 // ─── Store ────────────────────────────────────────────────────────────
 
-const poolCaches = new Map<string, QuotePool | null>();
+const poolStores = new Map<string, JsonStore<QuotePool>>();
 
 function getPoolPath(accountId?: string): string {
   if (accountId) return getAccountQuotesPath(accountId);
   return GLOBAL_POOL_PATH;
 }
 
-function ensurePoolDir(accountId?: string): void {
-  const p = getPoolPath(accountId);
-  const dir = path.dirname(p);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+function getPoolStore(accountId?: string): JsonStore<QuotePool> {
+  const poolPath = getPoolPath(accountId);
+  let store = poolStores.get(poolPath);
+  if (!store) {
+    store = createFileStore<QuotePool>(poolPath, { quotes: [] });
+    poolStores.set(poolPath, store);
+  }
+  return store;
 }
 
 function readPool(accountId?: string): QuotePool {
-  const cacheKey = accountId || "__global__";
-  const cached = poolCaches.get(cacheKey);
-  if (cached) return cached;
-
-  const poolPath = getPoolPath(accountId);
-  ensurePoolDir(accountId);
-
-  if (!fs.existsSync(poolPath)) {
-    poolCaches.set(cacheKey, { quotes: [] });
-    return { quotes: [] };
-  }
-  try {
-    const raw = fs.readFileSync(poolPath, "utf-8");
-    const pool = JSON.parse(raw) as QuotePool;
-    poolCaches.set(cacheKey, pool);
-    return pool;
-  } catch {
-    poolCaches.set(cacheKey, { quotes: [] });
-    return { quotes: [] };
-  }
+  return getPoolStore(accountId).get();
 }
 
 function writePool(pool: QuotePool, accountId?: string): void {
-  const poolPath = getPoolPath(accountId);
-  ensurePoolDir(accountId);
-  fs.writeFileSync(poolPath, JSON.stringify(pool, null, 2), "utf-8");
-  poolCaches.set(accountId || "__global__", pool);
+  getPoolStore(accountId).set(pool);
 }
 
 export function invalidatePoolCache(accountId?: string): void {
   if (accountId) {
-    poolCaches.delete(accountId);
+    poolStores.delete(getPoolPath(accountId));
   } else {
-    poolCaches.clear();
+    poolStores.clear();
   }
 }
 

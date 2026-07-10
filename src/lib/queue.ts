@@ -9,19 +9,12 @@
  * When accountDir is provided, the queue file lives at:
  *   <accountDir>/publish-queue.json
  */
-import fs from "fs";
 import path from "path";
 import type { CaptionData } from "./caption";
+import { createFileStore, type JsonStore } from "./json-store";
 
 const OUTPUT_DIR = path.resolve(process.cwd(), "output");
 const GLOBAL_QUEUE_PATH = path.join(OUTPUT_DIR, "publish-queue.json");
-
-/** Resolve the queue file path for a given account directory. */
-function getQueuePath(accountDir?: string): string {
-  return accountDir
-    ? path.join(accountDir, "publish-queue.json")
-    : GLOBAL_QUEUE_PATH;
-}
 
 export interface QueueEntry {
   id: string;
@@ -37,44 +30,34 @@ export interface QueueEntry {
   error?: string;
 }
 
-let queueCache: QueueEntry[] | null = null;
+// ─── Store (replaces private read/write/cache pattern) ────────────────
 
-function ensureOutputDir(dir?: string): void {
-  const target = dir || OUTPUT_DIR;
-  if (!fs.existsSync(target)) {
-    fs.mkdirSync(target, { recursive: true });
+const globalStore = createFileStore<QueueEntry[]>(GLOBAL_QUEUE_PATH, []);
+const accountStores = new Map<string, JsonStore<QueueEntry[]>>();
+
+function getStore(accountDir?: string): JsonStore<QueueEntry[]> {
+  if (!accountDir) return globalStore;
+  let store = accountStores.get(accountDir);
+  if (!store) {
+    store = createFileStore<QueueEntry[]>(
+      path.join(accountDir, "publish-queue.json"),
+      []
+    );
+    accountStores.set(accountDir, store);
   }
+  return store;
 }
 
 function readQueue(accountDir?: string): QueueEntry[] {
-  if (!accountDir && queueCache) return queueCache;
-  const qPath = getQueuePath(accountDir);
-  ensureOutputDir(accountDir);
-  if (!fs.existsSync(qPath)) {
-    if (!accountDir) queueCache = [];
-    return [];
-  }
-  try {
-    const raw = fs.readFileSync(qPath, "utf-8");
-    const data = JSON.parse(raw);
-    const entries = Array.isArray(data) ? data : [];
-    if (!accountDir) queueCache = entries;
-    return entries;
-  } catch {
-    if (!accountDir) queueCache = [];
-    return [];
-  }
+  return getStore(accountDir).get();
 }
 
 function writeQueue(data: QueueEntry[], accountDir?: string): void {
-  const qPath = getQueuePath(accountDir);
-  ensureOutputDir(accountDir);
-  fs.writeFileSync(qPath, JSON.stringify(data, null, 2), "utf-8");
-  if (!accountDir) queueCache = data;
+  getStore(accountDir).set(data);
 }
 
 export function invalidateQueueCache(): void {
-  queueCache = null;
+  globalStore.invalidate();
 }
 
 /**

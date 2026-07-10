@@ -1,5 +1,6 @@
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getMimeType } from "./media";
 
 /**
  * Model to use for image generation.
@@ -77,17 +78,4 @@ export async function generateQuoteImage(
   );
 }
 
-function getMimeType(filePath: string): string {
-  const ext = filePath.split(".").pop()?.toLowerCase();
-  switch (ext) {
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "png":
-      return "image/png";
-    case "webp":
-      return "image/webp";
-    default:
-      return "image/jpeg";
-  }
-}
+

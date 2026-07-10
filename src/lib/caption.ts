@@ -11,6 +11,7 @@
 
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getMimeType } from "./media";
 
 export interface CaptionData {
   commentary: string;
@@ -63,24 +64,6 @@ Respond ONLY with a valid JSON array of exactly 5 objects (no markdown, no backt
   { "commentary": "...", "hashtags": ["...", "..."] },
   ...
 ]`;
-
-/**
- * Get the MIME type for an image file.
- */
-function getMimeType(filePath: string): string {
-  const ext = filePath.split(".").pop()?.toLowerCase();
-  switch (ext) {
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "png":
-      return "image/png";
-    case "webp":
-      return "image/webp";
-    default:
-      return "image/jpeg";
-  }
-}
 
 /**
  * Load top caption examples from the learning store for few-shot prompting.

@@ -10,6 +10,7 @@
 
 import fs from "fs";
 import path from "path";
+import { createFileStore } from "./json-store";
 
 const ACCOUNTS_DIR = path.resolve(process.cwd(), "accounts");
 const ACCOUNTS_FILE = path.resolve(process.cwd(), "accounts", "accounts.json");
@@ -49,48 +50,21 @@ export interface AccountConfig {
 
 // ─── Store ────────────────────────────────────────────────────────────
 
-let accountsCache: AccountConfig[] | null = null;
+const ACCOUNTS_FILE_PATH = path.join(ACCOUNTS_DIR, "accounts.json");
+const accountsStore = createFileStore<AccountConfig[]>(ACCOUNTS_FILE_PATH, []);
+
+export function invalidateAccountsCache(): void {
+  accountsStore.invalidate();
+}
 
 function ensureDir(dir: string): void {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function accountsFilePath(): string {
-  return path.join(ACCOUNTS_DIR, "accounts.json");
-}
-
-function readAccounts(): AccountConfig[] {
-  if (accountsCache) return accountsCache;
-  ensureDir(ACCOUNTS_DIR);
-  const filePath = accountsFilePath();
-  if (!fs.existsSync(filePath)) {
-    accountsCache = [];
-    return accountsCache;
-  }
-  try {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    accountsCache = JSON.parse(raw) as AccountConfig[];
-    return accountsCache;
-  } catch {
-    accountsCache = [];
-    return accountsCache;
-  }
-}
-
-function writeAccounts(accounts: AccountConfig[]): void {
-  ensureDir(ACCOUNTS_DIR);
-  fs.writeFileSync(accountsFilePath(), JSON.stringify(accounts, null, 2), "utf-8");
-  accountsCache = accounts;
-}
-
-export function invalidateAccountsCache(): void {
-  accountsCache = null;
-}
-
 // ─── CRUD ─────────────────────────────────────────────────────────────
 
 export function createAccount(config: Omit<AccountConfig, "createdAt" | "updatedAt">): AccountConfig {
-  const accounts = readAccounts();
+  const accounts = accountsStore.get();
 
   // Check uniqueness
   if (accounts.some((a) => a.id === config.id)) {
@@ -107,7 +81,7 @@ export function createAccount(config: Omit<AccountConfig, "createdAt" | "updated
   };
 
   accounts.push(account);
-  writeAccounts(accounts);
+  accountsStore.set(accounts);
 
   // Create isolated directory with all subdirectories
   const accountDir = path.join(ACCOUNTS_DIR, account.id);
@@ -124,15 +98,15 @@ export function createAccount(config: Omit<AccountConfig, "createdAt" | "updated
 }
 
 export function getAccount(id: string): AccountConfig | undefined {
-  return readAccounts().find((a) => a.id === id);
+  return accountsStore.get().find((a) => a.id === id);
 }
 
 export function getAllAccounts(): AccountConfig[] {
-  return readAccounts();
+  return accountsStore.get();
 }
 
 export function updateAccount(id: string, updates: Partial<AccountConfig>): AccountConfig | undefined {
-  const accounts = readAccounts();
+  const accounts = accountsStore.get();
   const idx = accounts.findIndex((a) => a.id === id);
   if (idx === -1) return undefined;
 
@@ -143,17 +117,17 @@ export function updateAccount(id: string, updates: Partial<AccountConfig>): Acco
     updatedAt: new Date().toISOString(),
   };
 
-  writeAccounts(accounts);
+  accountsStore.set(accounts);
   return accounts[idx];
 }
 
 export function deleteAccount(id: string): boolean {
-  const accounts = readAccounts();
+  const accounts = accountsStore.get();
   const idx = accounts.findIndex((a) => a.id === id);
   if (idx === -1) return false;
 
   accounts.splice(idx, 1);
-  writeAccounts(accounts);
+  accountsStore.set(accounts);
   return true;
 }
 
@@ -262,7 +236,7 @@ export function getAccountsSummary(): Array<{
   scopeCount: number;
   hasSchedule: boolean;
 }> {
-  return readAccounts().map((a) => ({
+  return accountsStore.get().map((a) => ({
     id: a.id,
     name: a.name,
     enabled: a.enabled,
