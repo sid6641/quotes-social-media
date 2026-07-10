@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-07-10 — Architecture hardening: JsonStore<T> + getMimeType dedup
+
+### Agent
+Director (architecture review → implementation)
+
+### Summary
+- **Candidate #2**: Extracted file-backed store pattern into `src/lib/json-store.ts`
+  - `JsonStore<T>` interface: `get()`, `set(data)`, `invalidate()`
+  - `createFileStore<T>(path, default)` — production adapter
+  - `createMemoryStore<T>(default)` — test adapter (no filesystem)
+  - Refactored 5 modules: manifest.ts, queue.ts, quote-pool.ts, account.ts, hashtag-bank.ts
+  - Removed ~130 lines of duplicated read/write/cache/ensureDir
+- **Candidate #4**: Deduplicated `getMimeType` — extracted to `src/lib/media.ts`
+  - Updated gemini.ts and caption.ts to import shared definition
+
+### Before → After
+- Before: 5 modules each had private read/write/cache/ensureDir copies
+- After: All 5 delegate to `JsonStore<T>` — one seam, two adapters (file + memory)
+
+### State At End
+Candidates #1, #2, #3, #4 complete. Only #5 (page monolith) remains.
+
 ## 2026-07-10 — Architecture review: collapse generation pipeline + fix dependency leak
 
 ### Agent

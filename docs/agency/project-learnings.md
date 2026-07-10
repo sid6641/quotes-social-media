@@ -20,6 +20,24 @@ This refactoring collapsed ~450 lines of duplicated pipeline code into ~240 line
 ### Applied By
 Director (architecture review → implementation)
 
+## 2026-07-10: Extract duplicated file-I/O pattern into a generic JsonStore<T>
+
+### Context
+When multiple modules independently implement the same file-backed JSON cache pattern (read → parse → cache → mutate → write → invalidate).
+
+### The Pattern
+1. Define `JsonStore<T>` interface: `get()`, `set(data)`, `invalidate()`
+2. `createFileStore<T>(path, default)` — one production adapter, handles fs, JSON, cache
+3. `createMemoryStore<T>(default)` — one test adapter, no filesystem
+4. Each domain module creates stores via factory functions
+5. For per-account multi-file cases, use `Map<string, JsonStore<T>>` for lazy creation
+
+### Evidence
+Removed ~130 lines of duplicated read/write/cache/ensureDir across 5 modules. All now delegate to the same store pattern. Adding a new file-backed module now takes 3 lines instead of 30.
+
+### Applied By
+All agents — use `createFileStore` for any new file-backed JSON state.
+
 ## 2026-07-10: Dependency direction rule — lib never imports from cli/ or app/
 
 ### Context

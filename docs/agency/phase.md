@@ -6,14 +6,15 @@
 
 ## Current Step Details
 
-Architecture review completed. Candidates 1+3 (collapse generation pipeline + fix dependency leak) implemented. Remaining candidates queued:
-- Candidate 2: Extract file-backed store pattern (JsonStore<T>)
-- Candidate 4: Deduplicate getMimeType
-- Candidate 5: Decompose review page monolith
+Architecture review completed. Candidates 1-4 implemented:
+- ✅ #1+3: Generation pipeline collapsed + dependency leak fixed
+- ✅ #2: JsonStore<T> pattern extracted (5 modules refactored)
+- ✅ #4: getMimeType deduplicated to media.ts
+- ⬜ #5: Decompose review page monolith
 
 ## Next Action
 
-Captain picks next candidate from the architecture review report.
+Captain picks Candidate #5 or other roadmap item.
 
 ## Progress
 

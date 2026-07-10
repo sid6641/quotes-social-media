@@ -1,5 +1,29 @@
 # Decision Log
 
+## 2026-07-10: Architecture — JsonStore<T> pattern for file-backed state
+
+### Context
+Five modules (manifest, queue, quote-pool, account, hashtag-bank) each implemented the same file-I/O + JSON-cache pattern independently: `readX()`, `writeX()`, `invalidateCache()`, `ensureDir()`.
+
+### Decision
+- Extract `JsonStore<T>` interface with `get()`, `set(data)`, `invalidate()`
+- `createFileStore<T>(path, default)` — file-backed adapter for production
+- `createMemoryStore<T>(default)` — in-memory adapter for tests
+- All 5 modules delegate to JsonStore via local factory functions
+- Account-scoped modules use `Map<string, JsonStore<T>>` for lazy per-account store creation
+
+### Rationale
+- Locality: filesystem error handling and JSON parsing in one place
+- Leverage: one interface, 5 domain modules, 2 adapters (file + memory)
+- Testability: swap in memoryStore — no temp directories needed
+- Deletion test: delete the file adapter, in-memory adapter still works
+
+### Decided By
+Director (architecture review)
+
+### Reopens?
+No
+
 ## 2026-07-10: Architecture — Deepen generation module + fix dependency direction
 
 ### Context

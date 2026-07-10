@@ -19,7 +19,6 @@
 
 ## Next
 
-Captain selects next candidate from architecture review:
-- Candidate 2: Extract file-backed store pattern (JsonStore<T>)
-- Candidate 4: Deduplicate getMimeType
+Captain selects:
 - Candidate 5: Decompose review page monolith
+- Or other roadmap item
