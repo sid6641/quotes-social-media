@@ -698,12 +698,11 @@ export default function ReviewPage() {
   const fetchPoolQuotes = useCallback(async () => {
     try {
       setQuotesLoading(true);
-      const accountParam = selectedAccount ? `&account=${encodeURIComponent(selectedAccount)}` : "";
+      const accountParam = selectedAccount ? `account=${encodeURIComponent(selectedAccount)}` : "";
       const status = quoteScopeFilter !== "all" ? quoteScopeFilter : undefined;
-      const url = status
-        ? `/api/quotes?status=${status}${accountParam}`
-        : `/api/quotes${accountParam}`;
-      const statsUrl = `/api/quotes?stats=true${accountParam}`;
+      const params = [status ? `status=${status}` : "", accountParam].filter(Boolean).join("&");
+      const url = params ? `/api/quotes?${params}` : "/api/quotes";
+      const statsUrl = accountParam ? `/api/quotes?stats=true&${accountParam}` : "/api/quotes?stats=true";
       const [quotesRes, statsRes] = await Promise.all([
         fetch(url),
         fetch(statsUrl),
