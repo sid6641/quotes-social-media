@@ -266,7 +266,7 @@ export default function ReviewPage() {
       const res = await fetch("/api/caption", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ batchId, imageId, selectedOption: optionIndex }),
+        body: JSON.stringify({ batchId, imageId, selectedOption: optionIndex, account: selectedAccount || undefined }),
       });
       if (!res.ok) throw new Error("Failed to pick caption");
 

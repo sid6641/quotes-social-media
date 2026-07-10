@@ -182,9 +182,11 @@ export function updateImageCaption(
   batchId: string,
   imageId: string,
   caption: CaptionData,
-  selectedIndex: number = 0
+  selectedIndex: number = 0,
+  accountId?: string
 ): boolean {
-  const manifests = readManifest();
+  const dir = accountId ? getAccountDir(accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
   const batch = manifests.find((m) => m.batch.id === batchId);
   if (!batch) return false;
 
@@ -193,7 +195,7 @@ export function updateImageCaption(
 
   image.caption = caption;
   image.selectedCaptionIndex = selectedIndex;
-  writeManifest(manifests);
+  writeManifestToDir(manifests, dir);
   return true;
 }
 
@@ -203,9 +205,11 @@ export function updateImageCaption(
 export function updateSelectedCaptionIndex(
   batchId: string,
   imageId: string,
-  selectedIndex: number
+  selectedIndex: number,
+  accountId?: string
 ): boolean {
-  const manifests = readManifest();
+  const dir = accountId ? getAccountDir(accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
   const batch = manifests.find((m) => m.batch.id === batchId);
   if (!batch) return false;
 
@@ -215,7 +219,7 @@ export function updateSelectedCaptionIndex(
 
   image.selectedCaptionIndex = selectedIndex;
   image.caption = image.captions[selectedIndex];
-  writeManifest(manifests);
+  writeManifestToDir(manifests, dir);
   return true;
 }
 

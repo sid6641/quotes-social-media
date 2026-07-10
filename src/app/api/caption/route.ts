@@ -7,25 +7,29 @@ import {
 } from "@/lib/manifest";
 import { recordCaptionPick } from "@/lib/caption-learning";
 import { updateQueueEntryCaption } from "@/lib/queue";
+import { getAccountDir } from "@/lib/account";
+import path from "path";
 
 /**
  * POST /api/caption — pick a caption option or save an edited caption.
  *
  * Body (pick option): {
  *   batchId, imageId,
- *   selectedOption: number  // index into captions[] (0-4)
+ *   selectedOption: number,  // index into captions[] (0-4)
+ *   account?: string
  * }
  *
  * Body (save edited): {
  *   batchId, imageId,
  *   caption: { commentary, hashtags },
- *   selectedOption?: -1     // -1 or omitted = custom edit
+ *   selectedOption?: -1,     // -1 or omitted = custom edit
+ *   account?: string
  * }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { batchId, imageId, caption, selectedOption } = body;
+    const { batchId, imageId, caption, selectedOption, account: accountId } = body;
 
     if (!batchId || !imageId) {
       return NextResponse.json(
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Case 1: Picking an existing option (just store the index)
     if (typeof selectedOption === "number" && selectedOption >= 0 && !caption) {
-      const success = updateSelectedCaptionIndex(batchId, imageId, selectedOption);
+      const success = updateSelectedCaptionIndex(batchId, imageId, selectedOption, accountId);
       if (!success) {
         return NextResponse.json(
           { error: "Batch or image not found" },
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Also update the queue entry if this image is already queued
-      const batch = getLatestBatch();
+      const batch = getLatestBatch(accountId);
       if (batch && batch.batch.id === batchId) {
         const image = batch.images.find((img) => img.id === imageId);
         if (image?.captions?.[selectedOption]) {
