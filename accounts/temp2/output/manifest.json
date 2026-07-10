@@ -642,7 +642,7 @@
         "quote": "Two roads diverged in a wood, and I took the one less traveled by.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "approved",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "Every path we choose shapes who we become. There's a certain magic in daring to step off the beaten track and create your own adventure. What road are you taking today?",
@@ -743,7 +743,7 @@
         "quote": "The only impossible journey is the one you never begin.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "approved",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "Every grand adventure, every dream realized, starts with a single step. Don't let the fear of the unknown hold you back from embarking on your incredible journey. What's one step you can take today?",

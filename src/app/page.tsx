@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { logAction } from "@/lib/frontend-logger";
 
 interface CaptionData {
   commentary: string;
@@ -53,6 +54,20 @@ interface QueueEntry {
 }
 
 export default function ReviewPage() {
+  // Initialize frontend action logger
+  const loggerInited = useRef(false);
+  useEffect(() => {
+    if (loggerInited.current) return;
+    loggerInited.current = true;
+    (async () => {
+      const { initLogger, patchFetch, enableClickTracking, logger } = await import("@/lib/frontend-logger");
+      initLogger();
+      patchFetch();
+      enableClickTracking();
+      logger.info("page", "ReviewPage mounted");
+    })();
+  }, []);
+
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -175,6 +190,7 @@ export default function ReviewPage() {
   // Re-fetch when account changes — runs after all callbacks are defined
 
   const handleGenerate = async () => {
+    logAction("generate", { account: selectedAccount });
     try {
       setGenerating(true);
       setError(null);
@@ -203,6 +219,7 @@ export default function ReviewPage() {
     imageId: string,
     status: "approved" | "rejected"
   ) => {
+    logAction("status-change", { batchId, imageId, status, account: selectedAccount });
     try {
       const res = await fetch("/api/status", {
         method: "POST",
@@ -270,6 +287,7 @@ export default function ReviewPage() {
     imageId: string,
     optionIndex: number
   ) => {
+    logAction("caption-pick", { batchId, imageId, optionIndex, account: selectedAccount });
     try {
       const res = await fetch("/api/caption", {
         method: "POST",
@@ -442,6 +460,7 @@ export default function ReviewPage() {
   };
 
   const handleBulkStatus = async (status: "approved" | "rejected") => {
+    logAction("bulk-status", { status, count: selectedIds.size, account: selectedAccount });
     if (selectedIds.size === 0) return;
     // In cross-batch mode, use the first selected image's batchId
     const firstSelected = displayEntries.find((e) => selectedIds.has(e.id));
