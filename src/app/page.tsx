@@ -193,6 +193,16 @@ export default function ReviewPage() {
   }, []);
 
   // Re-fetch when account changes — runs after all callbacks are defined
+  useEffect(() => {
+    if (viewMode === "quotes") fetchPoolQuotes();
+    if (viewMode === "templates") fetchTemplates();
+    if (viewMode === "queue") fetchQueue();
+    if (viewMode === "review") {
+      fetchLatestBatch();
+      fetchAllImages();
+      fetchAllBatchesList();
+    }
+  }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = async () => {
     logAction("generate", { account: selectedAccount });
