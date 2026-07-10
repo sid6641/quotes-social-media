@@ -220,6 +220,14 @@ export default function ReviewPage() {
           ),
         };
       });
+      setAllImages((prev) => {
+        if (!prev) return prev;
+        return prev.map((entry) =>
+          entry.image.id === imageId
+            ? { ...entry, image: { ...entry.image, status } }
+            : entry
+        );
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update status");
     }
@@ -284,6 +292,17 @@ export default function ReviewPage() {
               : img
           ),
         };
+      });
+      setAllImages((prev) => {
+        if (!prev) return prev;
+        return prev.map((entry) => {
+          if (entry.image.id !== imageId) return entry;
+          const caption = entry.image.captions?.[optionIndex] ?? entry.image.caption;
+          return {
+            ...entry,
+            image: { ...entry.image, selectedCaptionIndex: optionIndex, caption },
+          };
+        });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to pick caption");

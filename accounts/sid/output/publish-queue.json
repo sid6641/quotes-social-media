@@ -1,0 +1,29 @@
+[
+  {
+    "id": "pub-001",
+    "batchId": "2026-07-10-001",
+    "imageId": "img-010",
+    "filename": "2026-07-10-001-10.png",
+    "quote": "Creativity is intelligence having fun.",
+    "template": "meme_template.jpg",
+    "caption": {
+      "commentary": "There's something truly magical about letting your mind wander and play. When we allow our intelligence to have fun, that's where the most beautiful and innovative ideas bloom. Embrace the joy in creating!",
+      "hashtags": [
+        "#CreativeJoy",
+        "#IntelligenceAtPlay",
+        "#EmbraceCreativity",
+        "#FunWithIdeas",
+        "#InspirationalQuote",
+        "#MindfulCreation",
+        "#ArtOfLiving",
+        "#DailyInspiration",
+        "#PositiveVibes",
+        "#CreativeMindset",
+        "#ThinkDifferent",
+        "#FlowState"
+      ]
+    },
+    "scheduledAt": "2026-07-11T03:30:00.000Z",
+    "status": "queued"
+  }
+]

@@ -12,7 +12,7 @@
         "quote": "The only way to do great work is to love what you do.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's something so pure about finding joy in the journey. When you genuinely love what you do, every step, big or small, feels like a part of a meaningful path. What a beautiful reminder to lean into our passions! ✨",
@@ -113,7 +113,7 @@
         "quote": "In the middle of difficulty lies opportunity.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "It’s easy to feel overwhelmed when things get tough, but this quote is such a beautiful reminder to shift our perspective. Every challenge truly holds a hidden door to something new and exciting. Let's look for those opportunities today! ✨",
@@ -214,7 +214,7 @@
         "quote": "Simplicity is the ultimate sophistication.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's a quiet elegance in keeping things simple, isn't there? It’s not about having less, but about appreciating what truly matters and finding beauty in the unassuming. Embracing this mindset can bring so much peace and clarity to our daily lives.",
@@ -317,7 +317,7 @@
         "quote": "The future belongs to those who believe in the beauty of their dreams.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's a gentle power in holding onto your dreams, isn't there? This quote reminds us that the path forward is paved by the conviction in our own beautiful visions. Keep believing, keep dreaming, and watch your future unfold.",
@@ -418,7 +418,7 @@
         "quote": "It does not matter how slowly you go as long as you do not stop.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "Taking those tiny steps forward, even when it feels like a crawl, is still progress. Every single step counts on your unique journey. Keep going, friend.",
@@ -531,7 +531,7 @@
         "quote": "Be yourself; everyone else is already taken.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's so much freedom in truly embracing who you are. This quote is a gentle reminder that your unique self is your superpower. Let go of comparisons and just bloom where you are planted, beautifully and authentically.",
@@ -642,7 +642,7 @@
         "quote": "Two roads diverged in a wood, and I took the one less traveled by.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "approved",
         "captions": [
           {
             "commentary": "Every path we choose shapes who we become. There's a certain magic in daring to step off the beaten track and create your own adventure. What road are you taking today?",
@@ -743,7 +743,7 @@
         "quote": "The only impossible journey is the one you never begin.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "approved",
         "captions": [
           {
             "commentary": "Every grand adventure, every dream realized, starts with a single step. Don't let the fear of the unknown hold you back from embarking on your incredible journey. What's one step you can take today?",
@@ -846,7 +846,7 @@
         "quote": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
         "template": "936819e6771ff34305a0b11d7181b00f.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's a quiet power in recognizing that our true strength and potential come from within. Everything else is just scenery. Let's nurture that inner world today.",
@@ -925,21 +925,21 @@
           }
         ],
         "caption": {
-          "commentary": "There's a quiet power in recognizing that our true strength and potential come from within. Everything else is just scenery. Let's nurture that inner world today.",
+          "commentary": "I used to spend so much time looking over my shoulder or constantly planning ahead, feeling like those external things defined me. It wasn't until I started truly looking inward that everything shifted. That's where the real magic, the real potential, truly resides.",
           "hashtags": [
-            "#InnerStrength",
-            "#SelfDiscovery",
-            "#MindsetMatters",
-            "#InnerJourney",
-            "#BelieveInYourself",
-            "#QuoteOfTheDay",
-            "#QuietPower",
-            "#PersonalGrowth",
-            "#InspirationalQuotes",
-            "#CultivateWithin"
+            "#MyJourney",
+            "#SelfReflection",
+            "#LifeLessons",
+            "#InnerWork",
+            "#PersonalStory",
+            "#GrowthMindset",
+            "#FindYourself",
+            "#Authenticity",
+            "#LiveWithPurpose",
+            "#DeepThoughts"
           ]
         },
-        "selectedCaptionIndex": 0
+        "selectedCaptionIndex": 2
       },
       {
         "id": "img-010",
@@ -947,7 +947,7 @@
         "quote": "Creativity is intelligence having fun.",
         "template": "meme_template.jpg",
         "promptTemplate": "default.md",
-        "status": "pending",
+        "status": "rejected",
         "captions": [
           {
             "commentary": "There's something truly magical about letting our minds play and discover. When intelligence sparks with joy, that's where true creativity blossoms. Let's embrace the fun in every idea!",
@@ -1036,23 +1036,23 @@
           }
         ],
         "caption": {
-          "commentary": "There's something truly magical about letting our minds play and discover. When intelligence sparks with joy, that's where true creativity blossoms. Let's embrace the fun in every idea!",
+          "commentary": "Drop the serious face, genius! 🎉 Creativity isn't work; it's intelligence having an absolute blast. Time to play smarter, not harder.",
           "hashtags": [
-            "#CreativityIsFun",
-            "#IntelligenceAtPlay",
-            "#InspirationDaily",
-            "#CreativeMindset",
-            "#JoyOfCreation",
-            "#Mindfulness",
-            "#ArtOfThinking",
-            "#Innovation",
-            "#EmbraceCreativity",
-            "#PositiveVibes",
-            "#DailyDoseOfHappy",
-            "#CreativeJourney"
+            "#PlaygroundOfIdeas",
+            "#SmartFun",
+            "#UnleashYourInnerGenius",
+            "#ThinkDifferent",
+            "#BoldlyCreative",
+            "#InnovationStartsHere",
+            "#GameOn",
+            "#CreativeExplosion",
+            "#ChallengeAccepted",
+            "#MakeItHappen",
+            "#NoLimits",
+            "#BeBold"
           ]
         },
-        "selectedCaptionIndex": 0
+        "selectedCaptionIndex": 1
       }
     ]
   }
