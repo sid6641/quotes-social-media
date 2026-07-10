@@ -14,12 +14,14 @@ interface TemplateEntry {
   sizeKB: string;
   filePath: string;
   isFavorite: boolean;
+  source: "global" | "account";
 }
 
 /**
  * GET /api/templates — list available template images.
  * Query params:
  *   ?account=xxx  — scope to a specific account's templates/ dir
+ *   ?scope=xxx    — "all" | "account" | "favorites" (default: all)
  */
 export async function GET(request: NextRequest) {
   const accountId = request.nextUrl.searchParams.get("account");
@@ -37,18 +39,32 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Collect templates: if account has any, show ONLY account templates
-  // Otherwise fall back to global templates
   const templates: TemplateEntry[] = [];
-  let foundAny = false;
 
+  // Always load global templates
+  if (fs.existsSync(GLOBAL_TEMPLATES_DIR)) {
+    for (const f of fs.readdirSync(GLOBAL_TEMPLATES_DIR).sort()) {
+      if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
+      const stats = fs.statSync(path.join(GLOBAL_TEMPLATES_DIR, f));
+      templates.push({
+        filename: f,
+        sizeBytes: stats.size,
+        sizeKB: (stats.size / 1024).toFixed(1),
+        filePath: `templates/${f}`,
+        isFavorite: accountId ? favorites.has(f) : false,
+        source: "global",
+      });
+    }
+  }
+
+  // If account specified, also load account templates
   if (accountId) {
     const accountTemplatesDir = getAccountTemplatesDir(accountId);
     if (fs.existsSync(accountTemplatesDir)) {
-      const files = fs.readdirSync(accountTemplatesDir).sort();
-      for (const f of files) {
+      for (const f of fs.readdirSync(accountTemplatesDir).sort()) {
         if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
-        foundAny = true;
+        // Don't duplicate if already in global
+        if (templates.some((t) => t.filename === f && t.source === "global")) continue;
         const stats = fs.statSync(path.join(accountTemplatesDir, f));
         templates.push({
           filename: f,
@@ -56,23 +72,7 @@ export async function GET(request: NextRequest) {
           sizeKB: (stats.size / 1024).toFixed(1),
           filePath: `accounts/${accountId}/templates/${f}`,
           isFavorite: favorites.has(f),
-        });
-      }
-    }
-  }
-
-  // Only fall back to global if account had no templates
-  if (!foundAny) {
-    if (fs.existsSync(GLOBAL_TEMPLATES_DIR)) {
-      for (const f of fs.readdirSync(GLOBAL_TEMPLATES_DIR).sort()) {
-        if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
-        const stats = fs.statSync(path.join(GLOBAL_TEMPLATES_DIR, f));
-        templates.push({
-          filename: f,
-          sizeBytes: stats.size,
-          sizeKB: (stats.size / 1024).toFixed(1),
-          filePath: `templates/${f}`,
-          isFavorite: false,
+          source: "account",
         });
       }
     }

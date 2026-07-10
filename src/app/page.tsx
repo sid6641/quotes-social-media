@@ -118,9 +118,9 @@ export default function ReviewPage() {
   const [favoriteTogglingQuotes, setFavoriteTogglingQuotes] = useState<Set<string>>(new Set());
 
   // Templates
-  const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string; filePath?: string; isFavorite?: boolean }>>([]);
+  const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string; filePath?: string; isFavorite?: boolean; source?: "global" | "account" }>>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [templateFilter, setTemplateFilter] = useState<"all" | "favorites">("all");
+  const [templateFilter, setTemplateFilter] = useState<"all" | "account" | "favorites">("all");
 
   // Hashtag bank
   const [hashtagSets, setHashtagSets] = useState<Array<{ name: string; tags: string[] }>>([]);
@@ -1858,7 +1858,7 @@ export default function ReviewPage() {
           {/* Template filter bar */}
           {selectedAccount && templates.length > 0 && (
             <div className="flex items-center gap-2 mb-4">
-              {([{ key: "all", label: "All" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
+              {([{ key: "all", label: "All" }, { key: "account", label: "Account" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setTemplateFilter(key)}
@@ -1872,6 +1872,11 @@ export default function ReviewPage() {
                   {key === "favorites" && (
                     <span className="ml-1.5 text-xs opacity-70">
                       ({templates.filter((t) => t.isFavorite).length})
+                    </span>
+                  )}
+                  {key === "account" && (
+                    <span className="ml-1.5 text-xs opacity-70">
+                      ({templates.filter((t) => t.source === "account" || t.isFavorite).length})
                     </span>
                   )}
                 </button>
@@ -1889,7 +1894,12 @@ export default function ReviewPage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {templates
-                .filter((t) => templateFilter === "all" || t.isFavorite)
+                .filter((t) => {
+                  if (templateFilter === "all") return t.source === "global" || !selectedAccount;
+                  if (templateFilter === "account") return t.source === "account" || t.isFavorite;
+                  if (templateFilter === "favorites") return t.isFavorite;
+                  return true;
+                })
                 .map((t) => (
                 <div
                   key={t.filename}
