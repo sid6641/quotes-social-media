@@ -1001,6 +1001,7 @@ export default function ReviewPage() {
                 setSelectedAccount(e.target.value);
                 // Re-fetch current view's data when account changes
                 if (viewMode === "templates") fetchTemplates();
+                if (viewMode === "queue") fetchQueue();
               }}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
             >
