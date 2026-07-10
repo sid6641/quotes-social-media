@@ -14,10 +14,43 @@ import {
   getAllAccounts,
   updateAccount,
   deleteAccount,
+  getAccountQuotesDir,
+  getAccountTemplatesDir,
+  getAccountPromptsDir,
 } from "../lib/account";
 import { createLogger } from "../lib/logger";
+import fs from "fs";
+import path from "path";
+import readline from "readline";
 
 const log = createLogger("account");
+
+const GLOBAL_QUOTES = path.resolve(process.cwd(), "quotes");
+const GLOBAL_TEMPLATES = path.resolve(process.cwd(), "templates");
+const GLOBAL_PROMPTS = path.resolve(process.cwd(), "prompts");
+
+function askQuestion(query: string): Promise<string> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase());
+    });
+  });
+}
+
+function copyFiles(srcDir: string, destDir: string): number {
+  if (!fs.existsSync(srcDir)) return 0;
+  let count = 0;
+  for (const f of fs.readdirSync(srcDir)) {
+    const src = path.join(srcDir, f);
+    if (fs.statSync(src).isFile()) {
+      fs.copyFileSync(src, path.join(destDir, f));
+      count++;
+    }
+  }
+  return count;
+}
 
 export interface AccountOptions {
   subcommand: string;
@@ -68,6 +101,48 @@ async function createCmd(options: AccountOptions): Promise<void> {
       console.log(JSON.stringify({ success: true, account }));
     } else {
       log.info({ id: account.id }, `✅ Account "${account.id}" created`);
+    }
+
+    // Interactive import prompts (skip in json mode)
+    if (!options.jsonOutput) {
+      const imports: string[] = [];
+
+      if (fs.existsSync(GLOBAL_QUOTES)) {
+        const answer = await askQuestion("  Import global quotes into this account? (y/n): ");
+        if (answer === "y" || answer === "yes") imports.push("quotes");
+      }
+      if (fs.existsSync(GLOBAL_TEMPLATES)) {
+        const answer = await askQuestion("  Import global templates into this account? (y/n): ");
+        if (answer === "y" || answer === "yes") imports.push("templates");
+      }
+      if (fs.existsSync(GLOBAL_PROMPTS)) {
+        const answer = await askQuestion("  Import global prompts into this account? (y/n): ");
+        if (answer === "y" || answer === "yes") imports.push("prompts");
+      }
+
+      for (const resource of imports) {
+        let count = 0;
+        switch (resource) {
+          case "quotes":
+            count = copyFiles(GLOBAL_QUOTES, getAccountQuotesDir(account.id));
+            log.info({ count }, `  📝 Imported ${count} quote file(s)`);
+            break;
+          case "templates":
+            count = copyFiles(GLOBAL_TEMPLATES, getAccountTemplatesDir(account.id));
+            log.info({ count }, `  🖼️  Imported ${count} template file(s)`);
+            break;
+          case "prompts":
+            count = copyFiles(GLOBAL_PROMPTS, getAccountPromptsDir(account.id));
+            log.info({ count }, `  📄 Imported ${count} prompt file(s)`);
+            break;
+        }
+      }
+
+      if (imports.length > 0) {
+        log.info("Done. You can now generate images for this account.");
+      } else {
+        log.info("No imports selected. Account is ready with empty directories.");
+      }
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

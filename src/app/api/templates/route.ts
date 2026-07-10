@@ -37,36 +37,46 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Collect from account dir first, then global
-  const seen = new Set<string>();
+  // Collect templates: if account has any, show ONLY account templates
+  // Otherwise fall back to global templates
   const templates: TemplateEntry[] = [];
+  let foundAny = false;
 
-  function addFromDir(dir: string, label: string): void {
-    if (!fs.existsSync(dir)) return;
-    for (const f of fs.readdirSync(dir).sort()) {
-      if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
-      if (seen.has(f)) continue;
-      seen.add(f);
-      const stats = fs.statSync(path.join(dir, f));
-      templates.push({
-        filename: f,
-        sizeBytes: stats.size,
-        sizeKB: (stats.size / 1024).toFixed(1),
-        filePath: path.join(label, f),
-        isFavorite: favorites.has(f),
-      });
+  if (accountId) {
+    const accountTemplatesDir = getAccountTemplatesDir(accountId);
+    if (fs.existsSync(accountTemplatesDir)) {
+      const files = fs.readdirSync(accountTemplatesDir).sort();
+      for (const f of files) {
+        if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
+        foundAny = true;
+        const stats = fs.statSync(path.join(accountTemplatesDir, f));
+        templates.push({
+          filename: f,
+          sizeBytes: stats.size,
+          sizeKB: (stats.size / 1024).toFixed(1),
+          filePath: `accounts/${accountId}/templates/${f}`,
+          isFavorite: favorites.has(f),
+        });
+      }
     }
   }
 
-  // Account templates take precedence
-  if (accountId) {
-    // Add favorites first (they're a subdir of templates, skip them in main scan)
-    const accountTemplatesDir = getAccountTemplatesDir(accountId);
-    addFromDir(accountTemplatesDir, `accounts/${accountId}/templates`);
+  // Only fall back to global if account had no templates
+  if (!foundAny) {
+    if (fs.existsSync(GLOBAL_TEMPLATES_DIR)) {
+      for (const f of fs.readdirSync(GLOBAL_TEMPLATES_DIR).sort()) {
+        if (!IMAGE_EXTS.has(path.extname(f).toLowerCase())) continue;
+        const stats = fs.statSync(path.join(GLOBAL_TEMPLATES_DIR, f));
+        templates.push({
+          filename: f,
+          sizeBytes: stats.size,
+          sizeKB: (stats.size / 1024).toFixed(1),
+          filePath: `templates/${f}`,
+          isFavorite: false,
+        });
+      }
+    }
   }
-
-  // Global fallback
-  addFromDir(GLOBAL_TEMPLATES_DIR, "templates");
 
   return NextResponse.json({ success: true, templates });
 }

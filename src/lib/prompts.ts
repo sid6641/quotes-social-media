@@ -27,29 +27,26 @@ export function loadTemplate(name: string, accountId?: string): string {
 
 /**
  * List all available prompt template files, optionally scoped to an account.
- * Checks account dir first, then merges with global prompts.
+ * If the account has any prompts, only those are returned (no global merge).
+ * If the account has none, global prompts are used as fallback.
  */
 export function listTemplates(accountId?: string): string[] {
-  const files = new Set<string>();
-
-  // Add account-specific prompts
+  // If account has prompts, use ONLY those
   if (accountId) {
     const accountDir = getAccountPromptsDir(accountId);
     if (fs.existsSync(accountDir)) {
-      for (const f of fs.readdirSync(accountDir)) {
-        if (f.endsWith(".md")) files.add(f);
-      }
+      const files = fs.readdirSync(accountDir)
+        .filter((f) => f.endsWith(".md"))
+        .sort();
+      if (files.length > 0) return files;
     }
   }
 
-  // Add global prompts (overrides if same name — account takes precedence)
-  if (fs.existsSync(GLOBAL_PROMPTS_DIR)) {
-    for (const f of fs.readdirSync(GLOBAL_PROMPTS_DIR)) {
-      if (f.endsWith(".md")) files.add(f);
-    }
-  }
-
-  return Array.from(files).sort();
+  // Fall back to global prompts
+  if (!fs.existsSync(GLOBAL_PROMPTS_DIR)) return [];
+  return fs.readdirSync(GLOBAL_PROMPTS_DIR)
+    .filter((f) => f.endsWith(".md"))
+    .sort();
 }
 
 /**
