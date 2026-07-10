@@ -130,6 +130,7 @@ export default function ReviewPage() {
 
   // Preview modal
   const [previewImage, setPreviewImage] = useState<ImageEntry | null>(null);
+  const [queuePreview, setQueuePreview] = useState<QueueEntry | null>(null);
 
   const fetchLatestBatch = useCallback(async () => {
     try {
@@ -1752,7 +1753,8 @@ export default function ReviewPage() {
                 {queue.map((entry) => (
                   <div
                     key={entry.id}
-                    className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${
+                    onClick={() => setQueuePreview(entry)}
+                    className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all cursor-pointer hover:shadow-md ${
                       entry.status === "published"
                         ? "border-green-200 opacity-70"
                         : entry.status === "failed"
@@ -1835,7 +1837,7 @@ export default function ReviewPage() {
                         </div>
                         {entry.status === "queued" && (
                           <button
-                            onClick={() => handleRemoveFromQueue(entry.id)}
+                            onClick={(e) => { e.stopPropagation(); handleRemoveFromQueue(entry.id); }}
                             className="text-xs text-gray-400 hover:text-red-500 transition-colors"
                             title="Remove from queue"
                           >
@@ -2567,6 +2569,101 @@ export default function ReviewPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Preview modal for queue entries */}
+      {queuePreview && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setQueuePreview(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image */}
+            <div className="bg-gray-100 p-4">
+              <img
+                src={`/api/images/${queuePreview.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
+                alt="Post preview"
+                className="w-full aspect-square rounded-lg object-cover shadow-md"
+              />
+            </div>
+            {/* Details */}
+            <div className="p-5">
+              {/* Quote */}
+              <p className="text-sm text-gray-700 font-medium mb-2">
+                &ldquo;{queuePreview.quote}&rdquo;
+              </p>
+              {/* Caption */}
+              <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                {queuePreview.caption.commentary}
+              </p>
+              <div className="flex flex-wrap gap-1 mb-4">
+                {queuePreview.caption.hashtags.map((tag, ti) => (
+                  <span
+                    key={ti}
+                    className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              {/* Status & Schedule */}
+              <div className="flex items-center justify-between mb-4">
+                <span
+                  className={`inline-block text-xs font-medium px-2 py-0.5 rounded ${
+                    queuePreview.status === "queued"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : queuePreview.status === "published"
+                      ? "bg-green-100 text-green-700"
+                      : queuePreview.status === "failed"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {queuePreview.status === "queued"
+                    ? "Queued"
+                    : queuePreview.status === "published"
+                    ? "Published"
+                    : queuePreview.status === "failed"
+                    ? "Failed"
+                    : queuePreview.status}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {queuePreview.status === "queued"
+                    ? `Scheduled: ${new Date(queuePreview.scheduledAt).toLocaleString()}`
+                    : queuePreview.publishedAt
+                    ? `Published: ${new Date(queuePreview.publishedAt).toLocaleString()}`
+                    : ""}
+                </span>
+              </div>
+              {queuePreview.error && (
+                <p className="text-xs text-red-400 mb-4">{queuePreview.error}</p>
+              )}
+              {/* Actions */}
+              <div className="flex gap-2">
+                {queuePreview.status === "queued" && (
+                  <button
+                    onClick={() => {
+                      handleRemoveFromQueue(queuePreview.id);
+                      setQueuePreview(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                  >
+                    Remove from Queue
+                  </button>
+                )}
+                <button
+                  onClick={() => setQueuePreview(null)}
+                  className={`${queuePreview.status === "queued" ? "flex-1" : "w-full"} px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
