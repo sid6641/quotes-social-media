@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { batchId, imageId, caption, selectedOption, account: accountId } = body;
+    const accountDir = accountId ? getAccountDir(accountId) : undefined;
 
     if (!batchId || !imageId) {
       return NextResponse.json(
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
         const image = batch.images.find((img) => img.id === imageId);
         if (image?.captions?.[selectedOption]) {
           // Sync queue entry caption to match the newly picked option
-          updateQueueEntryCaption(batchId, imageId, image.captions[selectedOption]);
+          updateQueueEntryCaption(batchId, imageId, image.captions[selectedOption], accountDir);
 
           recordCaptionPick({
             quote: image.quote,
@@ -95,9 +96,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Sync queue entry and record for self-learning
-    updateQueueEntryCaption(batchId, imageId, caption);
+    updateQueueEntryCaption(batchId, imageId, caption, accountDir);
 
-    const batch = getLatestBatch();
+    const batch = getLatestBatch(accountId);
     if (batch && batch.batch.id === batchId) {
       const image = batch.images.find((img) => img.id === imageId);
       if (image?.captions) {
