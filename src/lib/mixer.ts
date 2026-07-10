@@ -146,10 +146,23 @@ function getRecentlyUsedQuotes(accountId?: string): Set<string> {
  */
 export function pickCombinations(
   count: number = 10,
-  accountId?: string
+  accountId?: string,
+  all?: boolean
 ): QuoteTemplateCombo[] {
   const allQuotes = loadQuotes(accountId);
   const allTemplates = loadTemplates(accountId);
+
+  // "All" mode: full Cartesian product (n quotes × m templates)
+  if (all) {
+    const combos: QuoteTemplateCombo[] = [];
+    for (const quote of allQuotes) {
+      for (const template of allTemplates) {
+        combos.push({ quote: quote.text, template, quoteId: quote.id });
+      }
+    }
+    return combos;
+  }
+
   const recentlyUsed = getRecentlyUsedQuotes(accountId);
   const targetCount = count;
 

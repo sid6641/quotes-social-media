@@ -78,6 +78,7 @@ export default function ReviewPage() {
   const [generating, setGenerating] = useState(false);
   const [generateProgress, setGenerateProgress] = useState<{ total: number; completed: number; current: string } | null>(null);
   const [generateCount, setGenerateCount] = useState(5);
+  const [generateAll, setGenerateAll] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -215,33 +216,37 @@ export default function ReviewPage() {
   }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = async () => {
-    logAction("generate", { account: selectedAccount, count: generateCount });
+    logAction("generate", { account: selectedAccount, count: generateAll ? "all" : generateCount });
     try {
       setGenerating(true);
       setError(null);
-      setGenerateProgress({ total: generateCount, completed: 0, current: "Starting..." });
-
-      // Poll progress while generating
-      const accountParam = selectedAccount ? `?account=${encodeURIComponent(selectedAccount)}` : "";
-      const pollInterval = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/generate${accountParam}`);
-          const data = await res.json();
-          if (data.success && data.total > 0) {
-            setGenerateProgress({ total: data.total, completed: data.completed, current: data.current });
-          }
-        } catch { /* ignore poll errors */ }
-      }, 500);
 
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account: selectedAccount || undefined, count: generateCount }),
+        body: JSON.stringify({
+          account: selectedAccount || undefined,
+          count: generateAll ? 0 : generateCount,
+          all: generateAll,
+        }),
       });
+
+      // Start polling progress once we have a response (even before it completes)
+      const accountParam = selectedAccount ? `?account=${encodeURIComponent(selectedAccount)}` : "";
+      const pollInterval = setInterval(async () => {
+        try {
+          const pr = await fetch(`/api/generate${accountParam}`);
+          const pd = await pr.json();
+          if (pd.success && pd.total > 0) {
+            setGenerateProgress({ total: pd.total, completed: pd.completed, current: pd.current });
+          }
+        } catch { /* ignore */ }
+      }, 500);
+
+      const data = await res.json();
       clearInterval(pollInterval);
       setGenerateProgress(null);
 
-      const data = await res.json();
       if (!data.success) {
         throw new Error(data.error || "Generation failed");
       }
@@ -1204,26 +1209,41 @@ export default function ReviewPage() {
               : `Publish to Instagram (${statusCounts.approved})`}
           </button>
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500">
-              Count:
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={generateCount}
-                onChange={(e) => setGenerateCount(Number(e.target.value))}
-                disabled={generating}
-                className="ml-1 w-20 align-middle"
-              />
-              <span className="ml-1 font-medium text-gray-700">{generateCount}</span>
-            </label>
+            {!generateAll && (
+              <label className="text-xs text-gray-500">
+                Count:
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={generateCount}
+                  onChange={(e) => setGenerateCount(Math.min(10, Math.max(1, Number(e.target.value))))}
+                  disabled={generating}
+                  className="ml-1 w-14 text-center text-sm border border-gray-200 rounded-lg px-1 py-1.5"
+                />
+              </label>
+            )}
             <button
               onClick={handleGenerate}
               disabled={generating}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
             >
-              {generating ? "Generating..." : `Generate ${generateCount} Images`}
+              {generating
+                ? "Generating..."
+                : generateAll
+                ? "Generate All Images"
+                : `Generate ${generateCount} Images`}
             </button>
+            <label className={`flex items-center gap-1.5 text-xs cursor-pointer ${generating ? "opacity-50 pointer-events-none" : ""}`}>
+              <input
+                type="checkbox"
+                checked={generateAll}
+                onChange={(e) => setGenerateAll(e.target.checked)}
+                disabled={generating}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-gray-600">All images</span>
+            </label>
           </div>
         </div>
       </div>

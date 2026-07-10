@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
     // 0. Parse optional account and count
     const body = await request.json().catch(() => ({}));
     const accountId: string | undefined = body.account;
-    const generateCount: number = Math.min(Math.max(body.count || 5, 1), 10);
+    const generateAll: boolean = body.all === true;
+    const generateCount: number = generateAll
+      ? 0 // Will be computed below — n quotes × m templates
+      : Math.min(Math.max(body.count || 5, 1), 10);
 
     // Resolve account-specific paths
     const account = accountId ? getAccount(accountId) : undefined;
@@ -54,8 +57,8 @@ export async function POST(request: NextRequest) {
     const promptName = templates[0];
     const rawTemplate = loadTemplate(promptName, accountId);
 
-    // 2. Pick combinations (account-scoped, with count)
-    const combos = pickCombinations(generateCount, accountId);
+    // 2. Pick combinations (account-scoped, with count or all mode)
+    const combos = pickCombinations(generateCount, accountId, generateAll);
 
     // 3. Ensure output directories exist
     if (!fs.existsSync(outputDir)) {
