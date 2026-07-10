@@ -8,6 +8,7 @@ import {
   expireCooldowns,
   importQuotes,
   importQuotesFromFile,
+  toggleQuoteFavorite,
 } from "@/lib/quote-pool";
 import path from "path";
 
@@ -41,27 +42,51 @@ export async function GET(request: NextRequest) {
     ? parseInt(searchParams.get("offset")!, 10)
     : undefined;
 
-  const quotes = getQuotes({
+  let quotes = getQuotes({
     status: status as any,
     limit,
     offset,
   }, account);
 
+  // If status is "favorites", filter by isFavorite
+  if (status === "favorites") {
+    quotes = quotes.filter((q) => q.isFavorite);
+  }
+
   return NextResponse.json({ success: true, quotes });
 }
 
 /**
- * POST /api/quotes — add quote(s) or import from file.
+ * POST /api/quotes — add quote(s), import from file, expire cooldowns, or toggle favorite.
  *
  * Add single: { text, author?, account? }
  * Batch:       { texts: string[], author?, account? }
  * Import file: { filePath: string, author?, account? }
  * Cooldowns:   { action: "expire-cooldowns", account? }
+ * Favorite:    { action: "favorite" | "unfavorite", quoteId: string, account: string }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const account = body.account || undefined;
+
+    // Toggle favorite
+    if (body.action === "favorite" || body.action === "unfavorite") {
+      if (!body.quoteId || !body.account) {
+        return NextResponse.json(
+          { error: "Missing required fields: quoteId, account" },
+          { status: 400 }
+        );
+      }
+      const result = toggleQuoteFavorite(body.quoteId, body.account);
+      if (!result) {
+        return NextResponse.json(
+          { error: "Quote not found" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ success: true, isFavorite: body.action === "unfavorite" });
+    }
 
     // Expire cooldowns
     if (body.action === "expire-cooldowns") {

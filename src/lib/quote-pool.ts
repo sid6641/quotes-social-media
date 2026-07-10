@@ -26,6 +26,7 @@ export interface QuoteEntry {
   lastUsedAt?: string;
   usedByAccounts: string[];
   cooldownUntil?: string;
+  isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -287,6 +288,20 @@ export function recycleQuote(quoteId: string, accountId?: string): boolean {
 
   quote.status = "available";
   quote.cooldownUntil = undefined;
+  quote.updatedAt = new Date().toISOString();
+  writePool(pool, accountId);
+  return true;
+}
+
+/**
+ * Toggle the favorite status of a quote.
+ */
+export function toggleQuoteFavorite(quoteId: string, accountId?: string): boolean {
+  const pool = readPool(accountId);
+  const quote = pool.quotes.find((q) => q.id === quoteId);
+  if (!quote) return false;
+
+  quote.isFavorite = !quote.isFavorite;
   quote.updatedAt = new Date().toISOString();
   writePool(pool, accountId);
   return true;

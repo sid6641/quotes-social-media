@@ -109,12 +109,13 @@ export default function ReviewPage() {
   });
 
   // Quotes pool
-  const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; status: string; usageCount: number }>>([]);
+  const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; status: string; usageCount: number; isFavorite?: boolean }>>([]);
   const [poolStats, setPoolStats] = useState<{ total: number; available: number; cooldown: number; retired: number } | null>(null);
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [newQuoteText, setNewQuoteText] = useState("");
   const [newQuoteAuthor, setNewQuoteAuthor] = useState("");
-  const [quoteFilter, setQuoteFilter] = useState<string>("all");
+  const [quoteScopeFilter, setQuoteScopeFilter] = useState<"all" | "account" | "favorites">("all");
+  const [favoriteTogglingQuotes, setFavoriteTogglingQuotes] = useState<Set<string>>(new Set());
 
   // Templates
   const [templates, setTemplates] = useState<Array<{ filename: string; sizeKB: string; filePath?: string; isFavorite?: boolean }>>([]);
@@ -697,9 +698,11 @@ export default function ReviewPage() {
   const fetchPoolQuotes = useCallback(async () => {
     try {
       setQuotesLoading(true);
-      const status = quoteFilter !== "all" ? quoteFilter : undefined;
       const accountParam = selectedAccount ? `&account=${encodeURIComponent(selectedAccount)}` : "";
-      const url = status ? `/api/quotes?status=${status}${accountParam}` : `/api/quotes${accountParam ? `?${accountParam.slice(1)}` : ""}`;
+      const status = quoteScopeFilter !== "all" ? quoteScopeFilter : undefined;
+      const url = status
+        ? `/api/quotes?status=${status}${accountParam}`
+        : `/api/quotes${accountParam}`;
       const statsUrl = `/api/quotes?stats=true${accountParam}`;
       const [quotesRes, statsRes] = await Promise.all([
         fetch(url),
@@ -714,7 +717,7 @@ export default function ReviewPage() {
     } finally {
       setQuotesLoading(false);
     }
-  }, [quoteFilter, selectedAccount]);
+  }, [quoteScopeFilter, selectedAccount]);
 
   const handleAddQuote = async () => {
     const text = newQuoteText.trim();
@@ -753,6 +756,38 @@ export default function ReviewPage() {
       await fetchPoolQuotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete quote");
+    }
+  };
+
+  // Toggle quote favorite
+  const handleToggleQuoteFavorite = async (quoteId: string, isFavorite: boolean) => {
+    if (!selectedAccount) return;
+    setFavoriteTogglingQuotes((prev) => new Set(prev).add(quoteId));
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: isFavorite ? "unfavorite" : "favorite",
+          quoteId,
+          account: selectedAccount,
+        }),
+      });
+      if (res.ok) {
+        setPoolQuotes((prev) =>
+          prev.map((q) =>
+            q.id === quoteId ? { ...q, isFavorite: !isFavorite } : q
+          )
+        );
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setFavoriteTogglingQuotes((prev) => {
+        const next = new Set(prev);
+        next.delete(quoteId);
+        return next;
+      });
     }
   };
 
@@ -1938,22 +1973,29 @@ export default function ReviewPage() {
             </div>
           </div>
 
-          {/* Filter tabs */}
-          <div className="flex gap-2 mb-4">
-            {["all", "available", "cooldown", "retired"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setQuoteFilter(f)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                  quoteFilter === f
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
+          {/* Scope filter tabs */}
+          {selectedAccount && (
+            <div className="flex items-center gap-2 mb-4">
+              {([{ key: "all", label: "All" }, { key: "account", label: "Account" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setQuoteScopeFilter(key)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    quoteScopeFilter === key
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {label}
+                  {key === "favorites" && (
+                    <span className="ml-1.5 text-xs opacity-70">
+                      ({poolQuotes.filter((q) => q.isFavorite).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Quote list */}
           {quotesLoading ? (
@@ -1968,7 +2010,9 @@ export default function ReviewPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {poolQuotes.map((q) => (
+              {poolQuotes
+                .filter((q) => quoteScopeFilter !== "favorites" || q.isFavorite)
+                .map((q) => (
                 <div
                   key={q.id}
                   className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3"
@@ -1990,12 +2034,26 @@ export default function ReviewPage() {
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteQuote(q.id)}
-                    className="text-xs text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 mt-1"
-                  >
-                    ✕
-                  </button>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={() => handleToggleQuoteFavorite(q.id, !!q.isFavorite)}
+                      disabled={favoriteTogglingQuotes.has(q.id)}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-colors ${
+                        q.isFavorite
+                          ? "text-yellow-500 hover:text-yellow-600"
+                          : "text-gray-300 hover:text-yellow-400"
+                      }`}
+                      title={q.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      {q.isFavorite ? "★" : "☆"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuote(q.id)}
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors mt-0.5"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
