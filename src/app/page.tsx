@@ -99,9 +99,14 @@ export default function ReviewPage() {
   const [selectedAccount, setSelectedAccount] = useState<string>("");
   const [accounts, setAccounts] = useState<Array<{ id: string; name: string; enabled: boolean; cooldownDays?: number }>>([]);
   const [accountsLoading, setAccountsLoading] = useState(false);
-  const [newAccountId, setNewAccountId] = useState("");
-  const [newAccountName, setNewAccountName] = useState("");
-  const [newAccountDesc, setNewAccountDesc] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    id: "",
+    name: "",
+    igUserId: "",
+    igAccessToken: "",
+    igPageId: "",
+  });
 
   // Quotes pool
   const [poolQuotes, setPoolQuotes] = useState<Array<{ id: string; text: string; status: string; usageCount: number }>>([]);
@@ -626,21 +631,24 @@ export default function ReviewPage() {
   };
 
   const handleCreateAccount = async () => {
-    if (!newAccountId.trim()) return;
+    if (!createForm.id.trim()) return;
     try {
       const res = await fetch("/api/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: newAccountId.trim(),
-          name: newAccountName.trim() || newAccountId.trim(),
-          scope: newAccountDesc.trim() ? newAccountDesc.split(",").map((t) => t.trim()) : undefined,
+          id: createForm.id.trim(),
+          name: createForm.name.trim() || createForm.id.trim(),
+          instagram: {
+            igUserId: createForm.igUserId.trim() || undefined,
+            pageId: createForm.igPageId.trim() || undefined,
+            accessToken: createForm.igAccessToken.trim() || undefined,
+          },
         }),
       });
       if (!res.ok) throw new Error("Failed to create account");
-      setNewAccountId("");
-      setNewAccountName("");
-      setNewAccountDesc("");
+      setShowCreateModal(false);
+      setCreateForm({ id: "", name: "", igUserId: "", igAccessToken: "", igPageId: "" });
       await fetchAccounts();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
@@ -1982,34 +1990,18 @@ export default function ReviewPage() {
             Instagram auth, and isolated publish queue.
           </p>
 
-          {/* Create new account */}
+          {/* Create new account — modal trigger */}
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">New Account</h3>
-            <div className="flex flex-wrap gap-2">
-              <input
-                value={newAccountId}
-                onChange={(e) => setNewAccountId(e.target.value)}
-                placeholder="Account ID (e.g., dailygrind)"
-                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
-              />
-              <input
-                value={newAccountName}
-                onChange={(e) => setNewAccountName(e.target.value)}
-                placeholder="Display name"
-                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
-              />
-              <input
-                value={newAccountDesc}
-                onChange={(e) => setNewAccountDesc(e.target.value)}
-                placeholder="Description (optional)"
-                className="flex-[2] text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[200px]"
-              />
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">Accounts</h3>
               <button
-                onClick={handleCreateAccount}
-                disabled={!newAccountId.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium whitespace-nowrap"
+                onClick={() => {
+                  setCreateForm({ id: "", name: "", igUserId: "", igAccessToken: "", igPageId: "" });
+                  setShowCreateModal(true);
+                }}
+                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
               >
-                Create Account
+                + Create Account
               </button>
             </div>
           </div>
@@ -2070,6 +2062,109 @@ export default function ReviewPage() {
       )}
 
       {/* Account editor modal */}
+      {/* Create Account Modal */}
+      {showCreateModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h3 className="text-base font-semibold text-gray-800">Create Account</h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="px-6 py-4 space-y-4">
+              {/* Identity */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Identity</legend>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Account ID *</label>
+                    <input
+                      value={createForm.id}
+                      onChange={(e) => setCreateForm({ ...createForm, id: e.target.value })}
+                      placeholder="e.g., mybrand"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Display Name</label>
+                    <input
+                      value={createForm.name}
+                      onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                      placeholder="My Brand"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Instagram API (dummy) */}
+              <fieldset>
+                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Instagram API <span className="text-gray-300 font-normal lowercase">(optional — add later)</span>
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">IG User ID</label>
+                    <input
+                      value={createForm.igUserId}
+                      onChange={(e) => setCreateForm({ ...createForm, igUserId: e.target.value })}
+                      placeholder="dummy-ig-user-id"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">IG Access Token</label>
+                    <input
+                      value={createForm.igAccessToken}
+                      onChange={(e) => setCreateForm({ ...createForm, igAccessToken: e.target.value })}
+                      placeholder="dummy-access-token"
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label className="block text-xs text-gray-500 mb-1">Facebook Page ID</label>
+                  <input
+                    value={createForm.igPageId}
+                    onChange={(e) => setCreateForm({ ...createForm, igPageId: e.target.value })}
+                    placeholder="dummy-page-id"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+              </fieldset>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateAccount}
+                disabled={!createForm.id.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {editingAccount && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"

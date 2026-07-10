@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": "pub-001",
+    "batchId": "2026-07-10-001",
+    "imageId": "img-010",
+    "filename": "2026-07-10-001-10.png",
+    "quote": "Creativity is intelligence having fun.",
+    "template": "meme_template.jpg",
+    "caption": {
+      "commentary": "Drop the serious face, genius! 🎉 Creativity isn't work; it's intelligence having an absolute blast. Time to play smarter, not harder.",
+      "hashtags": [
+        "#PlaygroundOfIdeas",
+        "#SmartFun",
+        "#UnleashYourInnerGenius",
+        "#ThinkDifferent",
+        "#BoldlyCreative",
+        "#InnovationStartsHere",
+        "#GameOn",
+        "#CreativeExplosion",
+        "#ChallengeAccepted",
+        "#MakeItHappen",
+        "#NoLimits",
+        "#BeBold"
+      ]
+    },
+    "scheduledAt": "2026-07-11T03:30:00.000Z",
+    "status": "queued"
+  }
+]
