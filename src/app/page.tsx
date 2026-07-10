@@ -1948,13 +1948,11 @@ export default function ReviewPage() {
           {/* Quote list */}
           {quotesLoading ? (
             <div className="text-center py-10 text-gray-500">Loading quotes...</div>
-          ) : !selectedAccount ? (
-            <div className="text-center py-10 text-gray-400">
-              Select an account from the dropdown above to view its quote pool.
-            </div>
           ) : poolQuotes.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              No quotes found for this account. Add one above or import from a text file via CLI.
+              {selectedAccount
+                ? "No quotes found for this account. Add one above or import from a text file via CLI."
+                : "No global quotes found. Select an account to view its quote pool, or add quotes to the global pool via CLI."}
             </div>
           ) : (
             <div className="space-y-2">

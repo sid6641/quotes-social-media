@@ -99,6 +99,17 @@
       "usedByAccounts": [],
       "createdAt": "2026-07-10T06:16:07.521Z",
       "updatedAt": "2026-07-10T06:16:07.521Z"
+    },
+    {
+      "id": "q-00011",
+      "text": "The only way to do great work is to love what you do.",
+      "author": "Steve Jobs",
+      "source": "manual",
+      "status": "available",
+      "usageCount": 0,
+      "usedByAccounts": [],
+      "createdAt": "2026-07-10T09:42:18.162Z",
+      "updatedAt": "2026-07-10T09:42:18.162Z"
     }
   ]
 }
