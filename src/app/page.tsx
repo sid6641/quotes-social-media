@@ -70,6 +70,10 @@ export default function ReviewPage() {
   // Batch selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // Cross-batch review (all images across all batches for the account)
+  const [allImages, setAllImages] = useState<Array<{ batchId: string; image: ImageEntry }> | null>(null);
+  const [batchScope, setBatchScope] = useState<string>("__all__");
+
   // Batch history
   const [allBatches, setAllBatches] = useState<
     Array<{ id: string; generatedAt: string; trigger: string; imageCount: number; approvedCount: number }>
@@ -129,9 +133,37 @@ export default function ReviewPage() {
     }
   }, [selectedAccount]);
 
+  // Fetch ALL images across all batches (for the unified review view)
+  const fetchAllImages = useCallback(async () => {
+    try {
+      const accountParam = selectedAccount ? `?allImages=true&account=${selectedAccount}` : "?allImages=true";
+      const res = await fetch(`/api/manifest${accountParam}`);
+      if (!res.ok) { setAllImages([]); return; }
+      const data = await res.json();
+      setAllImages(data.images || []);
+    } catch {
+      setAllImages([]);
+    }
+  }, [selectedAccount]);
+
+  // Fetch batches summary list
+  const fetchAllBatchesList = useCallback(async () => {
+    try {
+      const accountParam = selectedAccount ? `?all=true&account=${selectedAccount}` : "?all=true";
+      const res = await fetch(`/api/manifest${accountParam}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setAllBatches(data.batches || []);
+    } catch {
+      // non-fatal
+    }
+  }, [selectedAccount]);
+
   useEffect(() => {
     fetchLatestBatch();
-  }, [fetchLatestBatch]);
+    fetchAllImages();
+    fetchAllBatchesList();
+  }, [fetchLatestBatch, fetchAllImages, fetchAllBatchesList]);
 
   // Load accounts on mount for the account selector
   useEffect(() => {
@@ -282,6 +314,38 @@ export default function ReviewPage() {
     }
   };
 
+  // Reject all remaining pending images across the current view scope
+  const handleRejectRemaining = async () => {
+    const pending = displayEntries.filter((i) => i.status === "pending");
+    if (pending.length === 0) return;
+
+    let rejected = 0;
+    for (const img of pending) {
+      const entry = img as ImageEntry & { batchId?: string };
+      const batchId = entry.batchId || manifest?.batch?.id;
+      if (!batchId) continue;
+      try {
+        const res = await fetch("/api/status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            batchId,
+            imageId: img.id,
+            status: "rejected",
+            account: selectedAccount || undefined,
+          }),
+        });
+        if (res.ok) rejected++;
+      } catch {
+        // continue
+      }
+    }
+
+    await Promise.all([fetchLatestBatch(), fetchAllImages(), fetchAllBatchesList()]);
+    setError(`Rejected ${rejected} remaining image(s).`);
+    setTimeout(() => setError(null), 4000);
+  };
+
   const handlePublishNow = async () => {
     try {
       setPublishing(true);
@@ -318,12 +382,19 @@ export default function ReviewPage() {
   }, []);
 
   const switchBatch = async (batchId: string) => {
+    if (batchId === "__all__") {
+      setBatchScope("__all__");
+      setBatchSelectorOpen(false);
+      return;
+    }
     try {
       setLoading(true);
-      const res = await fetch(`/api/manifest?batchId=${batchId}`);
+      const accountParam = selectedAccount ? `&account=${selectedAccount}` : "";
+      const res = await fetch(`/api/manifest?batchId=${batchId}${accountParam}`);
       if (!res.ok) throw new Error("Failed to load batch");
       const data = await res.json();
       setManifest(data);
+      setBatchScope(batchId);
       setBatchSelectorOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load batch");
@@ -851,19 +922,21 @@ export default function ReviewPage() {
     }
   };
 
-  const filteredImages =
-    manifest?.images.filter(
-      (img) => statusFilter === "all" || img.status === statusFilter
-    ) ?? [];
+  // When viewing all batches: merged list with batchId attached
+  const isCrossBatch = batchScope === "__all__";
+  const displayEntries: (ImageEntry & { batchId?: string })[] = isCrossBatch
+    ? (allImages ?? []).map((entry) => ({ ...entry.image, batchId: entry.batchId }))
+    : (manifest?.images ?? []);
+
+  const filteredImages = displayEntries.filter(
+    (img) => statusFilter === "all" || img.status === statusFilter
+  );
 
   const statusCounts = {
-    all: manifest?.images.length ?? 0,
-    pending:
-      manifest?.images.filter((i) => i.status === "pending").length ?? 0,
-    approved:
-      manifest?.images.filter((i) => i.status === "approved").length ?? 0,
-    rejected:
-      manifest?.images.filter((i) => i.status === "rejected").length ?? 0,
+    all: displayEntries.length,
+    pending: displayEntries.filter((i) => i.status === "pending").length,
+    approved: displayEntries.filter((i) => i.status === "approved").length,
+    rejected: displayEntries.filter((i) => i.status === "rejected").length,
   };
 
   return (
@@ -899,24 +972,43 @@ export default function ReviewPage() {
               <span
                 className="cursor-pointer hover:text-gray-700 transition-colors"
                 onClick={() => {
-                  fetchAllBatches();
+                  fetchAllBatchesList();
                   setBatchSelectorOpen(!batchSelectorOpen);
                 }}
               >
-                📦 Batch: {manifest.batch.id} ▾
+                {isCrossBatch
+                  ? `📦 All iterations (${displayEntries.length} images) ▾`
+                  : `📦 Batch: ${batchScope} ▾`}
               </span>
-              &middot; Generated{" "}
-              {new Date(manifest.batch.generatedAt).toLocaleString()}
-              &middot; Trigger: {manifest.batch.trigger}
+              {!isCrossBatch && manifest && (
+                <span>
+                  &middot; Generated{" "}
+                  {new Date(manifest.batch.generatedAt).toLocaleString()}
+                  &middot; Trigger: {manifest.batch.trigger}
+                </span>
+              )}
 
               {batchSelectorOpen && allBatches.length > 0 && (
                 <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[280px] max-h-60 overflow-y-auto">
+                  <button
+                    onClick={() => switchBatch("__all__")}
+                    className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors border-b border-gray-100 ${
+                      isCrossBatch
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    <span className="font-medium">All iterations</span>
+                    <span className="text-gray-400 ml-2">
+                      {allImages?.length ?? 0} image{(allImages?.length ?? 0) !== 1 ? "s" : ""}
+                    </span>
+                  </button>
                   {allBatches.map((b) => (
                     <button
                       key={b.id}
                       onClick={() => switchBatch(b.id)}
                       className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 ${
-                        b.id === manifest.batch.id
+                        b.id === batchScope
                           ? "bg-blue-50 text-blue-700 font-medium"
                           : "text-gray-600"
                       }`}
@@ -1102,7 +1194,7 @@ export default function ReviewPage() {
       </div>
 
       {/* Filter tabs + select-all (review mode only) */}
-      {manifest && viewMode === "review" && (
+      {(manifest || allImages) && viewMode === "review" && (
         <div className="flex items-center gap-2 mb-6">
           {(
             [
@@ -1128,6 +1220,15 @@ export default function ReviewPage() {
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2">
+            {statusCounts.pending > 0 && (
+              <button
+                onClick={handleRejectRemaining}
+                className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                title="Mark all still-pending images as rejected"
+              >
+                Reject remaining ({statusCounts.pending})
+              </button>
+            )}
             <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
               <input
                 type="checkbox"
@@ -1145,7 +1246,7 @@ export default function ReviewPage() {
       )}
 
       {/* Floating batch action bar */}
-      {manifest && viewMode === "review" && selectedIds.size > 0 && (
+      {(manifest || allImages) && viewMode === "review" && selectedIds.size > 0 && (
         <div className="sticky top-4 z-10 mb-4 flex items-center justify-between bg-white border border-blue-200 rounded-xl shadow-lg px-5 py-3">
           <span className="text-sm text-gray-700 font-medium">
             {selectedIds.size} selected
@@ -1174,15 +1275,26 @@ export default function ReviewPage() {
       )}
 
       {/* Review mode — image grid */}
-      {viewMode === "review" && manifest && (
+      {viewMode === "review" && (
         <>
-          {filteredImages.length === 0 ? (
+          {/* Cross-batch info bar */}
+          {isCrossBatch && allImages && allImages.length > 0 && (
+            <div className="text-xs text-gray-400 mb-3 px-1">
+              Showing {filteredImages.length} of {displayEntries.length} images across {allBatches.length} iteration(s)
+            </div>
+          )}
+
+          {filteredImages.length === 0 && displayEntries.length === 0 && manifest === null && allImages === null ? (
+            <div className="text-center py-20 text-gray-400">Loading...</div>
+          ) : filteredImages.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               No {statusFilter === "all" ? "" : statusFilter} images to show.
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredImages.map((image) => (
+              {filteredImages.map((image) => {
+                const imgBatchId = (image as any).batchId;
+                return (
                 <div
                   key={image.id}
                   className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${
@@ -1201,14 +1313,20 @@ export default function ReviewPage() {
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
+                    {/* Iteration badge (cross-batch mode) */}
+                    {isCrossBatch && imgBatchId && (
+                      <div className="absolute top-2 left-2 bg-gray-900/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+                        {imgBatchId}
+                      </div>
+                    )}
                     {/* Status badge */}
                     {image.status === "approved" && (
-                      <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded" style={imgBatchId ? {top: "1.6rem"} as React.CSSProperties : {}}>
                         ✓ Approved
                       </div>
                     )}
                     {image.status === "rejected" && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded" style={imgBatchId ? {top: "1.6rem"} as React.CSSProperties : {}}>
                         ✗ Rejected
                       </div>
                     )}
@@ -1226,6 +1344,9 @@ export default function ReviewPage() {
 
                   {/* Info */}
                   <div className="p-3">
+                    {isCrossBatch && imgBatchId && (
+                      <p className="text-[10px] text-gray-400 font-mono mb-1">{imgBatchId}</p>
+                    )}
                     <p className="text-sm text-gray-700 line-clamp-2 mb-1">
                       &ldquo;{image.quote}&rdquo;
                     </p>
@@ -1251,7 +1372,7 @@ export default function ReviewPage() {
                                 <button
                                   onClick={() =>
                                     handlePickCaptionOption(
-                                      manifest.batch.id,
+                                      imgBatchId || manifest?.batch?.id || "",
                                       image.id,
                                       oi
                                     )
@@ -1348,7 +1469,7 @@ export default function ReviewPage() {
                                       <button
                                         onClick={() =>
                                           handleCaptionSave(
-                                            manifest.batch.id,
+                                            imgBatchId || manifest?.batch?.id || "",
                                             image.id
                                           )
                                         }
@@ -1398,7 +1519,7 @@ export default function ReviewPage() {
                         <button
                           onClick={() =>
                             handleStatusChange(
-                              manifest.batch.id,
+                              imgBatchId || manifest?.batch?.id || "",
                               image.id,
                               "approved"
                             )
@@ -1410,7 +1531,7 @@ export default function ReviewPage() {
                         <button
                           onClick={() =>
                             handleStatusChange(
-                              manifest.batch.id,
+                              imgBatchId || manifest?.batch?.id || "",
                               image.id,
                               "rejected"
                             )
@@ -1425,7 +1546,7 @@ export default function ReviewPage() {
                       <button
                         onClick={() =>
                           handleStatusChange(
-                            manifest.batch.id,
+                            imgBatchId || manifest?.batch?.id || "",
                             image.id,
                             "rejected"
                           )
@@ -1439,7 +1560,7 @@ export default function ReviewPage() {
                       <button
                         onClick={() =>
                           handleStatusChange(
-                            manifest.batch.id,
+                            imgBatchId || manifest?.batch?.id || "",
                             image.id,
                             "approved"
                           )
@@ -1469,7 +1590,7 @@ export default function ReviewPage() {
                     )}
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
           )}
         </>

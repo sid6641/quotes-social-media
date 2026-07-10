@@ -258,6 +258,30 @@ export function getApprovedImages(accountId?: string): ImageEntry[] {
 }
 
 /**
+ * Get images from ALL batches, optionally filtered by status.
+ * Each image includes its batch ID for reference.
+ * Useful for the unified review view.
+ */
+export function getAllImages(
+  accountId?: string,
+  statusFilter?: "pending" | "approved" | "rejected"
+): Array<{ batchId: string; image: ImageEntry }> {
+  const dir = accountId ? getAccountDir(accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
+  const results: Array<{ batchId: string; image: ImageEntry }> = [];
+
+  for (const m of manifests) {
+    for (const img of m.images) {
+      if (statusFilter && img.status !== statusFilter) continue;
+      results.push({ batchId: m.batch.id, image: img });
+    }
+  }
+
+  // Most recent batches first
+  return results.reverse();
+}
+
+/**
  * Invalidate the in-memory cache so the next read gets fresh data.
  */
 export function invalidateCache(): void {
