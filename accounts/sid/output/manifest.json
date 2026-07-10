@@ -759,21 +759,20 @@
           }
         ],
         "caption": {
-          "commentary": "Ditch the map, blaze your own trail. The best views are always off the beaten path. Own your adventure. ✨",
+          "commentary": "Choosing the unbeaten path. Where are you headed?",
           "hashtags": [
-            "#BlazeYourTrail",
-            "#OwnYourAdventure",
-            "#NoRegrets",
-            "#GoRogue",
-            "#Unconventional",
-            "#DareToBeDifferent",
-            "#MakeYourOwnWay",
-            "#BoldMoves",
-            "#LifeOnYourTerms",
-            "#Wanderlust"
+            "#LessTraveled",
+            "#NewDirections",
+            "#AdventureAwaits",
+            "#Uncharted",
+            "#SimplyInspiring",
+            "#YourPath",
+            "#MinimalistVibes",
+            "#DeepThoughts",
+            "#Wander"
           ]
         },
-        "selectedCaptionIndex": 1
+        "selectedCaptionIndex": 3
       },
       {
         "id": "img-008",
@@ -1096,23 +1095,23 @@
           }
         ],
         "caption": {
-          "commentary": "There's something truly magical about letting your mind wander and play. When we allow our intelligence to have fun, that's where the most beautiful and innovative ideas bloom. Embrace the joy in creating!",
+          "commentary": "Drop the serious face, genius! 🎉 Creativity isn't work; it's intelligence having an absolute blast. Time to play smarter, not harder.",
           "hashtags": [
-            "#CreativeJoy",
-            "#IntelligenceAtPlay",
-            "#EmbraceCreativity",
-            "#FunWithIdeas",
-            "#InspirationalQuote",
-            "#MindfulCreation",
-            "#ArtOfLiving",
-            "#DailyInspiration",
-            "#PositiveVibes",
-            "#CreativeMindset",
+            "#PlaygroundOfIdeas",
+            "#SmartFun",
+            "#UnleashYourInnerGenius",
             "#ThinkDifferent",
-            "#FlowState"
+            "#BoldlyCreative",
+            "#InnovationStartsHere",
+            "#GameOn",
+            "#CreativeExplosion",
+            "#ChallengeAccepted",
+            "#MakeItHappen",
+            "#NoLimits",
+            "#BeBold"
           ]
         },
-        "selectedCaptionIndex": 0
+        "selectedCaptionIndex": 1
       }
     ]
   }

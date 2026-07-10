@@ -86,3 +86,11 @@ Patterns, gotchas, and what works for browser automation on this app.
 | `/api/templates` | GET | `?account=sid` | ✅ Yes |
 | `/api/generate` | POST | `{ account }` | ✅ Yes |
 | `/api/queue` | POST | `{ action: "process", account }` | ✅ Yes |
+
+## Known Bugs (Fixed)
+
+### Caption pick not syncing to queue (2026-07-10)
+- **Bug**: Changing a caption option on an approved/queued image updated the manifest but NOT the queue entry for account-scoped queues.
+- **Root cause**: `updateQueueEntryCaption()` was called without `accountDir`, so it wrote to the global queue instead of the account's queue.
+- **Fix**: Pass `accountDir` to `updateQueueEntryCaption()` in `caption/route.ts`.
+- **Also fixed**: `getLatestBatch()` call in the edit-caption branch was missing `accountId`.
