@@ -76,6 +76,8 @@ export default function ReviewPage() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [generateProgress, setGenerateProgress] = useState<{ total: number; completed: number; current: string } | null>(null);
+  const [generateCount, setGenerateCount] = useState(5);
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -120,6 +122,7 @@ export default function ReviewPage() {
   const [newQuoteText, setNewQuoteText] = useState("");
   const [newQuoteAuthor, setNewQuoteAuthor] = useState("");
   const [quoteScopeFilter, setQuoteScopeFilter] = useState<"all" | "account" | "favorites">("all");
+  const [quoteSearch, setQuoteSearch] = useState("");
   const [favoriteTogglingQuotes, setFavoriteTogglingQuotes] = useState<Set<string>>(new Set());
 
   // Templates
@@ -212,15 +215,32 @@ export default function ReviewPage() {
   }, [selectedAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = async () => {
-    logAction("generate", { account: selectedAccount });
+    logAction("generate", { account: selectedAccount, count: generateCount });
     try {
       setGenerating(true);
       setError(null);
+      setGenerateProgress({ total: generateCount, completed: 0, current: "Starting..." });
+
+      // Poll progress while generating
+      const accountParam = selectedAccount ? `?account=${encodeURIComponent(selectedAccount)}` : "";
+      const pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/generate${accountParam}`);
+          const data = await res.json();
+          if (data.success && data.total > 0) {
+            setGenerateProgress({ total: data.total, completed: data.completed, current: data.current });
+          }
+        } catch { /* ignore poll errors */ }
+      }, 500);
+
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account: selectedAccount || undefined }),
+        body: JSON.stringify({ account: selectedAccount || undefined, count: generateCount }),
       });
+      clearInterval(pollInterval);
+      setGenerateProgress(null);
+
       const data = await res.json();
       if (!data.success) {
         throw new Error(data.error || "Generation failed");
@@ -230,6 +250,7 @@ export default function ReviewPage() {
       }
       await fetchLatestBatch();
     } catch (err) {
+      setGenerateProgress(null);
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
@@ -1182,15 +1203,50 @@ export default function ReviewPage() {
               ? "Publishing..."
               : `Publish to Instagram (${statusCounts.approved})`}
           </button>
-          <button
-            onClick={handleGenerate}
-            disabled={generating}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-          >
-            {generating ? "Generating..." : "Generate New Batch"}
-          </button>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-500">
+              Count:
+              <input
+                type="range"
+                min={1}
+                max={10}
+                value={generateCount}
+                onChange={(e) => setGenerateCount(Number(e.target.value))}
+                disabled={generating}
+                className="ml-1 w-20 align-middle"
+              />
+              <span className="ml-1 font-medium text-gray-700">{generateCount}</span>
+            </label>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              {generating ? "Generating..." : `Generate ${generateCount} Images`}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Generation progress bar */}
+      {generateProgress && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-blue-700">
+              Generating {generateProgress.completed}/{generateProgress.total}
+            </span>
+            <span className="text-xs text-blue-500 truncate ml-4 max-w-xs">
+              {generateProgress.current}
+            </span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(generateProgress.completed / generateProgress.total) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Publish result banner */}
       <Banner variant="success" message={publishResult} onDismiss={() => setPublishResult(null)} />
@@ -1901,6 +1957,18 @@ export default function ReviewPage() {
             </div>
           )}
 
+          {/* Search */}
+          {selectedAccount && poolQuotes.length > 0 && (
+            <div className="mb-4">
+              <input
+                value={quoteSearch}
+                onChange={(e) => setQuoteSearch(e.target.value)}
+                placeholder="Search quotes..."
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+            </div>
+          )}
+
           {/* Add new quote */}
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
             <h3 className="text-sm font-medium text-gray-700 mb-3">Add Quote</h3>
@@ -1956,6 +2024,7 @@ export default function ReviewPage() {
             <div className="space-y-2">
               {poolQuotes
                 .filter((q) => quoteScopeFilter !== "favorites" || q.isFavorite)
+                .filter((q) => !quoteSearch || q.text.toLowerCase().includes(quoteSearch.toLowerCase()))
                 .map((q) => (
                 <div
                   key={q.id}

@@ -13,14 +13,18 @@ const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 export async function POST(request: NextRequest) {
   try {
-    // 0. Parse optional account
+    // 0. Parse optional account and count
     const body = await request.json().catch(() => ({}));
     const accountId: string | undefined = body.account;
+    const generateCount: number = Math.min(Math.max(body.count || 5, 1), 10);
 
     // Resolve account-specific paths
     const account = accountId ? getAccount(accountId) : undefined;
     const outputDir = account ? getAccountDir(accountId!) : GLOBAL_OUTPUT;
     const imagesDir = account ? getAccountImagesDir(accountId!) : GLOBAL_OUTPUT;
+
+    // Progress file path
+    const progressPath = path.join(outputDir, ".generation-progress.json");
 
     // Resolve template base directory (account first, then global)
     // Must match loadTemplates() logic in mixer.ts
@@ -50,8 +54,8 @@ export async function POST(request: NextRequest) {
     const promptName = templates[0];
     const rawTemplate = loadTemplate(promptName, accountId);
 
-    // 2. Pick combinations (account-scoped)
-    const combos = pickCombinations(10, accountId);
+    // 2. Pick combinations (account-scoped, with count)
+    const combos = pickCombinations(generateCount, accountId);
 
     // 3. Ensure output directories exist
     if (!fs.existsSync(outputDir)) {
@@ -60,6 +64,14 @@ export async function POST(request: NextRequest) {
     if (!fs.existsSync(imagesDir)) {
       fs.mkdirSync(imagesDir, { recursive: true });
     }
+
+    // Write initial progress
+    const writeProgress = (completed: number, current: string) => {
+      try {
+        fs.writeFileSync(progressPath, JSON.stringify({ total: combos.length, completed, current }), "utf-8");
+      } catch { /* non-fatal */ }
+    };
+    writeProgress(0, "Starting...");
 
     // 4. Generate images
     const batchId = generateBatchId();
@@ -97,6 +109,7 @@ export async function POST(request: NextRequest) {
         const msg = err instanceof Error ? err.message : String(err);
         results.push({ quote, template, filename, success: false, error: msg });
       }
+      writeProgress(i + 1, quote);
     }
 
     // 5. Generate captions for successful images
@@ -133,6 +146,9 @@ export async function POST(request: NextRequest) {
 
     const totalOptions = captionOptionsList.reduce((s, o) => s + o.length, 0);
 
+    // Clean up progress file
+    try { fs.unlinkSync(progressPath); } catch { /* ok */ }
+
     return NextResponse.json({
       success: true,
       batchId,
@@ -145,5 +161,26 @@ export async function POST(request: NextRequest) {
       { success: false, error: msg },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * GET /api/generate?account=xxx — check generation progress
+ */
+export async function GET(request: NextRequest) {
+  const accountId = request.nextUrl.searchParams.get("account");
+  const account = accountId ? getAccount(accountId) : undefined;
+  const outputDir = account ? getAccountDir(accountId!) : GLOBAL_OUTPUT;
+  const progressPath = path.join(outputDir, ".generation-progress.json");
+
+  try {
+    if (fs.existsSync(progressPath)) {
+      const raw = fs.readFileSync(progressPath, "utf-8");
+      const progress = JSON.parse(raw);
+      return NextResponse.json({ success: true, ...progress });
+    }
+    return NextResponse.json({ success: true, total: 0, completed: 0, current: null });
+  } catch {
+    return NextResponse.json({ success: true, total: 0, completed: 0, current: null });
   }
 }
