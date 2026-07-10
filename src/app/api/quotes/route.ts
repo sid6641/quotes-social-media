@@ -13,22 +13,22 @@ import path from "path";
 
 /**
  * GET /api/quotes — list quotes with filters.
- * Query params: status, theme, limit, offset, available=N (get N available)
+ * Query params: account, status, theme, limit, offset, available=N (get N available)
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const account = searchParams.get("account") || undefined;
 
   // Quick availability check
   const availableCount = searchParams.get("available");
   if (availableCount) {
-    const theme = searchParams.get("theme") || undefined;
-    const quotes = getAvailableQuotes(parseInt(availableCount, 10), theme);
+    const quotes = getAvailableQuotes(parseInt(availableCount, 10), account);
     return NextResponse.json({ success: true, quotes });
   }
 
   // Stats
   if (searchParams.has("stats")) {
-    const stats = getPoolStats();
+    const stats = getPoolStats(account);
     return NextResponse.json({ success: true, stats });
   }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     status: status as any,
     limit,
     offset,
-  });
+  }, account);
 
   return NextResponse.json({ success: true, quotes });
 }
@@ -53,18 +53,19 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/quotes — add quote(s) or import from file.
  *
- * Add single: { text, author? }
- * Batch:       { texts: string[], author? }
- * Import file: { filePath: string, author? }
- * Cooldowns:   { action: "expire-cooldowns" }
+ * Add single: { text, author?, account? }
+ * Batch:       { texts: string[], author?, account? }
+ * Import file: { filePath: string, author?, account? }
+ * Cooldowns:   { action: "expire-cooldowns", account? }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const account = body.account || undefined;
 
     // Expire cooldowns
     if (body.action === "expire-cooldowns") {
-      const recycled = expireCooldowns();
+      const recycled = expireCooldowns(account);
       return NextResponse.json({ success: true, recycled });
     }
 
@@ -72,7 +73,8 @@ export async function POST(request: NextRequest) {
     if (body.filePath) {
       const result = importQuotesFromFile(
         path.resolve(body.filePath),
-        { author: body.author, source: "imported" }
+        { author: body.author, source: "imported" },
+        account
       );
       return NextResponse.json({ success: true, ...result });
     }
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
       const count = importQuotes(body.texts, {
         author: body.author,
         source: body.source || "imported",
-      });
+      }, account);
       return NextResponse.json({ success: true, imported: count });
     }
 
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
       const entry = addQuote(body.text, {
         author: body.author,
         source: body.source || "manual",
-      });
+      }, account);
       return NextResponse.json({ success: true, quote: entry });
     }
 
@@ -109,12 +111,13 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/quotes — delete a quote by ID.
- * Body: { id: string }
+ * Body: { id: string, account?: string }
  */
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
     const { id } = body;
+    const account = body.account || undefined;
 
     if (!id) {
       return NextResponse.json(
@@ -123,7 +126,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = deleteQuote(id);
+    const deleted = deleteQuote(id, account);
     if (!deleted) {
       return NextResponse.json(
         { error: "Quote not found" },

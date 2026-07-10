@@ -688,10 +688,12 @@ export default function ReviewPage() {
     try {
       setQuotesLoading(true);
       const status = quoteFilter !== "all" ? quoteFilter : undefined;
-      const url = status ? `/api/quotes?status=${status}` : "/api/quotes";
+      const accountParam = selectedAccount ? `&account=${encodeURIComponent(selectedAccount)}` : "";
+      const url = status ? `/api/quotes?status=${status}${accountParam}` : `/api/quotes${accountParam ? `?${accountParam.slice(1)}` : ""}`;
+      const statsUrl = `/api/quotes?stats=true${accountParam}`;
       const [quotesRes, statsRes] = await Promise.all([
         fetch(url),
-        fetch("/api/quotes?stats=true"),
+        fetch(statsUrl),
       ]);
       const quotesData = await quotesRes.json();
       const statsData = await statsRes.json();
@@ -702,11 +704,15 @@ export default function ReviewPage() {
     } finally {
       setQuotesLoading(false);
     }
-  }, [quoteFilter]);
+  }, [quoteFilter, selectedAccount]);
 
   const handleAddQuote = async () => {
     const text = newQuoteText.trim();
     if (!text) return;
+    if (!selectedAccount) {
+      setError("Select an account first before adding quotes.");
+      return;
+    }
     try {
       const res = await fetch("/api/quotes", {
         method: "POST",
@@ -714,6 +720,7 @@ export default function ReviewPage() {
         body: JSON.stringify({
           text,
           author: newQuoteAuthor.trim() || undefined,
+          account: selectedAccount,
         }),
       });
       if (!res.ok) throw new Error("Failed to add quote");
@@ -730,7 +737,7 @@ export default function ReviewPage() {
       const res = await fetch("/api/quotes", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, account: selectedAccount || undefined }),
       });
       if (!res.ok) throw new Error("Failed to delete quote");
       await fetchPoolQuotes();
@@ -1941,9 +1948,13 @@ export default function ReviewPage() {
           {/* Quote list */}
           {quotesLoading ? (
             <div className="text-center py-10 text-gray-500">Loading quotes...</div>
+          ) : !selectedAccount ? (
+            <div className="text-center py-10 text-gray-400">
+              Select an account from the dropdown above to view its quote pool.
+            </div>
           ) : poolQuotes.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              No quotes found. Add one above or import from a text file via CLI.
+              No quotes found for this account. Add one above or import from a text file via CLI.
             </div>
           ) : (
             <div className="space-y-2">
