@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { logAction } from "@/lib/frontend-logger";
+import { Modal, ModalHeader, ModalFooter, FilterBar, StatusBadge, EmptyState, LoadingState, Banner, TabBar } from "@/components/ui";
+import { ImagePreviewModal } from "@/components/preview/ImagePreviewModal";
+import { QueuePreviewModal } from "@/components/preview/QueuePreviewModal";
+import { CreateAccountModal } from "@/components/accounts/CreateAccountModal";
+import { EditAccountModal } from "@/components/accounts/EditAccountModal";
 
 interface CaptionData {
   commentary: string;
@@ -1188,43 +1193,13 @@ export default function ReviewPage() {
       </div>
 
       {/* Publish result banner */}
-      {publishResult && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          {publishResult}
-          <button
-            onClick={() => setPublishResult(null)}
-            className="ml-3 underline hover:no-underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+      <Banner variant="success" message={publishResult} onDismiss={() => setPublishResult(null)} />
 
       {/* Export result banner */}
-      {exportResult && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm">
-          {exportResult}
-          <button
-            onClick={() => setExportResult(null)}
-            className="ml-3 underline hover:no-underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+      <Banner variant="success" message={exportResult} onDismiss={() => setExportResult(null)} />
 
       {/* Error banner */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-          <button
-            onClick={() => setError(null)}
-            className="ml-3 underline hover:no-underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+      <Banner variant="error" message={error} onDismiss={() => setError(null)} />
 
       {/* Loading state */}
       {loading && (
@@ -1317,29 +1292,19 @@ export default function ReviewPage() {
       {/* Filter tabs + select-all (review mode only) */}
       {(manifest || allImages) && viewMode === "review" && (
         <div className="flex items-center gap-2 mb-6">
-          {(
-            [
-              { key: "all", label: "All" },
-              { key: "pending", label: "Pending" },
-              { key: "approved", label: "Approved" },
-              { key: "rejected", label: "Rejected" },
-            ] as const
-          ).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => {
-                setStatusFilter(key);
-                setSelectedIds(new Set());
-              }}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === key
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {label} ({statusCounts[key]})
-            </button>
-          ))}
+          <FilterBar
+            options={[
+              { key: "all", label: "All", count: statusCounts.all },
+              { key: "pending", label: "Pending", count: statusCounts.pending },
+              { key: "approved", label: "Approved", count: statusCounts.approved },
+              { key: "rejected", label: "Rejected", count: statusCounts.rejected },
+            ]}
+            selected={statusFilter}
+            onChange={(key) => {
+              setStatusFilter(key as StatusFilter);
+              setSelectedIds(new Set());
+            }}
+          />
           <div className="ml-auto flex items-center gap-2">
             {statusCounts.pending > 0 && (
               <button
@@ -1441,16 +1406,11 @@ export default function ReviewPage() {
                       </div>
                     )}
                     {/* Status badge */}
-                    {image.status === "approved" && (
-                      <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded" style={imgBatchId ? {top: "1.6rem"} as React.CSSProperties : {}}>
-                        ✓ Approved
-                      </div>
-                    )}
-                    {image.status === "rejected" && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded" style={imgBatchId ? {top: "1.6rem"} as React.CSSProperties : {}}>
-                        ✗ Rejected
-                      </div>
-                    )}
+                    <div className={`absolute top-2 left-2 ${imgBatchId ? "top-6" : ""}`}>
+                      {image.status !== "pending" && (
+                        <StatusBadge status={image.status} variant="solid" />
+                      )}
+                    </div>
                     {/* Selection checkbox */}
                     <div className="absolute top-2 right-2">
                       <input
@@ -1859,31 +1819,15 @@ export default function ReviewPage() {
         <div>
           {/* Template filter bar */}
           {selectedAccount && templates.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              {([{ key: "all", label: "All" }, { key: "account", label: "Account" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setTemplateFilter(key)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    templateFilter === key
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {label}
-                  {key === "favorites" && (
-                    <span className="ml-1.5 text-xs opacity-70">
-                      ({templates.filter((t) => t.isFavorite).length})
-                    </span>
-                  )}
-                  {key === "account" && (
-                    <span className="ml-1.5 text-xs opacity-70">
-                      ({templates.filter((t) => t.source === "account" || t.isFavorite).length})
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            <FilterBar
+              options={[
+                { key: "all", label: "All" },
+                { key: "account", label: "Account", count: templates.filter(t => t.source === "account" || t.isFavorite).length },
+                { key: "favorites", label: "Favorites", count: templates.filter(t => t.isFavorite).length },
+              ]}
+              selected={templateFilter}
+              onChange={setTemplateFilter}
+            />
           )}
 
           {templatesLoading ? (
@@ -1986,26 +1930,15 @@ export default function ReviewPage() {
 
           {/* Scope filter tabs */}
           {selectedAccount && (
-            <div className="flex items-center gap-2 mb-4">
-              {([{ key: "all", label: "All" }, { key: "account", label: "Account" }, { key: "favorites", label: "Favorites" }] as const).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setQuoteScopeFilter(key)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    quoteScopeFilter === key
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {label}
-                  {key === "favorites" && (
-                    <span className="ml-1.5 text-xs opacity-70">
-                      ({poolQuotes.filter((q) => q.isFavorite).length})
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            <FilterBar
+              options={[
+                { key: "all", label: "All" },
+                { key: "account", label: "Account" },
+                { key: "favorites", label: "Favorites", count: poolQuotes.filter(q => q.isFavorite).length },
+              ]}
+              selected={quoteScopeFilter}
+              onChange={setQuoteScopeFilter}
+            />
           )}
 
           {/* Quote list */}
@@ -2154,293 +2087,21 @@ export default function ReviewPage() {
       {/* Account editor modal */}
       {/* Create Account Modal */}
       {showCreateModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowCreateModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h3 className="text-base font-semibold text-gray-800">Create Account</h3>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="px-6 py-4 space-y-4">
-              {/* Identity */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Identity</legend>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Account ID *</label>
-                    <input
-                      value={createForm.id}
-                      onChange={(e) => setCreateForm({ ...createForm, id: e.target.value })}
-                      placeholder="e.g., mybrand"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Display Name</label>
-                    <input
-                      value={createForm.name}
-                      onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                      placeholder="My Brand"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* Instagram API (dummy) */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Instagram API <span className="text-gray-300 font-normal lowercase">(optional — add later)</span>
-                </legend>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">IG User ID</label>
-                    <input
-                      value={createForm.igUserId}
-                      onChange={(e) => setCreateForm({ ...createForm, igUserId: e.target.value })}
-                      placeholder="dummy-ig-user-id"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">IG Access Token</label>
-                    <input
-                      value={createForm.igAccessToken}
-                      onChange={(e) => setCreateForm({ ...createForm, igAccessToken: e.target.value })}
-                      placeholder="dummy-access-token"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <label className="block text-xs text-gray-500 mb-1">Facebook Page ID</label>
-                  <input
-                    value={createForm.igPageId}
-                    onChange={(e) => setCreateForm({ ...createForm, igPageId: e.target.value })}
-                    placeholder="dummy-page-id"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                  />
-                </div>
-              </fieldset>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-2 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateAccount}
-                disabled={!createForm.id.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
-              >
-                Create Account
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateAccountModal
+          form={createForm}
+          onChange={setCreateForm}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateAccount}
+        />
       )}
 
       {editingAccount && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={closeAccountEditor}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h3 className="text-base font-semibold text-gray-800">
-                {editingAccount.id} — Settings
-              </h3>
-              <button
-                onClick={closeAccountEditor}
-                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="px-6 py-4 space-y-4">
-              {/* Identity */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Identity</legend>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Account ID</label>
-                    <input
-                      value={editingAccount.id}
-                      disabled
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Display Name</label>
-                    <input
-                      value={editingAccount.name}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, name: e.target.value })}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <label className="block text-xs text-gray-500 mb-1">Description</label>
-                  <input
-                    value={editingAccount.description}
-                    onChange={(e) => setEditingAccount({ ...editingAccount, description: e.target.value })}
-                    placeholder="What's this account about?"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                  />
-                </div>
-              </fieldset>
-
-              {/* Content */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Content</legend>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Cooldown (days)</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={editingAccount.cooldownDays}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, cooldownDays: e.target.value })}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* Schedule */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Publish Schedule</legend>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Time</label>
-                    <input
-                      type="time"
-                      value={editingAccount.scheduleTime}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, scheduleTime: e.target.value })}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Timezone</label>
-                    <select
-                      value={editingAccount.scheduleTimezone}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, scheduleTimezone: e.target.value })}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    >
-                      <option value="America/New_York">Eastern</option>
-                      <option value="America/Chicago">Central</option>
-                      <option value="America/Denver">Mountain</option>
-                      <option value="America/Los_Angeles">Pacific</option>
-                      <option value="America/Anchorage">Alaska</option>
-                      <option value="Pacific/Honolulu">Hawaii</option>
-                      <option value="Europe/London">London</option>
-                      <option value="Europe/Paris">Paris</option>
-                      <option value="Europe/Berlin">Berlin</option>
-                      <option value="Asia/Tokyo">Tokyo</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Posts/day</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={editingAccount.postsPerDay}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, postsPerDay: e.target.value })}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* Instagram Auth */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Instagram API</legend>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">IG User ID</label>
-                    <input
-                      value={editingAccount.igUserId}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, igUserId: e.target.value })}
-                      placeholder="From Meta Graph API"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Facebook Page ID</label>
-                    <input
-                      value={editingAccount.igPageId}
-                      onChange={(e) => setEditingAccount({ ...editingAccount, igPageId: e.target.value })}
-                      placeholder="Linked page ID"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <label className="block text-xs text-gray-500 mb-1">Access Token</label>
-                  <input
-                    value={editingAccount.igAccessToken}
-                    onChange={(e) => setEditingAccount({ ...editingAccount, igAccessToken: e.target.value })}
-                    placeholder="IG Graph API access token"
-                    type="password"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                  />
-                </div>
-              </fieldset>
-
-              {/* Status */}
-              <fieldset>
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status</legend>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editingAccount.enabled}
-                    onChange={(e) => setEditingAccount({ ...editingAccount, enabled: e.target.checked })}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Account enabled</span>
-                </label>
-              </fieldset>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={closeAccountEditor}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveAccount}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditAccountModal
+          account={editingAccount}
+          onChange={setEditingAccount}
+          onClose={closeAccountEditor}
+          onSave={handleSaveAccount}
+        />
       )}
 
       {/* Hashtag Bank mode */}
@@ -2519,153 +2180,23 @@ export default function ReviewPage() {
 
       {/* Preview modal */}
       {previewImage && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Phone-like frame */}
-            <div className="bg-gray-100 p-4">
-              <img
-                src={`/api/images/${previewImage.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
-                alt="Post preview"
-                className="w-full aspect-square rounded-lg object-cover shadow-md"
-              />
-            </div>
-            {/* Caption overlay */}
-            {previewImage.caption && (
-              <div className="p-5">
-                <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                  {previewImage.caption.commentary}
-                </p>
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {previewImage.caption.hashtags.map((tag, ti) => (
-                    <span
-                      key={ti}
-                      className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => copyCaption(previewImage)}
-                    className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-                  >
-                    {copiedId === previewImage.id
-                      ? "✅ Copied!"
-                      : "📋 Copy Caption"}
-                  </button>
-                  <button
-                    onClick={() => setPreviewImage(null)}
-                    className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <ImagePreviewModal
+          image={previewImage}
+          selectedAccount={selectedAccount}
+          copiedId={copiedId}
+          onClose={() => setPreviewImage(null)}
+          onCopyCaption={() => copyCaption(previewImage)}
+        />
       )}
 
       {/* Preview modal for queue entries */}
       {queuePreview && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={() => setQueuePreview(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Image */}
-            <div className="bg-gray-100 p-4">
-              <img
-                src={`/api/images/${queuePreview.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`}
-                alt="Post preview"
-                className="w-full aspect-square rounded-lg object-cover shadow-md"
-              />
-            </div>
-            {/* Details */}
-            <div className="p-5">
-              {/* Quote */}
-              <p className="text-sm text-gray-700 font-medium mb-2">
-                &ldquo;{queuePreview.quote}&rdquo;
-              </p>
-              {/* Caption */}
-              <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                {queuePreview.caption.commentary}
-              </p>
-              <div className="flex flex-wrap gap-1 mb-4">
-                {queuePreview.caption.hashtags.map((tag, ti) => (
-                  <span
-                    key={ti}
-                    className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              {/* Status & Schedule */}
-              <div className="flex items-center justify-between mb-4">
-                <span
-                  className={`inline-block text-xs font-medium px-2 py-0.5 rounded ${
-                    queuePreview.status === "queued"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : queuePreview.status === "published"
-                      ? "bg-green-100 text-green-700"
-                      : queuePreview.status === "failed"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {queuePreview.status === "queued"
-                    ? "Queued"
-                    : queuePreview.status === "published"
-                    ? "Published"
-                    : queuePreview.status === "failed"
-                    ? "Failed"
-                    : queuePreview.status}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {queuePreview.status === "queued"
-                    ? `Scheduled: ${new Date(queuePreview.scheduledAt).toLocaleString()}`
-                    : queuePreview.publishedAt
-                    ? `Published: ${new Date(queuePreview.publishedAt).toLocaleString()}`
-                    : ""}
-                </span>
-              </div>
-              {queuePreview.error && (
-                <p className="text-xs text-red-400 mb-4">{queuePreview.error}</p>
-              )}
-              {/* Actions */}
-              <div className="flex gap-2">
-                {queuePreview.status === "queued" && (
-                  <button
-                    onClick={() => {
-                      handleRemoveFromQueue(queuePreview.id);
-                      setQueuePreview(null);
-                    }}
-                    className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                  >
-                    Remove from Queue
-                  </button>
-                )}
-                <button
-                  onClick={() => setQueuePreview(null)}
-                  className={`${queuePreview.status === "queued" ? "flex-1" : "w-full"} px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm`}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <QueuePreviewModal
+          entry={queuePreview}
+          selectedAccount={selectedAccount}
+          onClose={() => setQueuePreview(null)}
+          onRemove={handleRemoveFromQueue}
+        />
       )}
     </main>
   );
