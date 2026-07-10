@@ -23,12 +23,20 @@ export async function POST(request: NextRequest) {
     const imagesDir = account ? getAccountImagesDir(accountId!) : GLOBAL_OUTPUT;
 
     // Resolve template base directory (account first, then global)
-    const templateBaseDir = accountId
-      ? getAccountTemplatesDir(accountId)
-      : GLOBAL_TEMPLATES_DIR;
-    const templateDir = fs.existsSync(templateBaseDir)
-      ? templateBaseDir
-      : GLOBAL_TEMPLATES_DIR;
+    // Must match loadTemplates() logic in mixer.ts
+    const templateDir = (() => {
+      if (accountId) {
+        const accountDir = getAccountTemplatesDir(accountId);
+        if (fs.existsSync(accountDir)) {
+          const files = fs.readdirSync(accountDir);
+          const hasImages = files.some((f) =>
+            [".jpg", ".jpeg", ".png", ".webp"].includes(path.extname(f).toLowerCase())
+          );
+          if (hasImages) return accountDir;
+        }
+      }
+      return GLOBAL_TEMPLATES_DIR;
+    })();
 
     // 1. Load prompt template (account-scoped)
     const templates = listTemplates(accountId);

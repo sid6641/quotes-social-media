@@ -155,6 +155,9 @@ export default function ReviewPage() {
       if (!data.success) {
         throw new Error(data.error || "Generation failed");
       }
+      if (data.imageCount === 0) {
+        throw new Error("Generation produced no images. Check if the account has quotes, templates, and prompts configured.");
+      }
       await fetchLatestBatch();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
