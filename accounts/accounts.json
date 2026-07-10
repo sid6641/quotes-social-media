@@ -5,7 +5,7 @@
     "cooldownDays": 30,
     "enabled": true,
     "createdAt": "2026-07-09T15:24:30.878Z",
-    "updatedAt": "2026-07-09T15:24:30.878Z"
+    "updatedAt": "2026-07-10T09:34:19.900Z"
   },
   {
     "id": "temp2",
@@ -14,5 +14,22 @@
     "enabled": true,
     "createdAt": "2026-07-10T07:40:04.892Z",
     "updatedAt": "2026-07-10T07:40:04.892Z"
+  },
+  {
+    "id": "newModal1",
+    "name": "newModal1",
+    "cooldownDays": 30,
+    "enabled": true,
+    "createdAt": "2026-07-10T09:32:06.861Z",
+    "updatedAt": "2026-07-10T09:32:06.861Z"
+  },
+  {
+    "id": "testplay",
+    "name": "Test Play Account",
+    "instagram": {},
+    "cooldownDays": 30,
+    "enabled": true,
+    "createdAt": "2026-07-10T09:35:07.609Z",
+    "updatedAt": "2026-07-10T09:35:07.609Z"
   }
 ]
