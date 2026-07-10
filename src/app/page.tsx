@@ -998,10 +998,24 @@ export default function ReviewPage() {
             <select
               value={selectedAccount}
               onChange={(e) => {
-                setSelectedAccount(e.target.value);
+                const newAccount = e.target.value;
+                setSelectedAccount(newAccount);
                 // Re-fetch current view's data when account changes
-                if (viewMode === "templates") fetchTemplates();
-                if (viewMode === "queue") fetchQueue();
+                // Use newAccount directly to avoid stale closure
+                if (viewMode === "templates") {
+                  fetch(`/api/templates${newAccount ? `?account=${encodeURIComponent(newAccount)}` : ""}`)
+                    .then(r => r.json())
+                    .then(d => { if (d.success) setTemplates(d.templates || []); })
+                    .catch(() => {});
+                }
+                if (viewMode === "queue") {
+                  setQueueLoading(true);
+                  fetch(`/api/queue${newAccount ? `?account=${newAccount}` : ""}`)
+                    .then(r => r.json())
+                    .then(d => { if (d.success) setQueue(d.queue || []); })
+                    .catch(() => {})
+                    .finally(() => setQueueLoading(false));
+                }
               }}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
             >

@@ -52,29 +52,5 @@
     },
     "scheduledAt": "2026-07-11T03:30:00.000Z",
     "status": "queued"
-  },
-  {
-    "id": "pub-003",
-    "batchId": "2026-07-10-001",
-    "imageId": "img-007",
-    "filename": "2026-07-10-001-07.png",
-    "quote": "Two roads diverged in a wood, and I took the one less traveled by.",
-    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
-    "caption": {
-      "commentary": "Choosing the unbeaten path. Where are you headed?",
-      "hashtags": [
-        "#LessTraveled",
-        "#NewDirections",
-        "#AdventureAwaits",
-        "#Uncharted",
-        "#SimplyInspiring",
-        "#YourPath",
-        "#MinimalistVibes",
-        "#DeepThoughts",
-        "#Wander"
-      ]
-    },
-    "scheduledAt": "2026-07-11T03:30:00.000Z",
-    "status": "queued"
   }
 ]
