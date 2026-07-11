@@ -24,7 +24,69 @@ Director (architecture review)
 ### Reopens?
 No
 
-## 2026-07-10: Architecture — JsonStore<T> pattern for file-backed state
+## 2026-07-11: Review — Per-batch pagination instead of cross-batch view
+
+### Context
+The review tab had a complex cross-batch "all images" mode that merged images from all batches into one view, with intra-batch pagination (10 per page). This required maintaining `allImages` state, `batchScope` toggle, `batchSelectorOpen` dropdown, `switchBatch()` function, and `isCrossBatch` computations — 7 extra state variables.
+
+### Decision
+- Paginate by batch: one page = one batch
+- Each batch is max 10 images (fixed by generation), so per-batch pagination naturally replaces intra-batch pagination
+- Removed: `allImages`, `batchScope`, `batchSelectorOpen`, `switchBatch()`, `fetchAllImages`, `fetchAllBatchesList`, `isCrossBatch`
+- Pagination: fetch `?all=true` for list, then `?batchId=xxx` for individual batch
+- Batch header shows ID, date, trigger, image count
+
+### Rationale
+- Simpler state: 7 fewer state variables, no cross-batch merge logic
+- Naturally matches user mental model (review one batch at a time)
+- Each batch is small (≤10 images), so one page is never overwhelming
+- Batch selector dropdown no longer needed — pagination prev/next replaces it
+
+### Decided By
+Captain + Director
+
+### Reopens?
+No
+
+## 2026-07-11: Generation — Remove global quotes/ directory fallback
+
+### Context
+`loadQuotes()` in mixer.ts fell back to the project root `quotes/` directory when the account's quote pool was empty. This was a legacy behavior from before the account-isolation migration.
+
+### Decision
+- Remove the global `quotes/` fallback entirely
+- Each account must have its own quotes seeded via the pool or `accounts/<id>/quotes/` text files
+- If pool is empty and no text files found, throw a clear error with CLI instructions
+
+### Rationale
+- Account isolation: an account shouldn't accidentally pull quotes meant for another account
+- Clearer failure mode: you get an actionable error message instead of silently falling back
+
+### Decided By
+Captain + Director
+
+### Reopens?
+No
+
+## 2026-07-11: Status changes — Always re-fetch batch from server
+
+### Context
+`handleStatusChange` (individual approve/reject) was doing an optimistic local `setManifest` update without re-fetching from the server. If the user then clicked "Reject remaining", it used stale local state that might not match the server — potentially including an already-approved image in the reject list.
+
+### Decision
+- After every approve/reject API call, re-fetch the batch manifest from the server
+- This ensures local state is always in sync with what's on disk
+- Consistent with how `handleRejectRemaining` and `handleMarkBatchReviewed` already work
+
+### Rationale
+- Optimistic updates are fine for immediate UX feedback, but subsequent operations need ground truth
+- Server is the source of truth for status; local state is a cache
+
+### Decided By
+Director
+
+### Reopens?
+No
 
 ### Context
 Five modules (manifest, queue, quote-pool, account, hashtag-bank) each implemented the same file-I/O + JSON-cache pattern independently: `readX()`, `writeX()`, `invalidateCache()`, `ensureDir()`.

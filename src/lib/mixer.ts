@@ -4,7 +4,6 @@ import { getLatestBatch } from "./manifest";
 import { getAvailableQuotes, getPoolStats, importQuotesFromFile } from "./quote-pool";
 import { getAccountTemplatesDir, getAccountQuotesDir } from "./account";
 
-const GLOBAL_QUOTES_DIR = path.resolve(process.cwd(), "quotes");
 const GLOBAL_TEMPLATES_DIR = path.resolve(process.cwd(), "templates");
 
 /** Supported image extensions for template files. */
@@ -24,7 +23,8 @@ interface QuoteEntry {
 
 /**
  * Load quotes from the quote pool, scoped to an account if provided.
- * Seeds from account-specific quotes/ dir first, falls back to global quotes/.
+ * Seeds from account-specific quotes/ dir if pool is empty.
+ * Will NOT fall back to the global quotes/ dir — each account manages its own quotes.
  */
 function loadQuotes(accountId?: string): QuoteEntry[] {
   const stats = getPoolStats(accountId);
@@ -33,7 +33,7 @@ function loadQuotes(accountId?: string): QuoteEntry[] {
   if (stats.total === 0) {
     const quoteSources: string[] = [];
 
-    // Try account-specific quotes dir first
+    // Only try account-specific quotes dir
     if (accountId) {
       const accountQuotesDir = getAccountQuotesDir(accountId);
       if (fs.existsSync(accountQuotesDir)) {
@@ -44,20 +44,12 @@ function loadQuotes(accountId?: string): QuoteEntry[] {
       }
     }
 
-    // Fall back to global quotes/ dir
     if (quoteSources.length === 0) {
-      if (!fs.existsSync(GLOBAL_QUOTES_DIR)) {
-        throw new Error(`No quotes directory found. Create accounts/<id>/quotes/ or project-level quotes/.`);
-      }
-      const files = fs.readdirSync(GLOBAL_QUOTES_DIR)
-        .filter((f) => f.endsWith(".txt"))
-        .sort();
-      quoteSources.push(...files.map((f) => path.join(GLOBAL_QUOTES_DIR, f)));
-    }
-
-    if (quoteSources.length === 0) {
+      const scope = accountId
+        ? `Account "${accountId}" has no quotes in its pool and no .txt files in accounts/${accountId}/quotes/.`
+        : "No quotes in the global pool and no global quotes/ directory.";
       throw new Error(
-        "No quotes found. Add .txt files to the account's quotes/ dir or the global quotes/ dir."
+        `${scope} Add quotes via the quotes CLI: npm run cli quotes add "your quote here" --account <id>`
       );
     }
 
@@ -71,7 +63,7 @@ function loadQuotes(accountId?: string): QuoteEntry[] {
 
     if (totalSeeded === 0) {
       throw new Error(
-        "No quotes found. Add quotes via text files or the quotes CLI."
+        `No quotes could be imported from ${accountId ? `accounts/${accountId}/quotes/` : "quotes/"}. Add quotes via the quotes CLI: npm run cli quotes add "your quote here" --account <id>`
       );
     }
   }

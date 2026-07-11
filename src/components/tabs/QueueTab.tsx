@@ -74,9 +74,16 @@ export default function QueueTab({
   if (queue.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-400 mb-4">
-          No items in the publish queue. Approve images from the Review tab to add them.
+        <p className="text-gray-400 mb-2">
+          {selectedAccount
+            ? "No items in the publish queue. Approve images from the Review tab to add them."
+            : "Select an account from the dropdown above to see its publish queue."}
         </p>
+        {!selectedAccount && (
+          <p className="text-xs text-gray-400">
+            Each account has its own queue. Choose one to review queued posts.
+          </p>
+        )}
       </div>
     );
   }

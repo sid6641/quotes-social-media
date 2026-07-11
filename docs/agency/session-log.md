@@ -1,5 +1,52 @@
 # Session Log
 
+## 2026-07-11 — Review UI: per-batch pagination, unreviewed filter, reject-remaining
+
+### Agent
+Director (implementation)
+
+### Summary
+Overhauled the review page to paginate by batch instead of the cross-batch "all images" view. Removed global quotes fallback. Added reviewed-tracking, reject-remaining, and queue empty-state hints.
+
+### Changes
+
+**`src/lib/mixer.ts`** — Removed global `quotes/` dir fallback:
+- `loadQuotes()` no longer falls back to project root `quotes/`
+- If account pool is empty and no `.txt` files exist in account's `quotes/`, throws clear error with CLI instructions
+
+**`src/lib/manifest.ts`** — Reviewed-image tracking:
+- Added `reviewed?: boolean` to `ImageEntry` interface
+- Added `markImagesAsReviewed(entries, accountId?)` — sets `reviewed: true` on batch+imageId pairs
+
+**`src/app/api/review/route.ts`** — New endpoint:
+- `POST /api/review` — marks images as visually seen (not approved)
+- Accepts `{ images: [{batchId, imageId}], account? }`
+
+**`src/components/tabs/ReviewTab.tsx`** — Major rewrite:
+- Removed: `allImages`, `batchScope`, `batchSelectorOpen`, `switchBatch()`, `isCrossBatch`, intra-batch pagination (PAGE_SIZE), `fetchAllImages`, `fetchAllBatchesList`
+- Added: per-batch pagination via `batches[]` + `currentBatchIndex` + `goToBatch()`
+- Each "page" fetches one specific batch by ID (`?batchId=xxx`)
+- Default filter: "Unreviewed" (status=pending + !reviewed)
+- "👁️ Mark batch as reviewed" button — sets reviewed=true on current batch's pending images
+- "🗑️ Reject remaining" button — rejects all non-approved images in the current batch
+- `handleStatusChange` now re-fetches batch from server (was: optimistic local state only — caused stale state for reject-remaining)
+- Batch header shows ID, date, trigger, image count + pagination nav
+
+**`src/components/tabs/QueueTab.tsx`** — Empty state hint:
+- Shows "Select an account from the dropdown" when "All accounts" is selected
+- Queue files are account-scoped (`accounts/<id>/output/publish-queue.json`); no global queue exists
+
+**`src/components/tabs/types.ts`** — Updated types:
+- Added `"unreviewed"` to `StatusFilter` union
+- Added `reviewed?: boolean` to UI `ImageEntry`
+
+### Before → After
+- Before: cross-batch pagination with complex batch selector dropdown, `allImages` state, 7 extra state vars
+- After: per-batch pagination with prev/next, no batch selector dropdown, no cross-batch logic
+
+### State At End
+Per-batch pagination, unreviewed filter, reject-remaining, and queue hints all verified working on dev server. All src/ TypeScript errors resolved.
+
 ## 2026-07-10 — Architecture hardening: page monolith decomposition
 
 ### Agent

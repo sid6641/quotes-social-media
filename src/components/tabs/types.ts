@@ -15,6 +15,7 @@ export interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  reviewed?: boolean;
   captions?: CaptionData[];
   caption?: CaptionData;
   selectedCaptionIndex?: number;
@@ -31,7 +32,7 @@ export interface Manifest {
   images: ImageEntry[];
 }
 
-export type StatusFilter = "all" | "pending" | "approved" | "rejected";
+export type StatusFilter = "unreviewed" | "all" | "pending" | "approved" | "rejected";
 
 export interface QueueEntry {
   id: string;

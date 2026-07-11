@@ -1,20 +1,23 @@
 # Phase: 2 — Iterative Improvement
-**Step**: Architecture hardening
+**Step**: Review UI & generation pipeline refinement
 **Status**: 🟢 Active
 **Started**: 2026-07-07
-**Updated**: 2026-07-10
+**Updated**: 2026-07-11
 
 ## Current Step Details
 
-Architecture hardening complete. All 5 candidates implemented:
-- ✅ #1+3: Generation pipeline collapsed + dependency leak fixed
-- ✅ #2: JsonStore<T> pattern extracted (5 modules refactored)
-- ✅ #4: getMimeType deduplicated to media.ts
-- ✅ #5: Review page decomposed into 6 tab components (2,297→250 line shell)
+Architecture hardening complete. Review page rewritten with per-batch pagination.
+
+## Completed
+- ✅ Architecture hardening (5 candidates)
+- ✅ Review UI: per-batch pagination, unreviewed filter, reviewed tracking
+- ✅ Reject remaining (batch-scoped)
+- ✅ Queue tab empty-state hint for "All accounts"
+- ✅ Global quotes fallback removed
 
 ## Next Action
 
-Architecture hardening phase complete. Ready for next feature or roadmap item.
+Continue generation pipeline refinement or next roadmap feature.
 
 ## Progress
 

@@ -21,6 +21,8 @@ export interface ImageEntry {
   template: string;
   promptTemplate: string;
   status: "pending" | "approved" | "rejected";
+  /** Whether the user has visually reviewed this image (pagination review). */
+  reviewed?: boolean;
   /** All generated caption options (usually 5). */
   captions?: CaptionData[];
   /** The currently active/selected caption (picked from options or edited). */
@@ -201,6 +203,31 @@ export function updateSelectedCaptionIndex(
   image.caption = image.captions[selectedIndex];
   writeManifestToDir(manifests, dir);
   return true;
+}
+
+/**
+ * Mark multiple images as reviewed (visually seen, not approved).
+ * Accepts a flat list of { batchId, imageId } pairs across any batches.
+ */
+export function markImagesAsReviewed(
+  entries: Array<{ batchId: string; imageId: string }>,
+  accountId?: string
+): number {
+  const dir = accountId ? getAccountDir(accountId) : undefined;
+  const manifests = readManifestFromDir(dir);
+  let count = 0;
+
+  for (const { batchId, imageId } of entries) {
+    const batch = manifests.find((m) => m.batch.id === batchId);
+    if (!batch) continue;
+    const image = batch.images.find((img) => img.id === imageId);
+    if (!image) continue;
+    image.reviewed = true;
+    count++;
+  }
+
+  if (count > 0) writeManifestToDir(manifests, dir);
+  return count;
 }
 
 /**
