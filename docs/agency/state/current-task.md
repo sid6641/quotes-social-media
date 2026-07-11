@@ -17,8 +17,11 @@
 - [x] TypeScript build verified — zero errors in src/
 - [x] All KB files updated (session-log, decisions, phase, learnings)
 
+## Completed
+
+- [x] All 5 architecture review candidates implemented
+- [x] page.tsx decomposed from 2,297 lines to 6 tab components + 250-line shell
+
 ## Next
 
-Captain selects:
-- Candidate 5: Decompose review page monolith
-- Or other roadmap item
+Architecture hardening phase complete. Ready for new feature work.

@@ -67,11 +67,11 @@ function writeManifest(data: Manifest[]): void {
   writeManifestToDir(data);
 }
 
-export function generateBatchId(): string {
+export function generateBatchId(dir?: string): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
-  // Find the next sequence number for today
-  const existing = readManifest();
+  // Find the next sequence number for today in the relevant store
+  const existing = dir ? readManifestFromDir(dir) : readManifest();
   const todayBatches = existing.filter((m) => m.batch.id.startsWith(date));
   const seq = todayBatches.length + 1;
   return `${date}-${String(seq).padStart(3, "0")}`;
@@ -94,7 +94,7 @@ export function createBatch(
   // Use account-specific dir if provided, otherwise global
   const targetDir = outputDir || OUTPUT_DIR;
   const manifests = readManifestFromDir(targetDir);
-  const batchId = generateBatchId();
+  const batchId = generateBatchId(targetDir);
 
   const manifest: Manifest = {
     batch: {

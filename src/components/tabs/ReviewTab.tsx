@@ -7,11 +7,9 @@ import type { ImageEntry, Manifest, StatusFilter, CaptionData } from "./types";
 export default function ReviewTab({
   selectedAccount,
   onPreviewImage,
-  onDataChange,
 }: {
   selectedAccount: string;
   onPreviewImage?: (img: ImageEntry) => void;
-  onDataChange?: (approvedCount: number) => void;
 }) {
   // ── State ──────────────────────────────────────────────────────────
   const [manifest, setManifest] = useState<Manifest | null>(null);
@@ -40,14 +38,12 @@ export default function ReviewTab({
       }
       const data = await res.json();
       setManifest(data);
-      const count = (data.images || []).filter((i: ImageEntry) => i.status === "approved").length;
-      onDataChange?.(count);
     } catch {
       // non-fatal
     } finally {
       setLoading(false);
     }
-  }, [selectedAccount, onDataChange]);
+  }, [selectedAccount]);
 
   const fetchAllImages = useCallback(async () => {
     try {
@@ -83,8 +79,7 @@ export default function ReviewTab({
       });
       if (!res.ok) throw new Error("Failed to update status");
       setManifest((prev) => prev ? { ...prev, images: prev.images.map((img) => img.id === imageId ? { ...img, status } : img) } : prev);
-      setAllImages((prev) => prev ? prev.map((e) => e.image.id === imageId ? { ...e, image: { ...e.image, status } } : e) : prev);
-      onDataChange?.(displayEntries.filter((i) => i.status === "approved").length + (status === "approved" ? 1 : 0));
+      setAllImages((prev) => prev ? prev.map((e) => e.batchId === batchId && e.image.id === imageId ? { ...e, image: { ...e.image, status } } : e) : prev);
     } catch { /* non-fatal */ }
   };
 
@@ -104,7 +99,7 @@ export default function ReviewTab({
         } : img),
       } : prev);
       setAllImages((prev) => prev ? prev.map((e) => {
-        if (e.image.id !== imageId) return e;
+        if (e.batchId !== batchId || e.image.id !== imageId) return e;
         const caption = e.image.captions?.[optionIndex] ?? e.image.caption;
         return { ...e, image: { ...e.image, selectedCaptionIndex: optionIndex, caption } };
       }) : prev);
@@ -289,7 +284,7 @@ export default function ReviewTab({
           {filteredImages.map((image) => {
             const imgBatchId = (image as any).batchId;
             return (
-              <div key={image.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${image.status === "approved" ? "border-green-400 ring-2 ring-green-200" : image.status === "rejected" ? "border-red-200 opacity-60" : "border-gray-200"}`}>
+              <div key={imgBatchId ? `${imgBatchId}-${image.id}` : image.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${image.status === "approved" ? "border-green-400 ring-2 ring-green-200" : image.status === "rejected" ? "border-red-200 opacity-60" : "border-gray-200"}`}>
                 <div className="aspect-square bg-gray-100 relative">
                   <img src={`/api/images/${image.filename}${selectedAccount ? `?account=${selectedAccount}` : ""}`} alt={`Quote: ${image.quote}`} className="w-full h-full object-cover" loading="lazy" />
                   {isCrossBatch && imgBatchId && <div className="absolute top-2 left-2 bg-gray-900/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">{imgBatchId}</div>}

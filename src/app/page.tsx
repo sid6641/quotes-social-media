@@ -68,7 +68,20 @@ export default function ReviewPage() {
   const [queuePreview, setQueuePreview] = useState<QueueEntry | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // ── Accounts fetch ──────────────────────────────────────────────────
+  // ── Shell data: manifest summary for header buttons ────────────────
+  // Fetched independently — no child→parent data push needed.
+  useEffect(() => {
+    const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
+    fetch(`/api/manifest${accountParam}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setLatestManifest(d);
+        setApprovedCount((d.images || []).filter((i: ImageEntry) => i.status === "approved").length);
+      })
+      .catch(() => {});
+  }, [selectedAccount, refreshKey]);
+
+  // ── Accounts list ───────────────────────────────────────────────────
   useEffect(() => {
     fetch("/api/accounts")
       .then((r) => r.json())
@@ -101,6 +114,7 @@ export default function ReviewPage() {
       setGenerateProgress(null);
       if (!data.success) throw new Error(data.error || "Generation failed");
       if (data.imageCount === 0) throw new Error("Generation produced no images.");
+      setRefreshKey((k) => k + 1); // refresh manifest summary + review tab
     } catch (err) {
       setGenerateProgress(null);
       setError(err instanceof Error ? err.message : "Generation failed");
@@ -127,19 +141,22 @@ export default function ReviewPage() {
   };
 
   const handlePublishToInstagram = async () => {
-    if (!latestManifest) return;
-    const approved = latestManifest.images.filter((img) => img.status === "approved");
-    if (approved.length === 0) { setError("No approved images to publish"); return; }
     try {
+      const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
+      const res = await fetch(`/api/manifest${accountParam}`);
+      const manifest: Manifest = await res.json();
+      const approved = (manifest.images || []).filter((img) => img.status === "approved");
+      if (approved.length === 0) { setError("No approved images to publish"); return; }
+
       setPublishing(true);
       setPublishResult(null);
       setError(null);
-      const res = await fetch("/api/publish", {
+      const pubRes = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageIds: approved.map((img) => img.id), caption: "Daily quote inspiration ✨ #quotes" }),
       });
-      const data = await res.json();
+      const data = await pubRes.json();
       if (!data.success) throw new Error(data.error || "Publishing failed");
       setPublishResult(`✅ Published ${data.published} image${data.published !== 1 ? "s" : ""} to Instagram${data.failed > 0 ? ` (${data.failed} failed)` : ""}`);
     } catch (err) {
@@ -150,19 +167,22 @@ export default function ReviewPage() {
   };
 
   const handleDownloadApproved = async () => {
-    if (!latestManifest) return;
-    const approved = latestManifest.images.filter((img) => img.status === "approved");
-    if (approved.length === 0) { setError("No approved images to download"); return; }
     try {
+      const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
+      const res = await fetch(`/api/manifest${accountParam}`);
+      const manifest: Manifest = await res.json();
+      const approved = (manifest.images || []).filter((img) => img.status === "approved");
+      if (approved.length === 0) { setError("No approved images to download"); return; }
+
       const zip = new JSZip();
       await Promise.all(approved.map(async (img) => {
         const accParam = selectedAccount ? `?account=${selectedAccount}` : "";
-        const res = await fetch(`/api/images/${img.filename}${accParam}`);
-        if (!res.ok) throw new Error(`Failed to fetch ${img.filename}`);
-        zip.file(img.filename, await res.blob());
+        const imgRes = await fetch(`/api/images/${img.filename}${accParam}`);
+        if (!imgRes.ok) throw new Error(`Failed to fetch ${img.filename}`);
+        zip.file(img.filename, await imgRes.blob());
       }));
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, `approved-${latestManifest.batch.id}.zip`);
+      saveAs(zipBlob, `approved-${manifest.batch.id}.zip`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create download");
     }
@@ -260,11 +280,6 @@ export default function ReviewPage() {
           key={`review-${refreshKey}`}
           selectedAccount={selectedAccount}
           onPreviewImage={setPreviewImage}
-          onDataChange={(count) => {
-            setApprovedCount(count);
-            const accountParam = selectedAccount ? `?account=${selectedAccount}` : "";
-            fetch(`/api/manifest${accountParam}`).then(r => r.json()).then(d => setLatestManifest(d)).catch(() => {});
-          }}
         />
       )}
       {viewMode === "queue" && <QueueTab selectedAccount={selectedAccount} onPreviewQueue={setQueuePreview} />}

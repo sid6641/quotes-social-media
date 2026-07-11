@@ -20,6 +20,25 @@ This refactoring collapsed ~450 lines of duplicated pipeline code into ~240 line
 ### Applied By
 Director (architecture review → implementation)
 
+## 2026-07-10: Decompose monolithic page into tab components with focused interfaces
+
+### Context
+When a single page component grows to 2,000+ lines with 47 useState hooks across 6 unrelated views.
+
+### The Pattern
+1. Identify the natural seams — each tab/view is a separate concern
+2. Extract each tab into its own component with a minimal prop interface
+3. Shell handles only cross-cutting concerns: routing, shared modals, global actions
+4. Each tab manages its own data fetching — no prop drilling
+5. Shared types go in a sibling `types.ts` file
+6. Tabs communicate with the shell via callbacks (`onDataChange`, `onPreviewImage`)
+
+### Evidence
+Page shell reduced from 2,297 lines to ~250. Each tab independently testable. Changing the queue tab no longer risks breaking the review tab.
+
+### Applied By
+All agents — use tab decomposition pattern for any page with 3+ unrelated views.
+
 ## 2026-07-10: Extract duplicated file-I/O pattern into a generic JsonStore<T>
 
 ### Context

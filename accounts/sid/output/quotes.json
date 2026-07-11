@@ -8,7 +8,8 @@
       "usageCount": 0,
       "usedByAccounts": [],
       "createdAt": "2026-07-10T06:16:07.521Z",
-      "updatedAt": "2026-07-10T06:16:07.521Z"
+      "updatedAt": "2026-07-10T13:24:15.209Z",
+      "isFavorite": true
     },
     {
       "id": "q-00002",
@@ -18,8 +19,8 @@
       "usageCount": 0,
       "usedByAccounts": [],
       "createdAt": "2026-07-10T06:16:07.521Z",
-      "updatedAt": "2026-07-10T11:41:00.232Z",
-      "isFavorite": true
+      "updatedAt": "2026-07-10T13:24:14.061Z",
+      "isFavorite": false
     },
     {
       "id": "q-00003",
@@ -110,8 +111,8 @@
       "usageCount": 0,
       "usedByAccounts": [],
       "createdAt": "2026-07-10T09:42:18.162Z",
-      "updatedAt": "2026-07-10T11:40:53.377Z",
-      "isFavorite": true
+      "updatedAt": "2026-07-10T13:24:12.360Z",
+      "isFavorite": false
     }
   ]
 }

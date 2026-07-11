@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-07-10 — Architecture hardening: page monolith decomposition
+
+### Agent
+Director (architecture review → implementation)
+
+### Summary
+- **Candidate #5**: Decomposed 2,297-line page.tsx monolith into 6 self-contained tab components
+  - `ReviewTab` (~320 lines), `QueueTab` (~170), `QuotesTab` (~200), `TemplatesTab` (~120), `HashtagsTab` (~110), `AccountsTab` (~200)
+  - Shell reduced to ~250 lines (account selector, tab bar, generation actions, modals)
+  - Each tab manages its own data fetching and internal state
+  - Shared types extracted to `src/components/tabs/types.ts`
+
+### Before → After
+- Before: 47 useState hooks, 31 functions, 6 tab views in one file
+- After: 6 components with focused interfaces (`selectedAccount` + callbacks)
+- Each tab independently testable; changing one tab doesn't risk breaking another
+
+### State At End
+All 5 architecture review candidates complete. Architecture hardening phase done.
+
 ## 2026-07-10 — Architecture hardening: JsonStore<T> + getMimeType dedup
 
 ### Agent

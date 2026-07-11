@@ -25,5 +25,32 @@
     },
     "scheduledAt": "2026-07-11T03:30:00.000Z",
     "status": "queued"
+  },
+  {
+    "id": "pub-002",
+    "batchId": "2026-07-10-001",
+    "imageId": "img-001",
+    "filename": "2026-07-10-001-01.png",
+    "quote": "The only way to do great work is to love what you do.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "It’s easy to feel lost when things get tough, but this little one reminds us that even small steps forward can reveal new paths. Every challenge truly holds a hidden gift, waiting for us to uncover it. Keep walking, keep believing! ✨",
+      "hashtags": [
+        "#OpportunityKnocks",
+        "#InnerStrength",
+        "#GrowthMindset",
+        "#EmbraceTheJourney",
+        "#FindingYourWay",
+        "#InspirationalQuote",
+        "#LifeLessons",
+        "#PositiveVibes",
+        "#KeepGoing",
+        "#NewBeginnings",
+        "#Resilience",
+        "#Hope"
+      ]
+    },
+    "scheduledAt": "2026-07-11T03:30:00.000Z",
+    "status": "queued"
   }
 ]

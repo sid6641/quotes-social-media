@@ -1,5 +1,29 @@
 # Decision Log
 
+## 2026-07-10: Architecture — Decompose review page into tab components
+
+### Context
+The review page (`src/app/page.tsx`) grew to 2,297 lines with 47 useState hooks, 31 functions, and 6 tab views rendered inline. Testing any view required mounting the entire page.
+
+### Decision
+- Split into 6 self-contained tab components under `src/components/tabs/`
+- Each tab receives `selectedAccount: string` + optional callbacks
+- Shell handles: account selector, tab routing, generation actions, error banner, shared modals
+- Shared types extracted to `src/components/tabs/types.ts`
+- Each tab independently fetches its own data
+
+### Rationale
+- Locality: each tab's state and logic isolated to its component
+- Testability: each tab testable in isolation with mocked fetch
+- Interface shrinks: each tab exposes ~3 props instead of 47 state variables
+- Deletion test: delete one tab component, others unaffected
+
+### Decided By
+Director (architecture review)
+
+### Reopens?
+No
+
 ## 2026-07-10: Architecture — JsonStore<T> pattern for file-backed state
 
 ### Context
