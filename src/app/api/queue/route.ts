@@ -58,7 +58,9 @@ export async function POST(request: NextRequest) {
 
     // Process due items
     if (body.action === "process") {
-      const results = await processQueue();
+      const accountId = body.account || undefined;
+      const dir = accountId ? getAccountDir(accountId) : undefined;
+      const results = await processQueue(dir, accountId);
       invalidateQueueCache();
       return NextResponse.json({ success: true, results });
     }
@@ -120,12 +122,12 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/queue — remove an entry from the queue.
- * Body: { id: string }
+ * Body: { id: string, account?: string }
  */
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id } = body;
+    const { id, account: accountId } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -134,7 +136,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const success = removeFromQueue(id);
+    const dir = accountId ? getAccountDir(accountId) : undefined;
+    const success = removeFromQueue(id, dir);
     if (!success) {
       return NextResponse.json(
         { error: "Queue entry not found" },

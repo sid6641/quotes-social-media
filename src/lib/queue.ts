@@ -78,18 +78,35 @@ function getPublishTime(): { hour: number; minute: number } {
  * Otherwise returns tomorrow.
  */
 export function getNextScheduledTime(): string {
-  const now = new Date();
-  const { hour, minute } = getPublishTime();
+  return getNextScheduledTimeFrom(new Date(), getPublishTime());
+}
 
-  const today = new Date(now);
-  today.setHours(hour, minute, 0, 0);
+/**
+ * Pure: calculate the next daily publish slot.
+ * Exported for testing — no store dependency, clock injected via now param.
+ */
+export function getNextScheduledTimeFrom(
+  now: Date,
+  publishTime: { hour: number; minute: number }
+): string {
+  const { hour, minute } = publishTime;
+
+  const today = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    hour,
+    minute,
+    0,
+    0
+  ));
 
   if (now < today) {
     return today.toISOString();
   }
 
   const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
   return tomorrow.toISOString();
 }
 
@@ -118,27 +135,45 @@ export function addToQueue(
   accountDir?: string
 ): QueueEntry {
   const queue = readQueue(accountDir);
+  const entry = addToQueueInQueue(queue, params, getNextScheduledTime());
+  writeQueue(queue, accountDir);
+  return entry;
+}
 
-  // Avoid duplicates — if already queued, skip
+/**
+ * Pure: add an entry to a queue array. Skips if batchId+imageId already present.
+ * Exported for testing — no store dependency.
+ */
+export function addToQueueInQueue(
+  queue: QueueEntry[],
+  params: {
+    batchId: string;
+    imageId: string;
+    filename: string;
+    quote: string;
+    template: string;
+    caption?: CaptionData;
+  },
+  scheduledAt: string
+): QueueEntry {
   const existing = queue.find(
     (e) => e.batchId === params.batchId && e.imageId === params.imageId
   );
   if (existing) return existing;
 
   const entry: QueueEntry = {
-    id: generateQueueId(accountDir),
+    id: `pub-${String(queue.length + 1).padStart(3, "0")}`,
     batchId: params.batchId,
     imageId: params.imageId,
     filename: params.filename,
     quote: params.quote,
     template: params.template,
     caption: params.caption || { commentary: "", hashtags: [] },
-    scheduledAt: getNextScheduledTime(),
+    scheduledAt,
     status: "queued",
   };
 
   queue.push(entry);
-  writeQueue(queue, accountDir);
   return entry;
 }
 
@@ -147,12 +182,23 @@ export function addToQueue(
  */
 export function removeFromQueue(id: string, accountDir?: string): boolean {
   const queue = readQueue(accountDir);
-  const index = queue.findIndex((e) => e.id === id);
-  if (index === -1) return false;
+  const result = removeFromQueueInQueue(queue, id);
+  if (result.success) writeQueue(result.queue, accountDir);
+  return result.success;
+}
 
+/**
+ * Pure: remove an entry by id from a queue array.
+ * Exported for testing — no store dependency.
+ */
+export function removeFromQueueInQueue(
+  queue: QueueEntry[],
+  id: string
+): { queue: QueueEntry[]; success: boolean } {
+  const index = queue.findIndex((e) => e.id === id);
+  if (index === -1) return { queue, success: false };
   queue.splice(index, 1);
-  writeQueue(queue, accountDir);
-  return true;
+  return { queue, success: true };
 }
 
 /**
@@ -164,14 +210,26 @@ export function removeImageFromQueue(
   accountDir?: string
 ): boolean {
   const queue = readQueue(accountDir);
+  const result = removeImageFromQueueInQueue(queue, batchId, imageId);
+  if (result.success) writeQueue(result.queue, accountDir);
+  return result.success;
+}
+
+/**
+ * Pure: remove entries by batchId+imageId from a queue array.
+ * Exported for testing — no store dependency.
+ */
+export function removeImageFromQueueInQueue(
+  queue: QueueEntry[],
+  batchId: string,
+  imageId: string
+): { queue: QueueEntry[]; success: boolean } {
   const index = queue.findIndex(
     (e) => e.batchId === batchId && e.imageId === imageId
   );
-  if (index === -1) return false;
-
+  if (index === -1) return { queue, success: false };
   queue.splice(index, 1);
-  writeQueue(queue, accountDir);
-  return true;
+  return { queue, success: true };
 }
 
 /**
@@ -182,6 +240,17 @@ export function getQueue(
   accountDir?: string
 ): QueueEntry[] {
   const queue = readQueue(accountDir);
+  return getQueueFromQueue(queue, status);
+}
+
+/**
+ * Pure: filter queue array by status.
+ * Exported for testing — no store dependency.
+ */
+export function getQueueFromQueue(
+  queue: QueueEntry[],
+  status?: QueueEntry["status"]
+): QueueEntry[] {
   if (!status) return [...queue];
   return queue.filter((e) => e.status === status);
 }
@@ -190,8 +259,18 @@ export function getQueue(
  * Get queue entries that are due for publishing.
  */
 export function getDueItems(accountDir?: string): QueueEntry[] {
-  const now = new Date();
-  return readQueue(accountDir).filter(
+  return getDueItemsFromQueue(readQueue(accountDir), new Date());
+}
+
+/**
+ * Pure: filter queue array by queued status + scheduled time.
+ * Exported for testing — no store dependency.
+ */
+export function getDueItemsFromQueue(
+  queue: QueueEntry[],
+  now: Date
+): QueueEntry[] {
+  return queue.filter(
     (e) => e.status === "queued" && new Date(e.scheduledAt) <= now
   );
 }
@@ -201,13 +280,25 @@ export function getDueItems(accountDir?: string): QueueEntry[] {
  */
 export function markPublished(id: string, accountDir?: string): boolean {
   const queue = readQueue(accountDir);
-  const entry = queue.find((e) => e.id === id);
-  if (!entry) return false;
+  const result = markPublishedInQueue(queue, id, new Date());
+  if (result.success) writeQueue(result.queue, accountDir);
+  return result.success;
+}
 
+/**
+ * Pure: mark a queue entry as published.
+ * Exported for testing — no store dependency.
+ */
+export function markPublishedInQueue(
+  queue: QueueEntry[],
+  id: string,
+  now: Date
+): { queue: QueueEntry[]; success: boolean } {
+  const entry = queue.find((e) => e.id === id);
+  if (!entry) return { queue, success: false };
   entry.status = "published";
-  entry.publishedAt = new Date().toISOString();
-  writeQueue(queue, accountDir);
-  return true;
+  entry.publishedAt = now.toISOString();
+  return { queue, success: true };
 }
 
 /**
@@ -215,13 +306,25 @@ export function markPublished(id: string, accountDir?: string): boolean {
  */
 export function markFailed(id: string, error: string, accountDir?: string): boolean {
   const queue = readQueue(accountDir);
-  const entry = queue.find((e) => e.id === id);
-  if (!entry) return false;
+  const result = markFailedInQueue(queue, id, error);
+  if (result.success) writeQueue(result.queue, accountDir);
+  return result.success;
+}
 
+/**
+ * Pure: mark a queue entry as failed.
+ * Exported for testing — no store dependency.
+ */
+export function markFailedInQueue(
+  queue: QueueEntry[],
+  id: string,
+  error: string
+): { queue: QueueEntry[]; success: boolean } {
+  const entry = queue.find((e) => e.id === id);
+  if (!entry) return { queue, success: false };
   entry.status = "failed";
   entry.error = error;
-  writeQueue(queue, accountDir);
-  return true;
+  return { queue, success: true };
 }
 
 /**
@@ -235,27 +338,50 @@ export function updateQueueEntryCaption(
   accountDir?: string
 ): boolean {
   const queue = readQueue(accountDir);
+  const result = updateQueueEntryCaptionInQueue(queue, batchId, imageId, caption);
+  if (result.success) writeQueue(result.queue, accountDir);
+  return result.success;
+}
+
+/**
+ * Pure: update the caption of a queued entry.
+ * Only updates entries with status === "queued".
+ * Exported for testing — no store dependency.
+ */
+export function updateQueueEntryCaptionInQueue(
+  queue: QueueEntry[],
+  batchId: string,
+  imageId: string,
+  caption: { commentary: string; hashtags: string[] }
+): { queue: QueueEntry[]; success: boolean } {
   const entry = queue.find(
     (e) => e.batchId === batchId && e.imageId === imageId && e.status === "queued"
   );
-  if (!entry) return false;
-
+  if (!entry) return { queue, success: false };
   entry.caption = caption;
-  writeQueue(queue, accountDir);
-  return true;
+  return { queue, success: true };
 }
 
 /**
  * Get queue statistics.
  */
-export function getQueueStats(accountDir?: string): {
+export function getQueueStats(accountDir?: string): QueueStats {
+  return getQueueStatsFromQueue(readQueue(accountDir));
+}
+
+export interface QueueStats {
   total: number;
   queued: number;
   published: number;
   failed: number;
   nextScheduledAt: string | null;
-} {
-  const queue = readQueue(accountDir);
+}
+
+/**
+ * Pure: compute queue statistics from queue data.
+ * Exported for testing — no store dependency.
+ */
+export function getQueueStatsFromQueue(queue: QueueEntry[]): QueueStats {
   const nextDue = queue
     .filter((e) => e.status === "queued")
     .sort(

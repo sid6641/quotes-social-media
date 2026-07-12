@@ -70,11 +70,21 @@ function writeManifest(data: Manifest[]): void {
 }
 
 export function generateBatchId(dir?: string): string {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
-  // Find the next sequence number for today in the relevant store
-  const existing = dir ? readManifestFromDir(dir) : readManifest();
-  const todayBatches = existing.filter((m) => m.batch.id.startsWith(date));
+  const manifests = dir ? readManifestFromDir(dir) : readManifest();
+  return generateBatchIdFromManifests(manifests, new Date());
+}
+
+/**
+ * Pure: generate a batch ID from an array of manifests and a date.
+ * Returns YYYY-MM-DD-NNN with an incrementing sequence for the given day.
+ * Exported for testing — no store dependency.
+ */
+export function generateBatchIdFromManifests(
+  manifests: Manifest[],
+  now: Date
+): string {
+  const date = now.toISOString().slice(0, 10);
+  const todayBatches = manifests.filter((m) => m.batch.id.startsWith(date));
   const seq = todayBatches.length + 1;
   return `${date}-${String(seq).padStart(3, "0")}`;
 }
@@ -93,15 +103,31 @@ export function createBatch(
   captions?: CaptionData[][],
   outputDir?: string
 ): Manifest {
-  // Use account-specific dir if provided, otherwise global
   const targetDir = outputDir || OUTPUT_DIR;
   const manifests = readManifestFromDir(targetDir);
-  const batchId = generateBatchId(targetDir);
+  const manifest = createBatchInManifests(manifests, images, trigger, promptTemplate, captions, new Date());
+  writeManifestToDir(manifests, targetDir);
+  return manifest;
+}
+
+/**
+ * Pure: create a batch entry and append it to the manifests array.
+ * Exported for testing — no store dependency.
+ */
+export function createBatchInManifests(
+  manifests: Manifest[],
+  images: Array<{ quote: string; template: string; filename: string }>,
+  trigger: "cli" | "web",
+  promptTemplate: string,
+  captions: CaptionData[][] | undefined,
+  now: Date
+): Manifest {
+  const batchId = generateBatchIdFromManifests(manifests, now);
 
   const manifest: Manifest = {
     batch: {
       id: batchId,
-      generatedAt: new Date().toISOString(),
+      generatedAt: now.toISOString(),
       trigger,
     },
     images: images.map((img, index) => {
@@ -121,7 +147,6 @@ export function createBatch(
   };
 
   manifests.push(manifest);
-  writeManifestToDir(manifests, targetDir);
   return manifest;
 }
 
@@ -215,6 +240,19 @@ export function markImagesAsReviewed(
 ): number {
   const dir = accountId ? getAccountDir(accountId) : undefined;
   const manifests = readManifestFromDir(dir);
+  const result = markImagesAsReviewedInManifests(manifests, entries);
+  if (result.count > 0) writeManifestToDir(result.manifests, dir);
+  return result.count;
+}
+
+/**
+ * Pure: mark images as reviewed in manifests data.
+ * Exported for testing — no store dependency.
+ */
+export function markImagesAsReviewedInManifests(
+  manifests: Manifest[],
+  entries: Array<{ batchId: string; imageId: string }>
+): { manifests: Manifest[]; count: number } {
   let count = 0;
 
   for (const { batchId, imageId } of entries) {
@@ -226,8 +264,7 @@ export function markImagesAsReviewed(
     count++;
   }
 
-  if (count > 0) writeManifestToDir(manifests, dir);
-  return count;
+  return { manifests, count };
 }
 
 /**
@@ -241,7 +278,23 @@ export function getAllBatches(accountId?: string): Array<{
   approvedCount: number;
 }> {
   const dir = accountId ? getAccountDir(accountId) : undefined;
-  return readManifestFromDir(dir).map((m) => ({
+  return getAllBatchesFromManifests(readManifestFromDir(dir));
+}
+
+/**
+ * Pure: extract batch summaries from manifests.
+ * Exported for testing — no store dependency.
+ */
+export function getAllBatchesFromManifests(
+  manifests: Manifest[]
+): Array<{
+  id: string;
+  generatedAt: string;
+  trigger: "cli" | "web";
+  imageCount: number;
+  approvedCount: number;
+}> {
+  return manifests.map((m) => ({
     id: m.batch.id,
     generatedAt: m.batch.generatedAt,
     trigger: m.batch.trigger,
@@ -278,7 +331,18 @@ export function getAllImages(
   statusFilter?: "pending" | "approved" | "rejected"
 ): Array<{ batchId: string; image: ImageEntry }> {
   const dir = accountId ? getAccountDir(accountId) : undefined;
-  const manifests = readManifestFromDir(dir);
+  return getAllImagesFromManifests(readManifestFromDir(dir), statusFilter);
+}
+
+/**
+ * Pure: get all images from manifests, optionally filtered by status.
+ * Returns most recent batches first.
+ * Exported for testing — no store dependency.
+ */
+export function getAllImagesFromManifests(
+  manifests: Manifest[],
+  statusFilter?: "pending" | "approved" | "rejected"
+): Array<{ batchId: string; image: ImageEntry }> {
   const results: Array<{ batchId: string; image: ImageEntry }> = [];
 
   for (const m of manifests) {
@@ -288,7 +352,6 @@ export function getAllImages(
     }
   }
 
-  // Most recent batches first
   return results.reverse();
 }
 

@@ -36,7 +36,7 @@ export default function QueueTab({
       const res = await fetch("/api/queue", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, account: selectedAccount || undefined }),
       });
       if (!res.ok) throw new Error("Failed to remove from queue");
       setQueue((prev) => prev.filter((e) => e.id !== id));
@@ -51,7 +51,7 @@ export default function QueueTab({
       const res = await fetch("/api/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "process" }),
+        body: JSON.stringify({ action: "process", account: selectedAccount || undefined }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Publish failed");
@@ -71,19 +71,25 @@ export default function QueueTab({
     return <div className="text-center py-20 text-gray-500">Loading queue...</div>;
   }
 
+  if (!selectedAccount) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-gray-400 mb-2">
+          Select an account from the dropdown above to see its publish queue.
+        </p>
+        <p className="text-xs text-gray-400">
+          Each account has its own queue. Choose one to review queued posts.
+        </p>
+      </div>
+    );
+  }
+
   if (queue.length === 0) {
     return (
       <div className="text-center py-20">
         <p className="text-gray-400 mb-2">
-          {selectedAccount
-            ? "No items in the publish queue. Approve images from the Review tab to add them."
-            : "Select an account from the dropdown above to see its publish queue."}
+          No items in the publish queue for this account. Approve images from the Review tab to add them.
         </p>
-        {!selectedAccount && (
-          <p className="text-xs text-gray-400">
-            Each account has its own queue. Choose one to review queued posts.
-          </p>
-        )}
       </div>
     );
   }
