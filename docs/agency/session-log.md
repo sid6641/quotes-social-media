@@ -506,3 +506,47 @@ Director → Builder + Explore
 
 ### State At End
 Behavioral contract documented. 5 critical gaps identified in the routing layer. Ready for systematic fix.
+
+## 2026-07-12 — TDD: 129 unit tests across all 6 lib seams
+
+### Agent
+Director
+
+### Skills
+tdd
+
+### Summary
+Set up vitest test runner and wrote pure-function tests for every lib module.
+Extracted pure versions of store-backed functions (same pattern: private store
+read/write → public function delegates to pure function → tests call pure function).
+
+### Test Files Created
+
+| File | Tests | Key coverage |
+|------|-------|-------------|
+| `src/lib/media.test.ts` | 13 | Extensions, case, unknown fallback, edge cases |
+| `src/lib/json-store.test.ts` | 16 | get/set, structuredClone isolation, Dates, invalidate no-op |
+| `src/lib/mixer.test.ts` | 15 | Index pairing, wrap-around, combo dedup, all-mode, fresh quotes |
+| `src/lib/quote-pool.test.ts` | 32 | Add, import (dedup), getAvailable (sort), lifecycle (cooldown→retired), recycle, stats |
+| `src/lib/manifest.test.ts` | 20 | Batch ID sequence, createBatch, getAllImages, markReviewed |
+| `src/lib/queue.test.ts` | 33 | Scheduling (UTC), add/dedup, remove, due items, markPublished/Failed, stats |
+
+### Refactors for Testability
+- **mixer.ts**: Extracted `pickCombos()` pure function from `pickCombinations()`
+- **quote-pool.ts**: Extracted `addQuoteToPool`, `importQuotesToPool`, `getAvailableQuotesFromPool`, `markQuoteUsedInPool`, `recycleQuoteInPool`, `getPoolStatsFromPool`
+- **manifest.ts**: Extracted `generateBatchIdFromManifests`, `createBatchInManifests`, `getAllBatchesFromManifests`, `getAllImagesFromManifests`, `markImagesAsReviewedInManifests`
+- **queue.ts**: Extracted `getNextScheduledTimeFrom`, `addToQueueInQueue`, `removeFromQueueInQueue`, `removeImageFromQueueInQueue`, `getQueueFromQueue`, `getDueItemsFromQueue`, `markPublishedInQueue`, `markFailedInQueue`, `updateQueueEntryCaptionInQueue`, `getQueueStatsFromQueue`
+- **json-store.ts**: Added `structuredClone()` to `createMemoryStore` for mutation isolation
+
+### Bugs Fixed
+- DELETE /api/queue was account-blind — ✕ remove button never worked for account queues
+- POST /api/queue { action: 'process' } was account-blind — publish trigger was always global
+- getNextScheduledTime used local-time setHours — tests failed in non-UTC timezones; fixed to UTC
+
+### Test Infra
+- vitest installed with vitest.config.ts
+- Path alias (@/ → src/) configured in vitest
+- `npm test` and `npm run test:watch` scripts added
+
+### State At End
+129 tests, all green. All 6 lib seams have pure-function test coverage. 2 account-scoping bugs fixed.

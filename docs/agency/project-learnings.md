@@ -75,6 +75,44 @@ Moving `runGenerate` to lib fixed the leak and enabled the scheduler to sit clea
 ### Applied By
 All agents — this is now a codebase invariant.
 
+## 2026-07-12: Testing store-backed modules via pure function extraction
+
+### Context
+Modules using `JsonStore<T>` interleave business logic with filesystem I/O.
+Testing through the exported functions requires temp files or mocks.
+
+### The Pattern
+- Extract a pure function that operates on plain data structures (arrays)
+- The pure function takes all dependencies as parameters (e.g., `now: Date`)
+- The original store-backed function becomes a thin wrapper: read → pure → write
+- Export the pure function for tests, keep the wrapper for production
+
+```typescript
+// Production (unchanged API)
+export function addToQueue(params, accountDir?): QueueEntry {
+  const queue = readQueue(accountDir);
+  const entry = addToQueueInQueue(queue, params, getNextScheduledTime());
+  writeQueue(queue, accountDir);
+  return entry;
+}
+
+// Pure (exported for tests)
+export function addToQueueInQueue(
+  queue: QueueEntry[], params, scheduledAt: string
+): QueueEntry { ... }
+```
+
+Benefits:
+- Tests call pure functions with plain arrays — no filesystem, 300ms for 129 tests
+- The store read/write is trivial (1 line each) — not worth testing
+- Time-dependent functions accept `now: Date` — deterministic scheduling tests
+
+### Evidence
+6 modules refactored, 129 tests, all green in under 400ms. No mocking library needed.
+
+### Applied By
+All agents — use this pattern for any new file-backed module that needs tests.
+
 <!-- Template:
 ## {{DATE}}: {{Pattern Name}}
 

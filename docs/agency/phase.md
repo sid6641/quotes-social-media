@@ -1,12 +1,12 @@
 # Phase: 2 — Iterative Improvement
-**Step**: Review UI & generation pipeline refinement
+**Step**: Test coverage (TDD)
 **Status**: 🟢 Active
 **Started**: 2026-07-07
-**Updated**: 2026-07-11
+**Updated**: 2026-07-12
 
 ## Current Step Details
 
-Architecture hardening complete. Review page rewritten with per-batch pagination.
+All 6 lib seams have pure-function unit tests. 2 account-scoping bugs fixed in queue API.
 
 ## Completed
 - ✅ Architecture hardening (5 candidates)
@@ -14,10 +14,16 @@ Architecture hardening complete. Review page rewritten with per-batch pagination
 - ✅ Reject remaining (batch-scoped)
 - ✅ Queue tab empty-state hint for "All accounts"
 - ✅ Global quotes fallback removed
+- ✅ vitest test runner configured
+- ✅ 129 unit tests across media, json-store, mixer, quote-pool, manifest, queue
+- ✅ All 6 seams use pure-function extraction pattern for testability
+- ✅ Bug fix: DELETE /api/queue now account-scoped
+- ✅ Bug fix: processQueue now account-scoped
+- ✅ Scheduling uses UTC (timezone-independent)
 
 ## Next Action
 
-Continue generation pipeline refinement or next roadmap feature.
+Continue with generation pipeline refinement, integration tests, or next roadmap feature.
 
 ## Progress
 

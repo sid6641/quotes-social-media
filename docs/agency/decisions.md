@@ -88,6 +88,82 @@ Director
 ### Reopens?
 No
 
+## 2026-07-12: Testing — Pure function extraction for store-backed modules
+
+### Context
+Four modules (mixer, quote-pool, manifest, queue) had business logic interleaved
+with filesystem I/O via `JsonStore<T>`. Tests couldn't call the exported functions
+without hitting the filesystem.
+
+### Decision
+- Extract pure versions of all business-logic functions that operate on plain
+data structures (arrays of quotes, manifests, queue entries)
+- Pure functions accept explicit `now: Date` parameters for deterministic
+time-dependent testing
+- Public store-backed functions delegate to pure functions + read/write store
+- Tests call pure functions only — no filesystem, no mocking
+
+### Rationale
+- No test infrastructure needed (no temp dirs, no fixture files)
+- Tests run in 300ms (no I/O)
+- Pure functions are independently verifiable — the combinatorial logic,
+lifecycle transitions, and scheduling math are the risky parts
+- The store read/write is trivial (delegates to JsonStore) — not worth testing
+
+### Decided By
+Captain + Director (TDD skill)
+
+### Reopens?
+No
+
+## 2026-07-12: API — Queue endpoints must be account-scoped
+
+### Context
+DELETE /api/queue and POST /api/queue { action: 'process' } both ignored the
+account parameter. The QueueTab UI sent requests without account context.
+This meant:
+- The ✕ remove button only deleted from the global queue (which is empty)
+- 'Publish Due Items Now' only processed the global queue
+
+### Decision
+- DELETE /api/queue accepts optional `account` param → passes to removeFromQueue
+- POST /api/queue { action: 'process' } accepts optional `account` param → passes to processQueue
+- QueueTab sends `account` on both DELETE and process requests
+- QueueTab shows 'select an account' hint immediately when no account is selected
+
+### Rationale
+- Queue files are account-scoped (accounts/<id>/output/publish-queue.json)
+- There is no global queue — all operations must target a specific account
+
+### Decided By
+Director
+
+### Reopens?
+No
+
+## 2026-07-12: Scheduling — Use UTC for publish time calculation
+
+### Context
+`getNextScheduledTime` used `setHours(hour, minute, 0, 0)` which operates in
+local time. `toISOString()` outputs UTC. Tests failed in non-UTC timezones
+because the expected UTC string didn't match the local-time-derived value.
+
+### Decision
+- `getNextScheduledTimeFrom` builds the target date using `Date.UTC()`
+- All comparisons and outputs are in UTC
+- PUBLISH_TIME env var is interpreted as UTC
+
+### Rationale
+- Server timezone may differ from user's timezone
+- All stored ISO strings are UTC
+- Schedule comparison in getDueItems uses UTC timestamps
+
+### Decided By
+Director (TDD test failure drove the fix)
+
+### Reopens?
+No
+
 ### Context
 Five modules (manifest, queue, quote-pool, account, hashtag-bank) each implemented the same file-I/O + JSON-cache pattern independently: `readX()`, `writeX()`, `invalidateCache()`, `ensureDir()`.
 
