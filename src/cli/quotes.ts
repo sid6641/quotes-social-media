@@ -8,6 +8,8 @@
  *   npm run cli quotes import --file quotes/sample.txt
  *   npm run cli quotes stats
  *   npm run cli quotes expire
+ *   npm run cli quotes generate --count 10 --theme motivation [--account testplay]
+ *   npm run cli quotes generate-image "Quote text" --theme minimal [--out output.png]
  */
 import {
   getQuotes,
@@ -15,8 +17,12 @@ import {
   importQuotesFromFile,
   getPoolStats,
   expireCooldowns,
+  importQuotes,
 } from "../lib/quote-pool";
+import { generateQuotes, generateQuoteImageDirect } from "../lib/quotes-generator";
 import { createLogger } from "../lib/logger";
+import fs from "fs";
+import path from "path";
 
 const log = createLogger("quotes");
 
@@ -26,7 +32,64 @@ export interface QuotesOptions {
   text?: string;
   author?: string;
   file?: string;
+  theme?: string;
+  count?: number;
+  out?: string;
+  account?: string;
   jsonOutput?: boolean;
+}
+
+// ── Generate (Plan A) ─────────────────────────────────────────────
+
+async function generateCmd(options: QuotesOptions): Promise<void> {
+  const count = options.count || 10;
+  const theme = options.theme;
+  const accountId = options.account;
+
+  log.info({ count, theme, account: accountId }, "Generating quotes via Gemini...");
+
+  const quotes = await generateQuotes(count, theme);
+
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, quotes }, null, 2));
+    return;
+  }
+
+  log.info({ generated: quotes.length }, `✨ Generated ${quotes.length} quotes`);
+
+  // Import into pool
+  const texts = quotes.map((q) => q.text);
+  const imported = importQuotes(texts, { source: "ai-generated" }, accountId);
+
+  log.info({ imported }, `📥 Imported ${imported} new quotes into pool`);
+
+  if (imported < quotes.length) {
+    log.info({ skipped: quotes.length - imported }, `${quotes.length - imported} were duplicates (already in pool)`);
+  }
+}
+
+// ── Generate Image (Plan B) ────────────────────────────────────────
+
+async function generateImageCmd(options: QuotesOptions): Promise<void> {
+  if (!options.text) {
+    log.error("Missing quote text. Usage: quotes generate-image \"quote text\"");
+    return;
+  }
+
+  const outPath = options.out || `quote-${Date.now()}.png`;
+  log.info({ theme: options.theme }, "Generating Instagram-ready image...");
+
+  const imageBuffer = await generateQuoteImageDirect(options.text, options.theme);
+
+  const fullPath = path.resolve(outPath);
+  fs.writeFileSync(fullPath, imageBuffer);
+
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ success: true, file: fullPath }));
+    return;
+  }
+
+  log.info({ file: fullPath }, `✅ Image saved to ${fullPath}`);
 }
 
 export async function runQuotes(options: QuotesOptions): Promise<void> {
@@ -43,9 +106,13 @@ export async function runQuotes(options: QuotesOptions): Promise<void> {
       return showStats(options);
     case "expire":
       return expireCmd(options);
+    case "generate":
+      return generateCmd(options);
+    case "generate-image":
+      return generateImageCmd(options);
     default:
       log.warn({ subcommand }, `Unknown quotes subcommand: "${subcommand}"`);
-      log.info("Available: list, add, import, stats, expire");
+      log.info("Available: list, add, import, stats, expire, generate, generate-image");
   }
 }
 
@@ -154,5 +221,9 @@ Quotes Commands:
   import --file path       Import from text file (one quote per line)
   stats                    Show pool statistics
   expire                   Recycle expired cooldowns
-`);
-}
+  generate --count 10      Generate quotes via Gemini (Plan A)
+  generate --theme motif   With optional theme filter
+  generate --account sid   Scope to account
+  generate-image "text"    Generate Instagram-ready image directly (Plan B)
+  generate-image "text" --theme minimal --out out.png
+`);}

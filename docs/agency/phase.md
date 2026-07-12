@@ -2,11 +2,11 @@
 **Step**: Test coverage (TDD)
 **Status**: 🟢 Active
 **Started**: 2026-07-07
-**Updated**: 2026-07-12
+**Updated**: 2026-07-13
 
 ## Current Step Details
 
-All 6 lib seams have pure-function unit tests. 2 account-scoping bugs fixed in queue API.
+All 7 lib seams have pure-function unit tests (media, json-store, mixer, quote-pool, manifest, queue, quotes-generator). 148 tests total.
 
 ## Completed
 - ✅ Architecture hardening (5 candidates)
@@ -15,11 +15,13 @@ All 6 lib seams have pure-function unit tests. 2 account-scoping bugs fixed in q
 - ✅ Queue tab empty-state hint for "All accounts"
 - ✅ Global quotes fallback removed
 - ✅ vitest test runner configured
-- ✅ 129 unit tests across media, json-store, mixer, quote-pool, manifest, queue
-- ✅ All 6 seams use pure-function extraction pattern for testability
+- ✅ 148 unit tests across 7 modules (media, json-store, mixer, quote-pool, manifest, queue, quotes-generator)
+- ✅ All 7 seams use pure-function extraction pattern for testability
 - ✅ Bug fix: DELETE /api/queue now account-scoped
 - ✅ Bug fix: processQueue now account-scoped
 - ✅ Scheduling uses UTC (timezone-independent)
+- ✅ Quotes generator: 19 tests for buildGeneratePrompt, parseQuotesResponse, buildDirectImagePrompt
+- ✅ Quotes generate CLI wired (Plan A: text→pool, Plan B: direct image)
 
 ## Next Action
 

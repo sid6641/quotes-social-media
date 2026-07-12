@@ -92,6 +92,11 @@ Quotes commands:
   import --file path            Import quotes from a text file
   stats                         Show pool statistics
   expire                        Recycle expired cooldowns
+  generate --count 10           Generate quotes via Gemini (Plan A)
+  generate --theme motif        With optional theme filter
+  generate --account sid        Scope to account
+  generate-image "text"         Generate Instagram-ready image directly (Plan B)
+  generate-image --out out.png  Output path for image
 
   Note: use --silent to suppress npm headers when piping:
     npm run --silent cli quotes stats -- --json | jq '{available,cooldown}'
@@ -483,6 +488,10 @@ async function main(): Promise<void> {
         text: typeof flags.text === "string" ? flags.text : undefined,
         author: typeof flags.author === "string" ? flags.author : undefined,
         file: typeof flags.file === "string" ? flags.file : undefined,
+        theme: typeof flags.theme === "string" ? flags.theme : undefined,
+        count: typeof flags.count === "number" ? flags.count : typeof flags.count === "string" ? parseInt(flags.count, 10) || undefined : undefined,
+        out: typeof flags.out === "string" ? flags.out : undefined,
+        account: typeof flags.account === "string" ? flags.account : undefined,
         jsonOutput: flags.json === true,
       });
       return;

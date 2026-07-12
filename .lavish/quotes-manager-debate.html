@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quotes Manager — Scraper vs Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/dist/themes.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/daisyui@5"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 1rem; }
+    .prose-card { max-width: 65ch; line-height: 1.6; }
+    .tradeoff-col { min-width: 0; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <div class="max-w-6xl mx-auto p-6 space-y-8">
+
+    <!-- Header -->
+    <div>
+      <span class="badge badge-ghost text-xs mb-2">Phase 2 — Quotes Manager</span>
+      <h1 class="text-3xl font-bold tracking-tight">Scraper vs Generator</h1>
+      <p class="text-gray-500 mt-1 text-sm">How should we auto-populate the quote pool for each Instagram account?</p>
+    </div>
+
+    <!-- Current State -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+      <div class="flex items-start gap-3">
+        <span class="text-lg">⚠️</span>
+        <div>
+          <h3 class="font-semibold text-yellow-800 text-sm">Current State — Manual Only</h3>
+          <p class="text-yellow-700 text-sm mt-1">Quotes must be entered by hand via <code class="bg-yellow-100 px-1 rounded">npm run cli quotes add</code> or imported from <code class="bg-yellow-100 px-1 rounded">.txt</code> files. No accounts have automated quote replenishment. Once the 10 seed quotes are used or cooldowned, generation stops.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="section-title">The Decision</div>
+      <p class="text-lg font-medium">Which approach should we build to keep the quote pool healthy without manual effort?</p>
+    </div>
+
+    <!-- Side-by-side comparison -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Option A: Scraper -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="bg-blue-50 px-5 py-3 border-b border-blue-100">
+          <span class="badge badge-primary text-xs">Option A</span>
+          <h2 class="text-lg font-bold mt-1">🕸️ Quotes Scraper</h2>
+          <p class="text-sm text-gray-600">Crawl quote websites &amp; extract</p>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">How it works</h4>
+            <p class="text-sm mt-1">Firecrawl scrapes pages from sites like BrainyQuote or Goodreads. Extract quote text + author, dedup against pool, import as "imported" source.</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3 overflow-x-auto">
+            <pre class="font-mono text-xs text-gray-700 whitespace-pre min-w-0">firecrawl_scrape("brainyquote.com/topic/inspirational")
+  → [{ text, author }, ...]
+  → importQuotesToPool(...)
+  → 50 new quotes available</pre>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pros</h4>
+            <ul class="text-sm space-y-1 mt-1">
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Real quotes from real people — authentic, proven</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Author attribution built-in</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Zero API cost (Firecrawl has free tier)</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Broad variety — scrape by topic, author, mood</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cons</h4>
+            <ul class="text-sm space-y-1 mt-1">
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Legal gray area — scraping may violate ToS</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Site structure changes break the scraper</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Quotes are not unique — other pages use them too</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Need to handle duplicates, rate limits, captchas</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> No control over tone matching the account's theme</li>
+            </ul>
+          </div>
+          <div class="text-xs text-gray-400 border-t border-gray-100 pt-3">Dependencies: Firecrawl MCP (already available)</div>
+        </div>
+      </div>
+
+      <!-- Option B: Generator -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="bg-purple-50 px-5 py-3 border-b border-purple-100">
+          <span class="badge badge-secondary text-xs">Option B</span>
+          <h2 class="text-lg font-bold mt-1">🤖 AI Quotes Generator</h2>
+          <p class="text-sm text-gray-600">Use Gemini to generate original quotes</p>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">How it works</h4>
+            <p class="text-sm mt-1">Gemini prompt generates N original quotes with optional author attribution. Each quote is unique. Can be themed per account. Stored as "ai-generated" source in the pool.</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3 overflow-x-auto">
+            <pre class="font-mono text-xs text-gray-700 whitespace-pre min-w-0">generateContent("Write 10 inspirational quotes...")
+  → [{ text: "Fall seven times...", author: "AI" }, ...]
+  → importQuotesToPool(...)
+  → 10 new quotes, fully unique</pre>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pros</h4>
+            <ul class="text-sm space-y-1 mt-1">
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> 100% unique content — no copyright concerns</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Themed per account: "motivation", "humor", "minimalist"</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Full control over tone, length, style</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> No external service dependency (uses existing Gemini key)</li>
+              <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">+</span> Can generate in any language</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cons</h4>
+            <ul class="text-sm space-y-1 mt-1">
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Gemini API cost per generation (~$0.01 per 50)</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> AI quotes may feel generic or inauthentic</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> No real author attribution (less relatable)</li>
+              <li class="flex items-start gap-2"><span class="text-red-400 mt-0.5">−</span> Quality varies — needs prompt engineering + curation</li>
+            </ul>
+          </div>
+          <div class="text-xs text-gray-400 border-t border-gray-100 pt-3">Dependencies: Gemini API (already configured)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scorecard -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="section-title">Scorecard</div>
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full">
+          <thead>
+            <tr>
+              <th class="text-xs">Criteria</th>
+              <th class="text-xs text-center text-blue-600">Scraper</th>
+              <th class="text-xs text-center text-purple-600">Generator</th>
+              <th class="text-xs text-gray-400">Winner</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-sm">Content uniqueness</td>
+              <td class="text-center text-sm text-red-500">❌ Republished</td>
+              <td class="text-center text-sm text-green-500">✅ Unique</td>
+              <td class="text-sm font-medium text-purple-600">Generator</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Cost to run</td>
+              <td class="text-center text-sm text-green-500">✅ Free</td>
+              <td class="text-center text-sm text-yellow-500">⚠️ ~$0.01/50</td>
+              <td class="text-sm font-medium text-blue-600">Scraper</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Account theming</td>
+              <td class="text-center text-sm text-yellow-500">⚠️ Limited</td>
+              <td class="text-center text-sm text-green-500">✅ Full</td>
+              <td class="text-sm font-medium text-purple-600">Generator</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Maintenance burden</td>
+              <td class="text-center text-sm text-red-500">❌ High (site changes)</td>
+              <td class="text-center text-sm text-green-500">✅ Low</td>
+              <td class="text-sm font-medium text-purple-600">Generator</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Legal risk</td>
+              <td class="text-center text-sm text-red-500">❌ Gray area</td>
+              <td class="text-center text-sm text-green-500">✅ Clean</td>
+              <td class="text-sm font-medium text-purple-600">Generator</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Setup complexity</td>
+              <td class="text-center text-sm text-yellow-500">⚠️ Medium</td>
+              <td class="text-center text-sm text-green-500">✅ Low</td>
+              <td class="text-sm font-medium text-purple-600">Generator</td>
+            </tr>
+            <tr>
+              <td class="text-sm">Authenticity / engagement</td>
+              <td class="text-center text-sm text-green-500">✅ Real quotes</td>
+              <td class="text-center text-sm text-yellow-500">⚠️ AI feel</td>
+              <td class="text-sm font-medium text-blue-600">Scraper</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hybrid Architecture -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="section-title">Two Generator Paths — "Plan A vs Plan B"</div>
+      <p class="text-sm text-gray-600 mb-4">Captain wants to compare both approaches before committing:</p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Plan A -->
+        <div class="border border-blue-200 rounded-xl overflow-hidden">
+          <div class="bg-blue-50 px-4 py-3 border-b border-blue-100">
+            <span class="badge badge-primary text-xs">Plan A</span>
+            <h3 class="font-bold text-sm mt-1">Text → Pool → Image Pipeline</h3>
+          </div>
+          <div class="p-4 space-y-2 text-sm">
+            <div class="bg-gray-50 rounded-lg p-3 overflow-x-auto">
+              <pre class="font-mono text-xs text-gray-700 whitespace-pre min-w-0">1. Gemini generates quote text (10 at a time)
+2. Quotes stored in pool (source: ai-generated)
+3. Existing pipeline picks quotes + templates
+4. Gemini generates composite image</pre>
+            </div>
+            <ul class="text-xs space-y-1 text-gray-600">
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> Reuses existing generation pipeline</li>
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> Quotes are reusable — multiple images per quote</li>
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> Template backgrounds give visual consistency</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Plan B -->
+        <div class="border border-purple-200 rounded-xl overflow-hidden">
+          <div class="bg-purple-50 px-4 py-3 border-b border-purple-100">
+            <span class="badge badge-secondary text-xs">Plan B</span>
+            <h3 class="font-bold text-sm mt-1">Direct — Instagram-Ready Image</h3>
+          </div>
+          <div class="p-4 space-y-2 text-sm">
+            <div class="bg-gray-50 rounded-lg p-3 overflow-x-auto">
+              <pre class="font-mono text-xs text-gray-700 whitespace-pre min-w-0">Gemini generates a full 1080×1080px image
+with quote text embedded, styled,
+colored, and composed — ready to post.</pre>
+            </div>
+            <ul class="text-xs space-y-1 text-gray-600">
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> Single step — no template needed</li>
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> Diverse visual styles per image</li>
+              <li class="flex items-start gap-2"><span class="text-green-500">+</span> No background image library needed</li>
+              <li class="flex items-start gap-2"><span class="text-red-400">−</span> No quote pool — one-off generation</li>
+              <li class="flex items-start gap-2"><span class="text-red-400">−</span> Less brand consistency across posts</li>
+              <li class="flex items-start gap-2"><span class="text-red-400">−</span> Gemini cost per image ~$0.02 vs per batch ~$0.01</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Hybrid Architecture (original) -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="section-title">Proposed Hybrid Architecture</div>
+      <p class="text-sm text-gray-600 mb-4">Best of both: use the <strong>generator</strong> as the primary source for themed, unique quotes, and add a <strong>scraper fallback</strong> for occasional high-quality real quotes.</p>
+
+      <div class="bg-gray-50 rounded-xl p-5">
+        <pre class="text-xs text-gray-700 leading-relaxed overflow-x-auto">
+┌─────────────────────────────────────────────────────────────┐
+│                   Quotes Manager Module                       │
+│                                                              │
+│  CLI: npm run cli quotes generate [--count N] [--theme X]   │
+│       npm run cli quotes scrape [--source brainyquote]       │
+│       npm run cli quotes autofill [--account X] [--target N] │
+│                                                              │
+├──────────────────────┬──────────────────────────────────────┤
+│  GENERATOR (primary)  │  SCRAPER (fallback)                  │
+│                      │                                      │
+│  Gemini API call      │  Firecrawl crawl                     │
+│  → "theme" prompt     │  → scrape topic page                 │
+│  → 10 original quotes │  → extract {text, author}            │
+│  → source: ai-generated│  → filter duplicates                │
+│  → into pool           │  → source: imported                  │
+│                       │  → into pool                         │
+├──────────────────────┴──────────────────────────────────────┤
+│                      quote-pool.ts                           │
+│  addQuote / importQuotes → available → cooldown → retired    │
+│  Accounts filter by theme from their config                  │
+└─────────────────────────────────────────────────────────────┘
+        </pre>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">💡</span>
+        <div>
+          <h3 class="font-bold text-lg">Recommendation</h3>
+          <p class="text-sm mt-2"><strong>Start with the Generator</strong>. It's simpler, fully controlled, themable per account, and has zero legal or maintenance risk. The Gemini API is already configured and paid for.</p>
+          <p class="text-sm mt-2">Add the scraper later (P2) as an occasional supplement — a single command to pull in real quotes when you want variety. The Firecrawl MCP is already available when needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Open Questions -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="section-title">Open Questions — Annotate Below</div>
+      <div class="space-y-3 text-sm">
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg" data-question="1">
+          <span class="text-xs font-bold text-gray-400 mt-0.5">Q1</span>
+          <div>
+            <p class="font-medium">Should the generator produce quotes with fake authors ("—AI") or remain anonymous?</p>
+            <p class="text-gray-500 text-xs mt-1">Impacts engagement: attributed quotes feel more authentic.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg" data-question="2">
+          <span class="text-xs font-bold text-gray-400 mt-0.5">Q2</span>
+          <div>
+            <p class="font-medium">Should autofill run on a schedule (cron) or on-demand via CLI?</p>
+            <p class="text-gray-500 text-xs mt-1">Cron = set-and-forget but more code. CLI = manual but simpler.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg" data-question="3">
+          <span class="text-xs font-bold text-gray-400 mt-0.5">Q3</span>
+          <div>
+            <p class="font-medium">What theme categories should the generator support?</p>
+            <p class="text-gray-500 text-xs mt-1">e.g., "motivation", "humor", "minimalist", "philosophy", "success" — should these map to account config?</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg" data-question="4">
+          <span class="text-xs font-bold text-gray-400 mt-0.5">Q4</span>
+          <div>
+            <p class="font-medium">How many new quotes per autofill run?</p>
+            <p class="text-gray-500 text-xs mt-1">10? 25? 50? Must balance API cost vs pool availability.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-400 pt-4 border-t border-gray-200">
+      Quotes Social Media — Decision artifact · 2026-07-13
+    </div>
+
+  </div>
+
+</body>
+</html>

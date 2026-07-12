@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-07-13 — TDD for quotes-generator, CLI wiring
+
+### Agent
+Director
+
+### Summary
+Applied TDD to `src/lib/quotes-generator.ts` — extracted 3 pure functions, wrote 19 tests, all green. Wired `generate` and `generate-image` subcommands into CLI.
+
+### Seams Under Test
+- `buildGeneratePrompt(count, theme)` — 4 tests (count, theme, no-theme fallback, non-empty)
+- `parseQuotesResponse(rawText)` — 11 tests (clean JSON, markdown fences, whitespace, missing author, empty filter, malformed JSON, non-array)
+- `buildDirectImagePrompt(quoteText, theme)` — 4 tests (quote text, theme guidance, fallback, dimensions)
+
+### CLI Changes
+- `npm run cli quotes generate --count 5 --theme motivation` — Plan A (text → pool)
+- `npm run cli quotes generate-image "text" --out out.png` — Plan B (direct image)
+- Both subcommands support `--json`, `--account`, `--theme`
+
+### Test Count
+148 tests, 7 files, all green.
+
 ## 2026-07-11 — Workflow execution: 3-account daily batch loop
 
 ### Agent
