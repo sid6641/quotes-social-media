@@ -77,19 +77,22 @@ export function createFileStore<T>(
 
 /**
  * Create an in-memory JSON store. Identical interface, no filesystem.
- * Use in tests to avoid temp directories and real I/O.
+ * Uses structuredClone() to mirror file-store semantics (mutating the
+ * returned value doesn't affect internal state).
  */
 export function createMemoryStore<T>(defaultData: T): JsonStore<T> {
-  let data: T = defaultData;
+  let data: T = structuredClone(defaultData);
   return {
     get(): T {
-      return data;
+      return structuredClone(data);
     },
     set(newData: T): void {
-      data = newData;
+      data = structuredClone(newData);
     },
     invalidate(): void {
-      // no-op — memory store doesn't cache separately from data
+      // no-op — memory store has no separate cache layer;
+      // data is always up-to-date. The method exists to satisfy
+      // the JsonStore<T> interface used by both adapters.
     },
   };
 }

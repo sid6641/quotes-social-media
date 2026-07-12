@@ -15,7 +15,7 @@ npx playwright install chromium
 
 ## File Structure
 
-```
+```text
 playwright/
   README.md              ← This file
   learnings.md           ← Patterns, gotchas, what works

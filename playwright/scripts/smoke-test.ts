@@ -16,7 +16,7 @@
  *   6. Template favorite works
  */
 
-import { chromium } from "playwright";
+import { chromium, type ElementHandle } from "playwright";
 
 const BASE_URL = "http://localhost:3005";
 
@@ -118,7 +118,7 @@ async function main() {
     }
 
     const images = await page.$$("img");
-    const templateImages = images.filter(async (img) => {
+    const templateImages = images.filter(async (img: ElementHandle) => {
       const src = await img.getAttribute("src");
       return src && (src.endsWith(".jpg") || src.endsWith(".png"));
     });
