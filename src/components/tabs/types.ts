@@ -32,7 +32,7 @@ export interface Manifest {
   images: ImageEntry[];
 }
 
-export type StatusFilter = "unreviewed" | "all" | "pending" | "approved" | "rejected";
+export type StatusFilter = "all" | "unreviewed";
 
 export interface QueueEntry {
   id: string;

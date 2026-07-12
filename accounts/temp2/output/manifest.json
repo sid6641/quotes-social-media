@@ -1055,5 +1055,512 @@
         "selectedCaptionIndex": 1
       }
     ]
+  },
+  {
+    "batch": {
+      "id": "2026-07-11-001",
+      "generatedAt": "2026-07-11T07:09:31.907Z",
+      "trigger": "web"
+    },
+    "images": [
+      {
+        "id": "img-001",
+        "filename": "2026-07-11-001-01.png",
+        "quote": "The only way to do great work is to love what you do.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "There's a quiet magic in finding something you truly love to do. It transforms 'work' into a joyful pursuit, where every step feels aligned with your heart. This little one reminds us that the journey of passion often starts with simple, genuine curiosity and a willingness to explore. What sparks that joy for you?",
+            "hashtags": [
+              "#LoveWhatYouDo",
+              "#PassionDriven",
+              "#WorkWithHeart",
+              "#FindYourJoy",
+              "#InspirationDaily",
+              "#CreativeLife",
+              "#PurposeDriven",
+              "#EmbraceTheJourney",
+              "#HeartfeltWork",
+              "#MeaningfulLiving",
+              "#AuthenticSelf",
+              "#SlowLiving"
+            ]
+          },
+          {
+            "commentary": "Love it or leave it. Great work isn't born from obligation, it's forged in passion. Find what makes your soul sing and give it everything you've got. Simple as that.",
+            "hashtags": [
+              "#GreatWork",
+              "#LoveYourCraft",
+              "#PassionFirst",
+              "#NoCompromise",
+              "#UnleashYourPotential",
+              "#GoBig",
+              "#DrivenByPassion",
+              "#MakeItHappen",
+              "#CreativeForce",
+              "#BoldMoves",
+              "#WorkHardPlayHard",
+              "#InspireAction"
+            ]
+          },
+          {
+            "commentary": "I remember a time when 'work' felt like a chore, a necessary evil. But then, I stumbled into something that ignited a spark, and suddenly, the hours flew by. It wasn't about the grind anymore; it was about the pure joy of creating, learning, and contributing. That shift wasn't just in my career, but in my entire outlook on life. This quote truly resonates with the transformation I experienced.",
+            "hashtags": [
+              "#MyPassionStory",
+              "#PersonalJourney",
+              "#CareerChange",
+              "#FindingMyPurpose",
+              "#LifeTransformation",
+              "#AuthenticPath",
+              "#WorkLifeBalance",
+              "#StoryTime",
+              "#GrowthMindset",
+              "#InspirationFromLife",
+              "#FollowYourHeart",
+              "#MakingADifference"
+            ]
+          },
+          {
+            "commentary": "Simple truth: Love what you do. The rest follows.",
+            "hashtags": [
+              "#LoveYourWork",
+              "#Passion",
+              "#Simplicity",
+              "#Motivation",
+              "#Inspiration",
+              "#WorkEthic",
+              "#Purpose",
+              "#DailyQuotes",
+              "#MinimalistLife",
+              "#Focus",
+              "#BeYou",
+              "#InnerDrive"
+            ]
+          },
+          {
+            "commentary": "Perhaps the pursuit of 'greatness' isn't about monumental achievements, but about the profound alignment between our spirit and our actions. When love infuses our work, it transcends mere task completion, becoming an extension of our deepest selves. It's in this sacred space that true excellence naturally unfolds, not as an effort, but as an expression.",
+            "hashtags": [
+              "#PhilosophicalThoughts",
+              "#MeaningOfWork",
+              "#InnerWisdom",
+              "#Existential",
+              "#PurposefulLiving",
+              "#BeyondTheSurface",
+              "#DeepThinking",
+              "#SelfDiscovery",
+              "#SpiritualJourney",
+              "#ConsciousLiving",
+              "#HumanExperience",
+              "#Reflective"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "Simple truth: Love what you do. The rest follows.",
+          "hashtags": [
+            "#LoveYourWork",
+            "#Passion",
+            "#Simplicity",
+            "#Motivation",
+            "#Inspiration",
+            "#WorkEthic",
+            "#Purpose",
+            "#DailyQuotes",
+            "#MinimalistLife",
+            "#Focus",
+            "#BeYou",
+            "#InnerDrive"
+          ]
+        },
+        "selectedCaptionIndex": 3
+      },
+      {
+        "id": "img-002",
+        "filename": "2026-07-11-001-02.png",
+        "quote": "In the middle of difficulty lies opportunity.",
+        "template": "meme_template.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "Life's journey often presents us with unexpected detours and uphill climbs. But if we look closely, within those challenging moments are hidden pathways to growth and new beginnings. Every difficulty truly holds a seed of opportunity.",
+            "hashtags": [
+              "#OpportunityKnocks",
+              "#EmbraceTheChallenge",
+              "#GrowthMindset",
+              "#FindingStrength",
+              "#InspirationDaily",
+              "#LifeLessons",
+              "#StayResilient",
+              "#PositiveVibes",
+              "#NewBeginnings",
+              "#Hope"
+            ]
+          },
+          {
+            "commentary": "Don't just face the difficulty—conquer it! The biggest breakthroughs often emerge from the toughest trials. This isn't a problem; it's your next big chance to shine.",
+            "hashtags": [
+              "#DifficultyIsOpportunity",
+              "#RiseAbove",
+              "#NoLimits",
+              "#ChallengeAccepted",
+              "#GoGetIt",
+              "#BeBold",
+              "#SuccessMindset",
+              "#Breakthrough",
+              "#PowerUp",
+              "#GameOn"
+            ]
+          },
+          {
+            "commentary": "I remember a time when everything felt impossible, like I was stuck in quicksand. But it was in that very struggle that I had to dig deep, get creative, and find a way out. That's when I truly understood that difficulties aren't roadblocks, they're detours leading to something even better. What's your story of finding opportunity in adversity?",
+            "hashtags": [
+              "#MyJourney",
+              "#StoryTime",
+              "#PersonalGrowth",
+              "#OvercomingAdversity",
+              "#LifeExperiences",
+              "#FindingYourWay",
+              "#ResilienceJourney",
+              "#InspiringStories",
+              "#AuthenticLife",
+              "#LearnedLessons"
+            ]
+          },
+          {
+            "commentary": "Amidst the storm, look for the silver lining. Opportunity awaits.",
+            "hashtags": [
+              "#Opportunity",
+              "#Difficulty",
+              "#Growth",
+              "#Perspective",
+              "#Mindset",
+              "#Inspiration",
+              "#SimpleTruth",
+              "#Focus",
+              "#DeepThoughts",
+              "#Hope"
+            ]
+          },
+          {
+            "commentary": "The universe doesn't throw challenges our way to break us, but to reveal our untapped potential. Every struggle is a philosophical crucible, refining our spirit and uncovering new paths we never knew existed. It's in the heart of chaos that true order can emerge.",
+            "hashtags": [
+              "#PhilosophicalQuotes",
+              "#ExistentialThoughts",
+              "#HumanPotential",
+              "#LifePhilosophy",
+              "#Wisdom",
+              "#DeeperMeaning",
+              "#InnerStrength",
+              "#UniverseSpeaks",
+              "#SelfDiscovery",
+              "#GrowthJourney"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "Don't just face the difficulty—conquer it! The biggest breakthroughs often emerge from the toughest trials. This isn't a problem; it's your next big chance to shine.",
+          "hashtags": [
+            "#DifficultyIsOpportunity",
+            "#RiseAbove",
+            "#NoLimits",
+            "#ChallengeAccepted",
+            "#GoGetIt",
+            "#BeBold",
+            "#SuccessMindset",
+            "#Breakthrough",
+            "#PowerUp",
+            "#GameOn"
+          ]
+        },
+        "selectedCaptionIndex": 1
+      },
+      {
+        "id": "img-003",
+        "filename": "2026-07-11-001-03.png",
+        "quote": "Simplicity is the ultimate sophistication.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved"
+      },
+      {
+        "id": "img-004",
+        "filename": "2026-07-11-001-04.png",
+        "quote": "The future belongs to those who believe in the beauty of their dreams.",
+        "template": "meme_template.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "There's a quiet power in truly believing in what you envision for yourself. It’s not just about having a dream, but seeing the inherent beauty and possibility within it, even when others can't yet. Keep nurturing that spark within you.",
+            "hashtags": [
+              "#DreamBig",
+              "#BelieveInYourDreams",
+              "#FutureBelongsToDreamers",
+              "#InnerStrength",
+              "#ManifestYourDreams",
+              "#InspirationDaily",
+              "#PositiveVibes",
+              "#NurtureYourSoul",
+              "#DreamersAndDoers",
+              "#HopefulFuture",
+              "#VisionaryLife",
+              "#EmbraceTheJourney"
+            ]
+          },
+          {
+            "commentary": "Your dreams? They're not just whispers; they're blueprints for your future. Believe in their beauty with everything you've got, because that belief is the most powerful tool you own. Go build that incredible future!",
+            "hashtags": [
+              "#OwnYourFuture",
+              "#DreamBoldly",
+              "#UnleashYourDreams",
+              "#FutureIsYours",
+              "#BelieveAndAchieve",
+              "#PowerfulMindset",
+              "#DreamChaser",
+              "#GoGetIt",
+              "#NoLimits",
+              "#Visionary",
+              "#MakeItHappen",
+              "#ImpactfulLiving"
+            ]
+          },
+          {
+            "commentary": "I remember a time when my dreams felt so distant, almost too big to articulate. But then I realized that the magic wasn't in the size of the dream, but in the unwavering belief that it was possible. Every step since has been a testament to that beautiful conviction, making the future feel not just possible, but inevitable. What's one dream you're holding onto today?",
+            "hashtags": [
+              "#MyDreamStory",
+              "#PersonalJourney",
+              "#BeliefInAction",
+              "#DreamBuilding",
+              "#LifeLessons",
+              "#InspirationFromLife",
+              "#AuthenticSelf",
+              "#FutureInProgress",
+              "#DreamBigWorkHard",
+              "#Storyteller",
+              "#OvercomingChallenges",
+              "#InspireOthers"
+            ]
+          },
+          {
+            "commentary": "Believe in the beautiful future you're building. It all starts with a dream.",
+            "hashtags": [
+              "#DreamBelieveAchieve",
+              "#FutureIsBright",
+              "#SimplyBelieve",
+              "#Vision",
+              "#Inspiration",
+              "#Motivation",
+              "#Dreamer",
+              "#Believe",
+              "#Future",
+              "#Hope",
+              "#Quotes",
+              "#Life"
+            ]
+          },
+          {
+            "commentary": "Beyond the tangible, beyond the immediate, lies the profound landscape of our dreams. To believe in their beauty is to acknowledge the infinite potential of the human spirit—a profound act of faith that shapes not just our individual paths, but the very fabric of tomorrow. What truth does your dream reveal about your deepest desires?",
+            "hashtags": [
+              "#PhilosophicalThoughts",
+              "#DeepThinking",
+              "#PowerOfBelief",
+              "#HumanSpirit",
+              "#ExistentialDreams",
+              "#FutureVision",
+              "#ConsciousLiving",
+              "#InnerWisdom",
+              "#BeyondReality",
+              "#DreamInterpretation",
+              "#Mindfulness",
+              "#SpiritualJourney"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "There's a quiet power in truly believing in what you envision for yourself. It’s not just about having a dream, but seeing the inherent beauty and possibility within it, even when others can't yet. Keep nurturing that spark within you.",
+          "hashtags": [
+            "#DreamBig",
+            "#BelieveInYourDreams",
+            "#FutureBelongsToDreamers",
+            "#InnerStrength",
+            "#ManifestYourDreams",
+            "#InspirationDaily",
+            "#PositiveVibes",
+            "#NurtureYourSoul",
+            "#DreamersAndDoers",
+            "#HopefulFuture",
+            "#VisionaryLife",
+            "#EmbraceTheJourney"
+          ]
+        },
+        "selectedCaptionIndex": 0
+      },
+      {
+        "id": "img-005",
+        "filename": "2026-07-11-001-05.png",
+        "quote": "It does not matter how slowly you go as long as you do not stop.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved"
+      }
+    ]
+  },
+  {
+    "batch": {
+      "id": "2026-07-11-002",
+      "generatedAt": "2026-07-11T09:32:44.191Z",
+      "trigger": "web"
+    },
+    "images": [
+      {
+        "id": "img-001",
+        "filename": "2026-07-11-001-01.png",
+        "quote": "Be yourself; everyone else is already taken.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved"
+      },
+      {
+        "id": "img-002",
+        "filename": "2026-07-11-001-03.png",
+        "quote": "The only impossible journey is the one you never begin.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved"
+      },
+      {
+        "id": "img-003",
+        "filename": "2026-07-11-001-04.png",
+        "quote": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
+        "template": "meme_template.jpg",
+        "promptTemplate": "default.md",
+        "status": "rejected"
+      }
+    ]
+  },
+  {
+    "batch": {
+      "id": "2026-07-11-003",
+      "generatedAt": "2026-07-11T09:33:56.517Z",
+      "trigger": "web"
+    },
+    "images": [
+      {
+        "id": "img-001",
+        "filename": "2026-07-11-001-01.png",
+        "quote": "The only way to do great work is to love what you do.",
+        "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+        "promptTemplate": "default.md",
+        "status": "approved",
+        "captions": [
+          {
+            "commentary": "There's a quiet magic in finding joy in the everyday hustle. When you truly love what you do, even the smallest steps forward feel like a dance. Let your passion light the way.",
+            "hashtags": [
+              "#LoveWhatYouDo",
+              "#PassionDriven",
+              "#WorkWithHeart",
+              "#CreativeLife",
+              "#InspirationDaily",
+              "#JoyfulJourney",
+              "#MindfulWork",
+              "#PurposeDriven",
+              "#EmbraceTheProcess",
+              "#AuthenticLiving",
+              "#GreatWork",
+              "#DailyMotivation"
+            ]
+          },
+          {
+            "commentary": "Love it or leave it. Great work isn't just done, it's *felt*. Fuel your fire.",
+            "hashtags": [
+              "#PassionFirst",
+              "#DoWhatYouLove",
+              "#NoExcuses",
+              "#DrivenByPurpose",
+              "#GreatnessAwaits",
+              "#IgniteYourPassion",
+              "#WorkHardPlayHard",
+              "#GoGetIt",
+              "#SuccessMindset",
+              "#BeBold",
+              "#Unstoppable",
+              "#LoveYourCraft"
+            ]
+          },
+          {
+            "commentary": "I remember a time when work felt like a chore, but then something shifted. It was when I started pouring my heart into every task, big or small, that the 'work' transformed into pure joy. This quote resonates so deeply with that journey – it's not just about what you do, but how much you love doing it. It changes everything.",
+            "hashtags": [
+              "#MyWorkStory",
+              "#JourneyOfPassion",
+              "#FindingMyPurpose",
+              "#LifeByDesign",
+              "#AuthenticWork",
+              "#PersonalJourney",
+              "#ReflectiveMoments",
+              "#GrowthMindset",
+              "#InspiredByLife",
+              "#HeartLed",
+              "#MeaningfulWork",
+              "#Transformational"
+            ]
+          },
+          {
+            "commentary": "Love. Work. Greatness. The ultimate connection.",
+            "hashtags": [
+              "#LoveAndWork",
+              "#Passion",
+              "#GreatWork",
+              "#Simplicity",
+              "#DeepTruth",
+              "#Motivation",
+              "#DailyInspiration",
+              "#WorkLife",
+              "#Purpose",
+              "#Focus",
+              "#MinimalistMind",
+              "#Achieve"
+            ]
+          },
+          {
+            "commentary": "Is 'work' truly work if it's born from a place of genuine affection? Perhaps the distinction between labor and love dissolves when our hands and hearts are fully engaged. To love what you do isn't merely a preference; it's a profound philosophy that shapes not just our output, but our very being.",
+            "hashtags": [
+              "#PhilosophyOfWork",
+              "#BeyondLabor",
+              "#ExistentialThoughts",
+              "#MeaningInWork",
+              "#DeepThinking",
+              "#ConsciousLiving",
+              "#PurposeAndPassion",
+              "#LifeQuestions",
+              "#InspiredThought",
+              "#ReflectAndGrow",
+              "#HumanExperience",
+              "#InnerJourney"
+            ]
+          }
+        ],
+        "caption": {
+          "commentary": "There's a quiet magic in finding joy in the everyday hustle. When you truly love what you do, even the smallest steps forward feel like a dance. Let your passion light the way.",
+          "hashtags": [
+            "#LoveWhatYouDo",
+            "#PassionDriven",
+            "#WorkWithHeart",
+            "#CreativeLife",
+            "#InspirationDaily",
+            "#JoyfulJourney",
+            "#MindfulWork",
+            "#PurposeDriven",
+            "#EmbraceTheProcess",
+            "#AuthenticLiving",
+            "#GreatWork",
+            "#DailyMotivation"
+          ]
+        },
+        "selectedCaptionIndex": 0
+      }
+    ]
   }
 ]

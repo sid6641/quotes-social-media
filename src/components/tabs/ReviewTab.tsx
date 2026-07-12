@@ -260,9 +260,6 @@ export default function ReviewTab({
   const statusCounts = {
     unreviewed: displayImages.filter((i) => i.status === "pending" && !i.reviewed).length,
     all: displayImages.length,
-    pending: displayImages.filter((i) => i.status === "pending").length,
-    approved: displayImages.filter((i) => i.status === "approved").length,
-    rejected: displayImages.filter((i) => i.status === "rejected").length,
   };
 
   // ── Render ─────────────────────────────────────────────────────────
@@ -305,8 +302,8 @@ export default function ReviewTab({
               </button>
             </div>
           )}
-          {/* Reject remaining */}
-          {manifest.images.some((img) => img.status !== "approved") && (
+          {/* Reject remaining — only show when there are pending images left */}
+          {manifest.images.some((img) => img.status === "pending") && (
             <button
               onClick={handleRejectRemaining}
               disabled={rejectingRemaining}
@@ -324,9 +321,6 @@ export default function ReviewTab({
           options={[
             { key: "unreviewed", label: "Unreviewed", count: statusCounts.unreviewed },
             { key: "all", label: "All", count: statusCounts.all },
-            { key: "pending", label: "Pending", count: statusCounts.pending },
-            { key: "approved", label: "Approved", count: statusCounts.approved },
-            { key: "rejected", label: "Rejected", count: statusCounts.rejected },
           ]}
           selected={statusFilter}
           onChange={(key) => { setStatusFilter(key as StatusFilter); setSelectedIds(new Set()); }}
@@ -366,7 +360,7 @@ export default function ReviewTab({
 
       {/* Image grid */}
       {filteredImages.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">No {statusFilter === "all" ? "" : statusFilter === "unreviewed" ? "unreviewed" : statusFilter} images to show.</div>
+        <div className="text-center py-20 text-gray-400">No {statusFilter === "unreviewed" ? "unreviewed" : ""} images to show.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredImages.map((image) => {

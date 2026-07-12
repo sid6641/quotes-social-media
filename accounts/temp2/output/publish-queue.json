@@ -52,5 +52,167 @@
     },
     "scheduledAt": "2026-07-11T03:30:00.000Z",
     "status": "queued"
+  },
+  {
+    "id": "pub-003",
+    "batchId": "2026-07-11-001",
+    "imageId": "img-003",
+    "filename": "2026-07-11-001-03.png",
+    "quote": "Simplicity is the ultimate sophistication.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "",
+      "hashtags": []
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-004",
+    "batchId": "2026-07-11-001",
+    "imageId": "img-004",
+    "filename": "2026-07-11-001-04.png",
+    "quote": "The future belongs to those who believe in the beauty of their dreams.",
+    "template": "meme_template.jpg",
+    "caption": {
+      "commentary": "There's a quiet power in truly believing in what you envision for yourself. It’s not just about having a dream, but seeing the inherent beauty and possibility within it, even when others can't yet. Keep nurturing that spark within you.",
+      "hashtags": [
+        "#DreamBig",
+        "#BelieveInYourDreams",
+        "#FutureBelongsToDreamers",
+        "#InnerStrength",
+        "#ManifestYourDreams",
+        "#InspirationDaily",
+        "#PositiveVibes",
+        "#NurtureYourSoul",
+        "#DreamersAndDoers",
+        "#HopefulFuture",
+        "#VisionaryLife",
+        "#EmbraceTheJourney"
+      ]
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-005",
+    "batchId": "2026-07-11-001",
+    "imageId": "img-001",
+    "filename": "2026-07-11-001-01.png",
+    "quote": "The only way to do great work is to love what you do.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "Simple truth: Love what you do. The rest follows.",
+      "hashtags": [
+        "#LoveYourWork",
+        "#Passion",
+        "#Simplicity",
+        "#Motivation",
+        "#Inspiration",
+        "#WorkEthic",
+        "#Purpose",
+        "#DailyQuotes",
+        "#MinimalistLife",
+        "#Focus",
+        "#BeYou",
+        "#InnerDrive"
+      ]
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-006",
+    "batchId": "2026-07-11-001",
+    "imageId": "img-005",
+    "filename": "2026-07-11-001-05.png",
+    "quote": "It does not matter how slowly you go as long as you do not stop.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "",
+      "hashtags": []
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-007",
+    "batchId": "2026-07-11-001",
+    "imageId": "img-002",
+    "filename": "2026-07-11-001-02.png",
+    "quote": "In the middle of difficulty lies opportunity.",
+    "template": "meme_template.jpg",
+    "caption": {
+      "commentary": "Don't just face the difficulty—conquer it! The biggest breakthroughs often emerge from the toughest trials. This isn't a problem; it's your next big chance to shine.",
+      "hashtags": [
+        "#DifficultyIsOpportunity",
+        "#RiseAbove",
+        "#NoLimits",
+        "#ChallengeAccepted",
+        "#GoGetIt",
+        "#BeBold",
+        "#SuccessMindset",
+        "#Breakthrough",
+        "#PowerUp",
+        "#GameOn"
+      ]
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-008",
+    "batchId": "2026-07-11-003",
+    "imageId": "img-001",
+    "filename": "2026-07-11-001-01.png",
+    "quote": "The only way to do great work is to love what you do.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "There's a quiet magic in finding joy in the everyday hustle. When you truly love what you do, even the smallest steps forward feel like a dance. Let your passion light the way.",
+      "hashtags": [
+        "#LoveWhatYouDo",
+        "#PassionDriven",
+        "#WorkWithHeart",
+        "#CreativeLife",
+        "#InspirationDaily",
+        "#JoyfulJourney",
+        "#MindfulWork",
+        "#PurposeDriven",
+        "#EmbraceTheProcess",
+        "#AuthenticLiving",
+        "#GreatWork",
+        "#DailyMotivation"
+      ]
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-009",
+    "batchId": "2026-07-11-002",
+    "imageId": "img-001",
+    "filename": "2026-07-11-001-01.png",
+    "quote": "Be yourself; everyone else is already taken.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "",
+      "hashtags": []
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
+  },
+  {
+    "id": "pub-010",
+    "batchId": "2026-07-11-002",
+    "imageId": "img-002",
+    "filename": "2026-07-11-001-03.png",
+    "quote": "The only impossible journey is the one you never begin.",
+    "template": "936819e6771ff34305a0b11d7181b00f.jpg",
+    "caption": {
+      "commentary": "",
+      "hashtags": []
+    },
+    "scheduledAt": "2026-07-12T03:30:00.000Z",
+    "status": "queued"
   }
 ]

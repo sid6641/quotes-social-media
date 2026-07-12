@@ -73,7 +73,7 @@ async function main() {
       const result: Record<string, string> = {};
       for (const btn of buttons) {
         const text = btn.textContent || "";
-        const match = text.match(/^(All|Pending|Approved|Rejected)\s*\(\d+\)$/);
+        const match = text.match(/^(All|Unreviewed)\s*\(\d+\)$/);
         if (match) result[match[1].toLowerCase()] = text;
       }
       return result;

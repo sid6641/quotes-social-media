@@ -16,6 +16,28 @@ Patterns, gotchas, and what works for browser automation on this app.
 
 ## Review Tab
 
+### Per-batch pagination
+- Each page = one batch (max 10 images). Pagination is via "← Prev" / "Next →" buttons.
+- "1 / 4" label shows current position. Disabled buttons at boundaries.
+- Batch header shows: "Batch {id} · {date} · {trigger} | {N} images"
+- **Gotcha**: Switching accounts causes a full data reload. Wait 2-3s.
+
+### Filter bar (simplified)
+- Only two filters: **Unreviewed (N)** and **All (N)**.
+- Default is Unreviewed — shows only images with `status==="pending"` and `reviewed!==true`.
+- Clicking a filter resets selection state.
+
+### Mark batch as reviewed
+- "👁️ Mark batch as reviewed" button appears when Unreviewed filter is active and there are unreviewed images.
+- Sets `reviewed: true` on all images in the current batch (does NOT approve them).
+- Re-fetches the batch after API call.
+
+### Reject remaining button
+- "🗑️ Reject remaining" button appears in the batch header when there are pending images.
+- Rejects all non-approved images in the **current batch only** (batch-scoped).
+- Sends `POST /api/batch-status` with the current batch's ID.
+- Button disappears once all images are approved or rejected.
+
 ### Caption options
 - Caption option buttons are numbered 1-5 inside each image card.
 - Each button contains a `<span>` with just the number text.
@@ -24,29 +46,36 @@ Patterns, gotchas, and what works for browser automation on this app.
   ```typescript
   const btn = page.locator('button').filter({ hasText: /^1$/ }).first();
   ```
-  But this can match filter buttons like "All (10)" or "Pending (10)" because they contain "1" and "0".
+  But this can match filter buttons like "All (10)" or "Unreviewed (0)" because they contain "1" and "0".
 - **Reliable approach**: Scope to the image grid container first, then find numbered buttons.
 
 ### Approve/Reject individual
 - Each image card has "Approve" and "Reject" buttons in its footer.
 - These buttons appear after the caption options section.
 - Use `page.locator('button').filter({ hasText: 'Approve' }).first()` to find the first approve button.
+- **Important**: After approve/reject, the batch is re-fetched from the server. The page may briefly show "Loading...".
 
 ### Bulk approve/reject
 - Click the checkbox on image cards to select them.
 - A floating action bar appears with "✅ Approve (N)" and "❌ Reject (N)" buttons.
 - **Gotcha**: The floating bar is `position: sticky`, so it may overlap other elements. Scroll it into view first.
-- **Gotcha**: In "All iterations" (cross-batch) mode, `manifest` is null. The batch status API must receive an `account` parameter.
 
 ### Select all
 - The "Select all" checkbox is in the filter bar.
-- It only selects **pending** images, not already approved/rejected ones.
+- It selects all **visible** images (filtered by current filter).
 - Click the label text "Select all" instead of the checkbox itself for reliability.
 
-### "Reject remaining" button
-- Visible in the filter bar when there are pending images.
-- Marks all still-pending images as rejected via individual `POST /api/status` calls.
-- Then refreshes all data (`fetchLatestBatch`, `fetchAllImages`, `fetchAllBatchesList`).
+## Queue Tab
+
+### Account scoping
+- Queue files are account-scoped: `accounts/<id>/output/publish-queue.json`.
+- With "All accounts" selected, the queue tab shows a hint: *"Select an account from the dropdown above..."*
+- **Must** select a specific account to see queue entries.
+
+## Page Stability
+- Playwright's `page.evaluate()` can fail with `ReferenceError: document is not defined` if the page navigates between calls.
+- After any navigation (tab switch, account change), always wait with `page.waitForTimeout(2000-3000)`.
+- The page may briefly show "Loading manifest..." between fetches — wait for the filter bar to appear before interacting.
 
 ## Templates Tab
 

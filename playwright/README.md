@@ -28,6 +28,41 @@ playwright/
     smoke-test.ts        ← Quick smoke test of all core flows
 ```
 
+## Core Workflows
+
+### 1. Daily Batch — Generate → Review → Queue
+
+```typescript
+import { selectAccount } from "../utils/navigation";
+import { approveImage, rejectImage, rejectRemaining } from "../utils/review";
+
+// Select account
+await selectAccount(page, "temp2");
+
+// Paginate through batches, approve good ones
+// Each page = 1 batch (max 10 images)
+// "← Prev" / "Next →" to navigate batches
+await approveImage(page);    // approve first pending image
+await rejectRemaining(page); // reject rest of batch
+
+// Switch to Queue tab to see queued items
+await page.getByRole("button", { name: "Queue" }).click();
+```
+
+### 2. Mark Batch as Reviewed
+
+```typescript
+// Switch to Unreviewed filter (default), then mark page as seen
+await page.getByRole("button", { name: /👁️/ }).click();
+```
+
+### 3. Export Calendar
+
+```typescript
+// From the Review tab with approved images
+await page.getByRole("button", { name: /📅/ }).click();
+```
+
 ## Core Patterns
 
 ### Selecting an account
@@ -35,7 +70,6 @@ playwright/
 ```typescript
 import { selectAccount } from "../utils/navigation";
 
-// Via Playwright page object
 await selectAccount(page, "sid");
 ```
 
@@ -47,6 +81,13 @@ import { pickCaption } from "../utils/review";
 // Click the first image's caption option 1
 await pickCaption(page, { imageIndex: 0, optionIndex: 0 });
 ```
+
+## Gotchas
+
+- Queue is **account-scoped** — select a specific account before checking the Queue tab.
+- After any navigation (tab switch, account change), wait 2-3 seconds for data to load.
+- `page.evaluate()` can fail with `ReferenceError: document is not defined` if the page navigates between calls — scope operations within a single `evaluate` when possible.
+- The Reject remaining button is batch-scoped (current batch only) and disappears once all images are approved/rejected.
 
 ### Approving an image
 

@@ -1,5 +1,36 @@
 # Session Log
 
+## 2026-07-11 — Workflow execution: 3-account daily batch loop
+
+### Agent
+Director (Playwright automation)
+
+### Summary
+Executed all 3 core workflows for managing 3 Instagram quote-page accounts (temp2, sid, newModal1) using the review UI.
+
+### Workflow 1 — Daily Batch (temp2)
+- Reviewed 4 batches via per-batch pagination (← Prev / Next →)
+- Approved images across batches, used "Reject remaining" on one batch
+- Queue ended with **9 queued** items
+
+### Workflow 1 — Daily Batch (sid)
+- Reviewed batch with 10 images, approved 6 via individual approve
+- Server confirmed all 6 `POST /api/status 200` calls
+- Queue ended with **2 queued** items
+
+### Workflow 3 — Export Calendar (temp2)
+- Exported 5 approved images to `accounts/temp2/output/calendar/`
+- Each day has image + caption.txt — ready to copy-paste into Instagram
+
+### Key Observations
+- Per-batch pagination works well: each batch ≤ 10 images, easy to approve/reject
+- Queue tab shows accurate counts (account-scoped)
+- Approve/reject re-fetches batch from server — clean state
+- Export correctly spreads images across days
+
+### State At End
+All 3 workflows verified working on dev server. Playwright docs updated with patterns and gotchas.
+
 ## 2026-07-11 — Review UI: per-batch pagination, unreviewed filter, reject-remaining
 
 ### Agent
