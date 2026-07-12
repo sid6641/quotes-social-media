@@ -16,7 +16,7 @@ export interface QuoteTemplateCombo {
   quoteId?: string;
 }
 
-interface QuoteEntry {
+export interface QuoteEntry {
   text: string;
   id?: string;
 }
@@ -143,6 +143,35 @@ export function pickCombinations(
 ): QuoteTemplateCombo[] {
   const allQuotes = loadQuotes(accountId);
   const allTemplates = loadTemplates(accountId);
+  const recentlyUsed = getRecentlyUsedQuotes(accountId);
+  return pickCombos(allQuotes, allTemplates, count, recentlyUsed, all);
+}
+
+/**
+ * Pure combinatorial logic — picks quote+template combinations.
+ *
+ * Exported for testing. Takes pre-loaded quotes and templates so
+ * callers can inject data without touching the filesystem.
+ *
+ * - Sequential index-based pairing: quote[i % N] + template[i % M]
+ * - Avoids reusing the same quote+template combo in one call
+ * - "All" mode returns full Cartesian product (ignores count + recentlyUsed)
+ * - Soft-deduplicates quotes in recentlyUsed when alternatives exist
+ *
+ * @param allQuotes  Available quotes from the pool
+ * @param allTemplates  Available template filenames
+ * @param count  Number of combos to produce
+ * @param recentlyUsed  Quote texts to deprioritize
+ * @param all  If true, return all quote×template combinations
+ */
+export function pickCombos(
+  allQuotes: QuoteEntry[],
+  allTemplates: string[],
+  count: number,
+  recentlyUsed: Set<string>,
+  all?: boolean
+): QuoteTemplateCombo[] {
+  if (count <= 0 && !all) return [];
 
   // "All" mode: full Cartesian product (n quotes × m templates)
   if (all) {
@@ -155,18 +184,14 @@ export function pickCombinations(
     return combos;
   }
 
-  const recentlyUsed = getRecentlyUsedQuotes(accountId);
-  const targetCount = count;
-
   // Prefer quotes not recently used
-  const poolTexts = allQuotes.map((q) => q.text);
   const freshQuotes = allQuotes.filter((q) => !recentlyUsed.has(q.text));
   const pool = freshQuotes.length > 0 ? freshQuotes : allQuotes;
 
   const combos: QuoteTemplateCombo[] = [];
   const used = new Set<string>();
 
-  for (let i = 0; i < targetCount; i++) {
+  for (let i = 0; i < count; i++) {
     const entry = pool[i % pool.length];
     const template = allTemplates[i % allTemplates.length];
     const key = `${entry.text}::${template}`;
